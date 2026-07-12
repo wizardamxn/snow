@@ -1,0 +1,96 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:#89c8ff;
+}
+
+.scene{
+
+    width:800px;
+    height:500px;
+
+    position:relative;
+
+    border:2px solid black;
+}
+
+.tree{
+
+    position:absolute;
+
+    bottom:0;
+    left:250px;
+
+    width:250px;
+
+    image-rendering: pixelated;
+
+    transform-origin: bottom center;
+
+    animation:sway 2s ease-in-out infinite;
+}
+
+@keyframes sway{
+
+    0%{
+        transform:rotate(-2deg);
+    }
+
+    50%{
+        transform:rotate(2deg);
+    }
+
+    100%{
+        transform:rotate(-2deg);
+    }
+
+}
+
+.clouds{
+    
+    position:absolute;
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100%;
+
+    overflow:hidden;
+}
+
+.cloud{
+    
+    position:absolute;
+
+    top:50px;
+    left:-200px;
+
+    width:200px;
+
+    image-rendering: pixelated;
+
+    animation:moveClouds 20s linear infinite;
+}
+
+@keyframes moveClouds{
+
+    0%{
+        left:-200px;
+    }
+
+    100%{
+        left:100%;
+    }
+
+}
