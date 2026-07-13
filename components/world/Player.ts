@@ -89,7 +89,16 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
     const frames = moving ? runFrames : idleFrames;
     const fps = moving ? RUN_FPS : IDLE_FPS;
     animTime += dt;
-    sprite.texture = frames[Math.floor(animTime * fps) % frames.length];
+    const currentFrameIdx = Math.floor(animTime * fps) % frames.length;
+    
+    // Play footstep on specific run animation frames (e.g. frame 1 and 4)
+    if (moving && sprite.texture !== frames[currentFrameIdx]) {
+      if (currentFrameIdx === 1 || currentFrameIdx === 4) {
+        import("@/lib/audio/ambient").then(m => m.playFootstep());
+      }
+    }
+    
+    sprite.texture = frames[currentFrameIdx];
 
     // Subtle walk bob
     bob = moving ? bob + dt * 12 : 0;

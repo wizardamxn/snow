@@ -27,6 +27,17 @@ export const worldState = {
    */
   playerX: 0,
   playerY: 0,
+  /**
+   * Day/Night cycle state.
+   * timeOfDay goes from 0 to 24.
+   */
+  timeOfDay: 17, // Start at Golden Hour
+  cycleRunning: true,
+  /**
+   * Raven NPC world-pixel position for the speech bubble.
+   */
+  ravenX: 0,
+  ravenY: 0,
 };
 
 /**

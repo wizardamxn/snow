@@ -6,6 +6,7 @@ import {
   Text,
   TextStyle,
   Texture,
+  ColorMatrixFilter,
 } from "pixi.js";
 import { buildTilemap } from "@/components/world/Tilemap";
 import { createPlayer } from "@/components/world/Player";
@@ -48,6 +49,32 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   const scene = new Container();
   const world = new Container();
   scene.addChild(world);
+
+  // Apply Day/Night tint filter
+  const filter = new ColorMatrixFilter();
+  world.filters = [filter];
+
+  const DAY_MAT = [
+    1, 0, 0, 0, 0,
+    0, 1, 0, 0, 0,
+    0, 0, 1, 0, 0,
+    0, 0, 0, 1, 0,
+  ] as any;
+  const GOLDEN_MAT = [
+    1.1, 0.0, 0.0, 0.0, 0.05,
+    0.0, 0.95, 0.0, 0.0, 0.02,
+    0.0, 0.0, 0.8, 0.0, -0.05,
+    0.0, 0.0, 0.0, 1.0, 0.0,
+  ] as any;
+  const NIGHT_MAT = [
+    0.5, 0.0, 0.0, 0.0, -0.1,
+    0.0, 0.6, 0.0, 0.0, -0.05,
+    0.0, 0.0, 0.9, 0.0, 0.1,
+    0.0, 0.0, 0.0, 1.0, 0.0,
+  ] as any;
+
+  const lerpMat = (a: number[], b: number[], t: number) => 
+    a.map((v, i) => v + (b[i] - v) * t) as any;
 
   // ── Ground + collision ─────────────────────────────────────────────────────
   const tilemap = await buildTilemap();
@@ -97,6 +124,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     sheepIdleTex,
     sheepMoveTex,
     duckTex,
+    ravenTex,
     buildingTexes,
   ] = await Promise.all([
     Promise.all(TREE_URLS.map(loadTex)),
@@ -110,6 +138,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     loadTex("/pixel/deco/sheep_idle.png"),
     loadTex("/pixel/deco/sheep_move.png"),
     loadTex("/pixel/deco/duck.png"),
+    loadTex("/pixel/knight/Raven_Idle.png"),
     (async () => {
       const map = new Map<string, Texture>();
       const urls = new Set<string>([
@@ -127,6 +156,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   const sheepIdleFrames = sliceFrames(sheepIdleTex, 128, 128);
   const sheepMoveFrames = sliceFrames(sheepMoveTex, 128, 128);
   const duckFrames = sliceFrames(duckTex, 32, 32);
+  const ravenFrames = sliceFrames(ravenTex, 192, 192);
   // trees/bushes/water-rocks are strips — keep first pose, indexed to their url
   const treeFrames = treeTexes.map((t) => sliceFrames(t, 192, t.height)[0]);
   const bushFrames = bushTexes.map((t) => sliceFrames(t, 128, 128)[0]);
@@ -481,10 +511,80 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     });
   }
 
+  // ── High-Altitude Birds ────────────────────────────────────────────────────
+  const birds: Bird[] = [];
+  {
+    const bRng = mulberry32(111);
+    for (let i = 0; i < 15; i++) {
+      const g = new Graphics();
+      // Draw a tiny bird silhouette (V-shape)
+      g.moveTo(0, 0).lineTo(-4, -3).moveTo(0, 0).lineTo(4, -3).stroke({ color: 0x111122, width: 1.5, join: "round", cap: "round" });
+      g.alpha = 0.6;
+      cloudLayer.addChild(g);
+      birds.push({
+        g,
+        x: bRng() * WORLD_W,
+        y: bRng() * WORLD_H,
+        vx: 40 + bRng() * 30,
+        vy: -15 - bRng() * 10,
+        flapPhase: bRng() * Math.PI * 2,
+        flapSpeed: 10 + bRng() * 5,
+        baseScale: 0.8 + bRng() * 0.4,
+      });
+    }
+  }
+
+  // ── Falling Leaves ─────────────────────────────────────────────────────────
+  const leaves: Leaf[] = [];
+  {
+    const lRng = mulberry32(222);
+    for (let i = 0; i < 35; i++) {
+      const g = new Graphics();
+      g.rect(-1.5, -1.5, 3, 3).fill({ color: lRng() > 0.5 ? 0xc85a17 : 0x8a6820 });
+      world.addChild(g);
+      leaves.push({
+        g,
+        x: lRng() * WORLD_W,
+        y: lRng() * WORLD_H,
+        vx: -15 - lRng() * 20,
+        vy: 25 + lRng() * 15,
+        swayPhase: lRng() * Math.PI * 2,
+        swaySpeed: 2 + lRng() * 2,
+      });
+    }
+  }
+
   // ── Player ─────────────────────────────────────────────────────────────────
   const player = await createPlayer((SPAWN.col + 0.5) * TILE, (SPAWN.row + 0.9) * TILE);
   entities.addChild(player.container);
   const canWalk = (x: number, y: number) => !tilemap.isBlockedPx(x, y);
+
+  // Glowing lantern for night
+  const lantern = new Graphics();
+  for (let r = 10; r <= 200; r += 20) {
+    lantern.circle(0, 0, r).fill({ color: 0xffaa33, alpha: 0.08 * (1 - r / 200) });
+  }
+  lantern.blendMode = "add";
+  lantern.zIndex = 9999;
+  entities.addChild(lantern);
+
+  // ── Raven NPC (The Guide) ──────────────────────────────────────────────────
+  const ravenX = (SPAWN.col - 1.5) * TILE;
+  const ravenY = (SPAWN.row + 1.5) * TILE;
+  const ravenContainer = new Container();
+  
+  const ravenShadow = new Graphics().ellipse(0, -2, 16, 6).fill({ color: 0x000, alpha: 0.28 });
+  ravenContainer.addChild(ravenShadow);
+
+  const ravenSprite = new Sprite(ravenFrames[0]);
+  ravenSprite.anchor.set(0.5, 0.82); // match player
+  ravenSprite.scale.set(74 / 192); // match player height
+  ravenContainer.addChild(ravenSprite);
+  
+  ravenContainer.x = ravenX;
+  ravenContainer.y = ravenY;
+  ravenContainer.zIndex = ravenY;
+  entities.addChild(ravenContainer);
 
   // ── Wandering sheep ────────────────────────────────────────────────────────
   const sheepRegions = [
@@ -560,11 +660,81 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   let elapsed = 0;
   const update = (dt: number) => {
     elapsed += dt;
+
+    // ── Day / Night Cycle ────────────────────────────────────────────────────
+    if (worldState.cycleRunning) {
+      worldState.timeOfDay += dt * 0.4; // Faster cycle for demo (60s = 1 day)
+      if (worldState.timeOfDay >= 24) worldState.timeOfDay -= 24;
+    }
+    
+    const tOfDay = worldState.timeOfDay;
+    let nightAmt = 0;
+    let goldenAmt = 0;
+
+    if (tOfDay >= 16 && tOfDay < 18) {
+      goldenAmt = (tOfDay - 16) / 2;
+    } else if (tOfDay >= 18 && tOfDay < 20) {
+      goldenAmt = 1 - (tOfDay - 18) / 2;
+      nightAmt = (tOfDay - 18) / 2;
+    } else if (tOfDay >= 20 || tOfDay < 6) {
+      nightAmt = 1;
+    } else if (tOfDay >= 6 && tOfDay < 8) {
+      nightAmt = 1 - (tOfDay - 6) / 2;
+    }
+
+    if (nightAmt > 0) {
+      filter.matrix = lerpMat(DAY_MAT, NIGHT_MAT, nightAmt);
+      if (goldenAmt > 0) filter.matrix = lerpMat(filter.matrix, GOLDEN_MAT, goldenAmt);
+    } else if (goldenAmt > 0) {
+      filter.matrix = lerpMat(DAY_MAT, GOLDEN_MAT, goldenAmt);
+    } else {
+      filter.matrix = DAY_MAT;
+    }
+
+    lantern.alpha = nightAmt * 0.8 + goldenAmt * 0.3;
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     player.update(dt, canWalk);
     // Expose player position for the React minimap (polled via rAF, no React state).
     worldState.playerX = player.x;
     worldState.playerY = player.y;
-    detectNear();
+    worldState.ravenX = ravenX;
+    worldState.ravenY = ravenY - 70; // bubble attaches above head
+    
+    lantern.x = player.x;
+    lantern.y = player.y - TILE * 0.5;
+
+    // Raven idle animation
+    ravenSprite.texture = ravenFrames[Math.floor(elapsed * 6) % ravenFrames.length];
+
+    // Proximity logic
+    let anyNear = false;
+
+    // 1. Check Raven
+    const distToRaven = Math.hypot(player.x - ravenX, player.y - ravenY);
+    if (distToRaven < 75) {
+      anyNear = true;
+      if (worldState.near?.id !== "raven") {
+        setNear({ id: "raven", action: "TALK TO", label: "RAVEN" });
+      }
+    } else {
+      // 2. Check buildings
+      for (const b of BUILDINGS) {
+        if (!b.id) continue;
+        const dx = (b.col + b.w / 2) * TILE - player.x;
+        const dy = (b.row + b.h) * TILE - player.y;
+        if (Math.hypot(dx, dy) < 120) {
+          anyNear = true;
+          if (worldState.near?.id !== b.id) {
+            setNear({ id: b.id, action: "ENTER", label: b.name });
+          }
+          break;
+        }
+      }
+    }
+
+    if (!anyNear && worldState.near) setNear(null);
 
     if (input.justPressed(...KEY.interact) && worldState.near) {
       bus.emitOpen(worldState.near.id);
@@ -670,6 +840,51 @@ export async function buildTownScene(app: Application): Promise<SceneController>
       bf.g.y = Math.round(bf.y) + Math.sin(elapsed * 1.2 + bf.flapPhase * 0.1) * 3; // gentle vertical drift
     }
 
+    // birds
+    for (const b of birds) {
+      b.x += b.vx * dt;
+      b.y += b.vy * dt;
+      
+      // Wrap around world
+      if (b.x > WORLD_W + 100) b.x = -100;
+      if (b.y < -100) b.y = WORLD_H + 100;
+
+      b.flapPhase += b.flapSpeed * dt;
+      const flapAmt = Math.sin(b.flapPhase);
+      
+      b.g.clear();
+      b.g.moveTo(0, 0)
+         .lineTo(-4, -3 + flapAmt * 3)
+         .moveTo(0, 0)
+         .lineTo(4, -3 + flapAmt * 3)
+         .stroke({ color: 0x111122, width: 1.5, join: "round", cap: "round" });
+         
+      b.g.x = b.x;
+      b.g.y = b.y + Math.sin(elapsed * 2) * 4;
+      b.g.scale.set(b.baseScale);
+    }
+
+    // leaves
+    for (const l of leaves) {
+      l.x += l.vx * dt;
+      l.y += l.vy * dt;
+      
+      // Sway side to side
+      l.swayPhase += l.swaySpeed * dt;
+      const sway = Math.sin(l.swayPhase) * 20;
+
+      // Wrap around world
+      if (l.y > WORLD_H + 20) {
+        l.y = -20;
+        l.x = Math.random() * WORLD_W; // new random X when respawning at top
+      }
+      if (l.x < -20) l.x = WORLD_W + 20;
+      
+      l.g.x = l.x + sway;
+      l.g.y = l.y;
+      l.g.rotation += dt * 2;
+    }
+
     // waterfall
     if (waterfallStreaks) {
       for (const st of waterfallStreaks.streaks) {
@@ -729,4 +944,23 @@ type Butterfly = {
   wanderTimer: number;
   baseColor: number;
   size: number;
+};
+type Bird = {
+  g: Graphics;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  flapPhase: number;
+  flapSpeed: number;
+  baseScale: number;
+};
+type Leaf = {
+  g: Graphics;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  swayPhase: number;
+  swaySpeed: number;
 };

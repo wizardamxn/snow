@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { bus, type NearInfo } from "@/lib/world/bus";
 import { worldState } from "@/lib/world/worldState";
+import { playBlip, setMuted, getAudioState } from "@/lib/audio/ambient";
 import SanctumPanel from "./panels/SanctumPanel";
 import ChroniclesPanel from "./panels/ChroniclesPanel";
 import RelicsPanel from "./panels/RelicsPanel";
@@ -10,6 +11,7 @@ import ArmoryPanel from "./panels/ArmoryPanel";
 import TestimoniesPanel from "./panels/TestimoniesPanel";
 import ContactPanel from "./panels/ContactPanel";
 import CavePanel from "./panels/CavePanel";
+import RavenBubble from "./panels/RavenBubble";
 import TutorialOverlay from "./TutorialOverlay";
 import Minimap from "./Minimap";
 
@@ -38,6 +40,8 @@ function PanelRouter({
       return <ContactPanel onClose={onClose} />;
     case "cave":
       return <CavePanel onClose={onClose} />;
+    case "raven":
+      return <RavenBubble onClose={onClose} />;
     default:
       return null;
   }
@@ -53,18 +57,44 @@ const pixelBox: React.CSSProperties = {
 export default function Overlay() {
   const [near, setNear] = useState<NearInfo>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isDynamicTime, setIsDynamicTime] = useState(true);
 
   useEffect(() => {
+    // Initial audio state sync
+    setIsMuted(getAudioState().muted);
+
     setNear(worldState.near);
     const offNear = bus.onNear((info) => setNear(info));
-    const offOpen = bus.onOpen((id) => setOpenId(id));
+    const offOpen = bus.onOpen((id) => {
+      playBlip();
+      setOpenId(id);
+    });
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key.toLowerCase() === "m") {
+        const current = getAudioState().muted;
+        setMuted(!current);
+        setIsMuted(!current);
+      }
+      if (e.key.toLowerCase() === "t") {
+        worldState.cycleRunning = !worldState.cycleRunning;
+        setIsDynamicTime(worldState.cycleRunning);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+
     return () => {
       offNear();
       offOpen();
+      window.removeEventListener("keydown", onKeyDown);
     };
   }, []);
 
-  const closePanel = () => setOpenId(null);
+  const closePanel = () => {
+    playBlip();
+    setOpenId(null);
+  };
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 select-none">
@@ -115,6 +145,14 @@ export default function Overlay() {
           <div>
             <span style={{ color: "#f0c050" }}>[E]</span>
             <span style={{ color: "#5a4020" }}> INTERACT</span>
+          </div>
+          <div>
+            <span style={{ color: "#f0c050" }}>[M]</span>
+            <span style={{ color: "#5a4020" }}> {isMuted ? "UNMUTE" : "MUTE"}</span>
+          </div>
+          <div>
+            <span style={{ color: "#f0c050" }}>[T]</span>
+            <span style={{ color: "#5a4020" }}> TIME: {isDynamicTime ? "DYNAMIC" : "STATIC"}</span>
           </div>
         </div>
       </div>

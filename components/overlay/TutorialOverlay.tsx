@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ensureStarted } from "@/lib/audio/ambient";
 
 /**
  * First-load tutorial screen. Shown once per session (sessionStorage flag).
@@ -64,6 +65,7 @@ export default function TutorialOverlay() {
   }, []);
 
   const dismiss = () => {
+    ensureStarted();
     sessionStorage.setItem("tutorialShown", "1");
     setVisible(false);
   };

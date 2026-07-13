@@ -1,89 +1,126 @@
 /**
- * Ambient audio, synthesized with the Web Audio API — no asset needed yet.
- *
- * A low medieval drone (root + fifth + octave) through a slowly-sweeping
- * lowpass filter. In Phase 8 this is replaced by streaming a real royalty-free
- * track through the same masterGain, so the mute/volume UI keeps working.
- *
- * Browsers forbid audio until a user gesture, so nothing is created until
- * `ensureStarted()` is called from a real click/keypress.
+ * Ambient audio engine.
+ * Plays a real MP3 file on loop and synthesizes UI sounds and footsteps.
  */
 
 let ctx: AudioContext | null = null;
-let master: GainNode | null = null;
-let started = false;
+let bgMusic: HTMLAudioElement | null = null;
 
-let volume = 0.4;
+// Volumes
+let masterVolume = 0.8;
 let muted = false;
 
-function applyGain() {
-  if (master && ctx) {
-    // Smooth the change to avoid clicks.
-    master.gain.setTargetAtTime(muted ? 0 : volume, ctx.currentTime, 0.05);
+let started = false;
+
+function applyVolumes() {
+  if (bgMusic) {
+    bgMusic.volume = muted ? 0 : masterVolume;
   }
 }
 
 export function ensureStarted(): void {
   if (typeof window === "undefined") return;
   if (started) {
+    if (bgMusic && bgMusic.paused) bgMusic.play().catch(() => {});
     ctx?.resume();
     return;
   }
   started = true;
 
+  // 1. Setup BG Music
+  bgMusic = new Audio("/audio/music.mp3");
+  bgMusic.loop = true;
+  bgMusic.volume = muted ? 0 : masterVolume;
+  bgMusic.play().catch((e) => console.warn("Audio play blocked:", e));
+
+  // 2. Setup Web Audio for SFX
   const AudioCtor =
     window.AudioContext ||
-    (window as unknown as { webkitAudioContext: typeof AudioContext })
-      .webkitAudioContext;
+    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   ctx = new AudioCtor();
+  if (ctx.state === "suspended") ctx.resume();
 
-  master = ctx.createGain();
-  master.gain.value = 0;
-  master.connect(ctx.destination);
-
-  const filter = ctx.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.value = 700;
-  filter.Q.value = 4;
-  filter.connect(master);
-
-  // Root A2, fifth E3, octave A3.
-  const notes = [110, 164.81, 220];
-  notes.forEach((freq, i) => {
-    const osc = ctx!.createOscillator();
-    osc.type = i === 2 ? "sine" : "triangle";
-    osc.frequency.value = freq;
-    osc.detune.value = (i - 1) * 5; // slight detune for warmth
-    const voice = ctx!.createGain();
-    voice.gain.value = i === 2 ? 0.05 : 0.09;
-    osc.connect(voice);
-    voice.connect(filter);
-    osc.start();
-  });
-
-  // Slow filter sweep so the timbre gently breathes.
-  const lfo = ctx.createOscillator();
-  lfo.frequency.value = 0.06;
-  const lfoDepth = ctx.createGain();
-  lfoDepth.gain.value = 140;
-  lfo.connect(lfoDepth);
-  lfoDepth.connect(filter.frequency);
-  lfo.start();
-
-  // Fade in the master over a few seconds.
-  applyGain();
+  applyVolumes();
 }
 
 export function setVolume(v: number): void {
-  volume = Math.min(1, Math.max(0, v));
-  applyGain();
+  masterVolume = Math.min(1, Math.max(0, v));
+  applyVolumes();
 }
 
 export function setMuted(m: boolean): void {
   muted = m;
-  applyGain();
+  applyVolumes();
 }
 
 export function getAudioState(): { volume: number; muted: boolean } {
-  return { volume, muted };
+  return { volume: masterVolume, muted };
+}
+
+/**
+ * Synthesize a quick 8-bit "blip" sound for UI interactions.
+ */
+export function playBlip(): void {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.3 * masterVolume, t + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+  osc.type = "square";
+  osc.frequency.setValueAtTime(880, t);
+  osc.frequency.exponentialRampToValueAtTime(440, t + 0.05);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + 0.1);
+}
+
+/**
+ * Synthesize a soft footstep "crunch".
+ */
+export function playFootstep(): void {
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  
+  // Create a tiny white noise burst
+  const bufferSize = ctx.sampleRate * 0.1; // 100ms
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    output[i] = Math.random() * 2 - 1;
+  }
+  
+  const noise = ctx.createBufferSource();
+  noise.buffer = noiseBuffer;
+  
+  const filter = ctx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 1000;
+  
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.4 * masterVolume, t + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+  
+  noise.connect(filter);
+  filter.connect(gain);
+  gain.connect(ctx.destination);
+  
+  noise.start(t);
+}
+
+// Ensure audio starts on the very first user interaction if the tutorial was already dismissed.
+if (typeof window !== "undefined") {
+  const startAudioOnInteraction = () => {
+    if (!started) ensureStarted();
+    window.removeEventListener("keydown", startAudioOnInteraction);
+    window.removeEventListener("click", startAudioOnInteraction);
+  };
+  window.addEventListener("keydown", startAudioOnInteraction);
+  window.addEventListener("click", startAudioOnInteraction);
 }
