@@ -53,6 +53,10 @@ type Critter = {
   idleFps: number;
   moveFps: number;
   speed: number;
+  /** Target on-screen character height in px — held constant across idle/move poses. */
+  contentH: number;
+  idleTrim: { ax: number; ay: number; wf: number; hf: number };
+  moveTrim: { ax: number; ay: number; wf: number; hf: number };
 };
 type Duck = { sprite: Sprite; baseX: number; baseY: number; phase: number };
 type Butterfly = {
@@ -607,66 +611,83 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     return null;
   };
 
+  // Sets the sprite's frame size/anchor from a trim so the CONTENT (not the raw,
+  // inconsistently-padded canvas) renders at a constant height across idle/move.
+  const applyPose = (cr: Critter, trim: { ax: number; ay: number; hf: number }, frame: Texture) => {
+    const frameDisplay = cr.contentH / trim.hf; // frames are square, so this is both w & h
+    cr.sprite.texture = frame;
+    cr.sprite.anchor.set(trim.ax, trim.ay);
+    cr.sprite.height = frameDisplay;
+    cr.sprite.width = frameDisplay;
+    cr.baseScale = cr.sprite.scale.x;
+  };
+
   const spawnCritter = (
     idleFrames: Texture[],
     moveFrames: Texture[],
+    idleUrl: string,
+    moveUrl: string,
     reg: { col: number; row: number; w: number; h: number },
     count: number,
-    opts: { displayH: number; idleFps: number; moveFps: number; speed: number; anchorY?: number },
+    opts: { contentH: number; idleFps: number; moveFps: number; speed: number },
   ) => {
+    const idleTrim = trimOf(idleUrl) as { ax: number; ay: number; wf: number; hf: number };
+    const moveTrim = trimOf(moveUrl) as { ax: number; ay: number; wf: number; hf: number };
     const rng = mulberry32(reg.col * 31 + reg.row * 17 + count * 7);
     for (let i = 0; i < count; i++) {
       const spot = pickSpot(reg, rng);
       if (!spot) continue;
       const sprite = new Sprite(idleFrames[0]);
-      sprite.anchor.set(0.5, opts.anchorY ?? 0.85);
-      sprite.height = opts.displayH;
-      sprite.width = sprite.height * (idleFrames[0].width / idleFrames[0].height);
-      const baseScale = sprite.scale.x;
       sprite.x = spot.x;
       sprite.y = spot.y;
       entities.addChild(sprite);
       const shadow = new Graphics()
-        .ellipse(0, 0, opts.displayH * 0.34, opts.displayH * 0.12)
+        .ellipse(0, 0, opts.contentH * 0.34, opts.contentH * 0.12)
         .fill({ color: 0, alpha: 0.22 });
       entities.addChild(shadow);
-      critters.push({
+      const cr: Critter = {
         sprite, shadow, x: spot.x, y: spot.y, tx: spot.x, ty: spot.y,
         state: "idle", timer: 1 + rng() * 3, facing: 1, anim: rng() * 3,
-        baseScale, region: reg, idleFrames, moveFrames,
+        baseScale: 1, region: reg, idleFrames, moveFrames,
         idleFps: opts.idleFps, moveFps: opts.moveFps, speed: opts.speed,
-      });
+        contentH: opts.contentH, idleTrim, moveTrim,
+      };
+      applyPose(cr, idleTrim, idleFrames[0]);
+      critters.push(cr);
     }
   };
 
   // Sheep dot the grassy frontier and the town green.
-  spawnCritter(sheepIdleFrames, sheepMoveFrames, { col: 2, row: 20, w: 48, h: 16 }, 7, {
-    displayH: TILE * 0.82, idleFps: 5, moveFps: 6, speed: 26, anchorY: trimOf("/pixel/deco/sheep_idle.png").ay,
+  spawnCritter(sheepIdleFrames, sheepMoveFrames, "/pixel/deco/sheep_idle.png", "/pixel/deco/sheep_move.png", { col: 2, row: 20, w: 48, h: 16 }, 7, {
+    contentH: TILE * 0.32, idleFps: 5, moveFps: 6, speed: 26,
   });
-  spawnCritter(sheepIdleFrames, sheepMoveFrames, { col: 14, row: 8, w: 24, h: 8 }, 4, {
-    displayH: TILE * 0.82, idleFps: 5, moveFps: 6, speed: 26, anchorY: trimOf("/pixel/deco/sheep_idle.png").ay,
+  spawnCritter(sheepIdleFrames, sheepMoveFrames, "/pixel/deco/sheep_idle.png", "/pixel/deco/sheep_move.png", { col: 14, row: 8, w: 24, h: 8 }, 4, {
+    contentH: TILE * 0.32, idleFps: 5, moveFps: 6, speed: 26,
   });
 
-  // Friendly townsfolk wander the streets.
-  spawnCritter(peasantIdleFrames, peasantRunFrames, { col: 2, row: 20, w: 48, h: 17 }, 3, {
-    displayH: 48, idleFps: 6, moveFps: 8, speed: 30,
+  // Friendly townsfolk wander the streets. All humanoid NPCs/mobs share one
+  // target content height so they read as the same "scale" of character.
+  const HUMANOID_H = 26;
+  spawnCritter(peasantIdleFrames, peasantRunFrames, "/pixel/npcs/peasant_idle.png", "/pixel/npcs/peasant_run.png", { col: 2, row: 20, w: 48, h: 17 }, 3, {
+    contentH: HUMANOID_H, idleFps: 6, moveFps: 8, speed: 30,
   });
-  spawnCritter(tavernIdleFrames, tavernRunFrames, { col: 2, row: 20, w: 48, h: 17 }, 2, {
-    displayH: 48, idleFps: 6, moveFps: 8, speed: 30,
+  spawnCritter(tavernIdleFrames, tavernRunFrames, "/pixel/npcs/tavern_idle.png", "/pixel/npcs/tavern_run.png", { col: 2, row: 20, w: 48, h: 17 }, 2, {
+    contentH: HUMANOID_H, idleFps: 6, moveFps: 8, speed: 30,
   });
-  spawnCritter(wizardIdleFrames, wizardRunFrames, { col: 2, row: 20, w: 48, h: 17 }, 2, {
-    displayH: 48, idleFps: 6, moveFps: 9, speed: 26,
+  spawnCritter(wizardIdleFrames, wizardRunFrames, "/pixel/npcs/wizard_idle.png", "/pixel/npcs/wizard_run.png", { col: 2, row: 20, w: 48, h: 17 }, 2, {
+    contentH: HUMANOID_H, idleFps: 6, moveFps: 9, speed: 26,
   });
-  spawnCritter(knightIdleFrames, knightRunFrames, { col: 18, row: 20, w: 20, h: 12 }, 2, {
-    displayH: 48, idleFps: 6, moveFps: 9, speed: 32,
+  // A single knight guard, patrolling right in front of the Sanctum's door.
+  spawnCritter(knightIdleFrames, knightRunFrames, "/pixel/npcs/knight_idle.png", "/pixel/npcs/knight_run.png", { col: 21, row: 26, w: 9, h: 3 }, 1, {
+    contentH: HUMANOID_H, idleFps: 6, moveFps: 9, speed: 32,
   });
 
   // Wild mobs roam the frontier, north of the river.
-  spawnCritter(orcIdleFrames, orcRunFrames, { col: 20, row: 7, w: 16, h: 9 }, 3, {
-    displayH: 48, idleFps: 6, moveFps: 9, speed: 30,
+  spawnCritter(orcIdleFrames, orcRunFrames, "/pixel/mobs/orc_idle.png", "/pixel/mobs/orc_run.png", { col: 20, row: 7, w: 16, h: 9 }, 3, {
+    contentH: HUMANOID_H, idleFps: 6, moveFps: 9, speed: 30,
   });
-  spawnCritter(skeletonIdleFrames, skeletonRunFrames, { col: 30, row: 7, w: 8, h: 9 }, 2, {
-    displayH: 48, idleFps: 6, moveFps: 9, speed: 28,
+  spawnCritter(skeletonIdleFrames, skeletonRunFrames, "/pixel/mobs/skeleton_idle.png", "/pixel/mobs/skeleton_run.png", { col: 30, row: 7, w: 8, h: 9 }, 2, {
+    contentH: HUMANOID_H, idleFps: 6, moveFps: 9, speed: 28,
   });
 
   // ── Interaction / proximity ────────────────────────────────────────────────
@@ -717,7 +738,9 @@ export async function buildTownScene(app: Application): Promise<SceneController>
       bus.emitOpen(worldState.near.id);
     }
 
-    // wandering critters (sheep, townsfolk, mobs)
+    // wandering critters (sheep, townsfolk, mobs) — pose (size/anchor) is only
+    // recomputed on an idle⇄move transition, so a fixed content height is held
+    // throughout each state instead of jittering between differently-padded frames.
     for (const cr of critters) {
       cr.anim += dt;
       if (cr.state === "idle") {
@@ -730,6 +753,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
             cr.ty = spot.y;
             cr.state = "move";
             cr.timer = 2 + Math.random() * 4;
+            applyPose(cr, cr.moveTrim, cr.moveFrames[0]);
           } else cr.timer = 1;
         }
       } else {
@@ -739,6 +763,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
         if (dist < 4 || cr.timer <= 0) {
           cr.state = "idle";
           cr.timer = 1.5 + Math.random() * 3;
+          applyPose(cr, cr.idleTrim, cr.idleFrames[0]);
         } else {
           const step = cr.speed * dt;
           const nx = cr.x + (dx / dist) * step;
@@ -751,6 +776,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
           } else {
             cr.state = "idle";
             cr.timer = 1;
+            applyPose(cr, cr.idleTrim, cr.idleFrames[0]);
           }
           cr.sprite.texture = cr.moveFrames[Math.floor(cr.anim * cr.moveFps) % cr.moveFrames.length];
         }
