@@ -1,36 +1,35 @@
 /**
- * Declarative layout of the "Wild Frontier" world (compact edition).
+ * Declarative layout of the "Wild Frontier" world.
  *
- *   rows 0–5    MOUNTAIN RANGE (north wall) — impassable stone cliffs
- *   rows 6–11   WILD FRONTIER — pond + waterfall (west) and cave (east)
- *   rows 12–13  RIVER across the map, one BRIDGE crossing
- *   rows 14–25  TOWN — buildings you explore, spawn near the centre-south
+ *   rows 0–6    MOUNTAIN RANGE (north wall) — impassable stone cliffs
+ *   rows 7–17   WILD FRONTIER — pond + waterfall (west) and cave (east)
+ *   rows 18–19  RIVER across the map, one wide BRIDGE crossing
+ *   rows 20–37  TOWN — buildings you explore, two streets, spawn in the south
  *
  * All three nature features sit at the far (north) border, opposite the town.
- * Small enough for a recruiter to cross in a few seconds, dense with life.
  */
 import { TILE } from "./tiles";
 
 export { TILE };
-export const COLS = 36;
-export const ROWS = 26;
+export const COLS = 52;
+export const ROWS = 38;
 export const WORLD_W = COLS * TILE;
 export const WORLD_H = ROWS * TILE;
 
 /** Rows 0..MOUNTAIN_ROWS-1 are the northern mountain wall. */
-export const MOUNTAIN_ROWS = 6;
+export const MOUNTAIN_ROWS = 7;
 
 export type Rect = { col: number; row: number; w: number; h: number };
 
-export const RIVER = { row: 12, rows: 2 };
-export const BRIDGE = { col: 22, w: 4 };
+export const RIVER = { row: 18, rows: 2 };
+export const BRIDGE = { col: 25, w: 5 };
 
-export const POND: Rect = { col: 3, row: 8, w: 10, h: 4 };
-export const WATERFALL: Rect = { col: 6, row: 5, w: 3, h: 4 };
-export const CAVE: Rect = { col: 28, row: 4, w: 3, h: 2 };
+export const POND: Rect = { col: 4, row: 9, w: 14, h: 6 };
+export const WATERFALL: Rect = { col: 8, row: 5, w: 4, h: 5 };
+export const CAVE: Rect = { col: 40, row: 5, w: 4, h: 2 };
 
 /** Where the player starts (tile coords). */
-export const SPAWN = { col: 18, row: 21 };
+export const SPAWN = { col: 26, row: 35 };
 
 export type TileCode =
   | "grass"
@@ -56,29 +55,35 @@ export type BuildingDef = {
 
 const B = "/pixel/buildings";
 
+/** Two streets running east–west; buildings' doors sit on one of them. */
+export const STREET_1 = 26;
+export const STREET_2 = 31;
+
 /** The buildings you can enter, mapped to portfolio sections. */
 export const BUILDINGS: BuildingDef[] = [
-  { id: "sanctum", name: "The Sanctum", action: "Enter", sprite: `${B}/Castle.png`, col: 14, row: 15, w: 5, h: 4, interior: true },
-  { id: "contact", name: "Contact Spire", action: "Enter", sprite: `${B}/Tower.png`, col: 20, row: 15, w: 2, h: 4, interior: true },
-  { id: "chronicles", name: "Hall of Chronicles", action: "Enter", sprite: `${B}/Barracks.png`, col: 4, row: 15, w: 3, h: 4, interior: true },
-  { id: "relics", name: "Vault of Relics", action: "Enter", sprite: `${B}/Monastery.png`, col: 29, row: 14, w: 3, h: 5, interior: true },
-  { id: "armory", name: "The Armory", action: "Enter", sprite: `${B}/Archery.png`, col: 7, row: 20, w: 3, h: 4, interior: true },
-  { id: "testimonies", name: "Hall of Testimonies", action: "Enter", sprite: `${B}/House1.png`, col: 24, row: 21, w: 2, h: 3, interior: true },
+  { id: "sanctum", name: "The Sanctum", action: "Enter", sprite: `${B}/Castle.png`, col: 23, row: STREET_1 - 4, w: 5, h: 4, interior: true },
+  { id: "contact", name: "Contact Spire", action: "Enter", sprite: `${B}/Tower.png`, col: 30, row: STREET_1 - 4, w: 2, h: 4, interior: true },
+  { id: "chronicles", name: "Hall of Chronicles", action: "Enter", sprite: `${B}/Barracks.png`, col: 8, row: STREET_1 - 4, w: 3, h: 4, interior: true },
+  { id: "relics", name: "Vault of Relics", action: "Enter", sprite: `${B}/Monastery.png`, col: 40, row: STREET_1 - 5, w: 3, h: 5, interior: true },
+  { id: "armory", name: "The Armory", action: "Enter", sprite: `${B}/Archery.png`, col: 12, row: STREET_2 - 4, w: 3, h: 4, interior: true },
+  { id: "testimonies", name: "Hall of Testimonies", action: "Enter", sprite: `${B}/House1.png`, col: 34, row: STREET_2 - 3, w: 2, h: 3, interior: true },
 ];
 
 /** Purely decorative homes (no interior). */
 export const DECOR_HOUSES: { sprite: string; col: number; row: number; w: number; h: number }[] = [
-  { sprite: `${B}/House2.png`, col: 11, row: 21, w: 2, h: 3 },
-  { sprite: `${B}/House3.png`, col: 32, row: 20, w: 2, h: 3 },
+  { sprite: `${B}/House2.png`, col: 17, row: STREET_2 - 3, w: 2, h: 3 },
+  { sprite: `${B}/House3.png`, col: 45, row: STREET_1 + 1, w: 2, h: 3 },
+  { sprite: `${B}/House2.png`, col: 6, row: STREET_2 + 2, w: 2, h: 3 },
 ];
 
-/** Dirt footpaths (walkable grass, drawn as tan ribbons). */
+/** Dirt footpaths (walkable grass, drawn as tan ribbons + cobblestone). */
 export const PATH_SEGMENTS: Rect[] = [
-  { col: 4, row: 19, w: 28, h: 1 }, // main street in front of the northern doors
-  { col: 8, row: 19, w: 1, h: 5 }, // down to the Armory
-  { col: 25, row: 19, w: 1, h: 5 }, // down to the Hall of Testimonies
-  { col: 23, row: 13, w: 1, h: 7 }, // up to the bridge
-  { col: 18, row: 19, w: 1, h: 3 }, // spawn connector
+  { col: 6, row: STREET_1, w: 42, h: 1 }, // main street, front doors of the row-1 buildings
+  { col: 10, row: STREET_2, w: 30, h: 1 }, // second street
+  { col: 28, row: RIVER.row + RIVER.rows, w: 1, h: STREET_1 - (RIVER.row + RIVER.rows) }, // bridge → main street (gap between Sanctum and Contact)
+  { col: 20, row: STREET_1, w: 1, h: STREET_2 - STREET_1 + 1 }, // main → second street
+  { col: 36, row: STREET_1, w: 1, h: STREET_2 - STREET_1 + 1 }, // main → second street
+  { col: 26, row: STREET_2, w: 1, h: SPAWN.row - STREET_2 + 1 }, // second street → spawn
 ];
 
 /** Bottom-centre door position of a building, in world pixels. */
