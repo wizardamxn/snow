@@ -50,9 +50,17 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   // ── Ground + collision ─────────────────────────────────────────────────────
   const tilemap = await buildTilemap();
   world.addChild(tilemap.container);
-  // Buildings block their whole footprint (you approach the door from the south).
-  BUILDINGS.forEach((b) => tilemap.blockRect(b.col, b.row, b.w, b.h));
-  DECOR_HOUSES.forEach((h) => tilemap.blockRect(h.col, h.row, h.w, h.h));
+  // Buildings block only their ground-floor rows (bottom 2 rows of the footprint).
+  // Blocking the whole sprite height (including roof) creates invisible walls above
+  // the building that the player gets stuck on — only the door area needs to be solid.
+  BUILDINGS.forEach((b) => {
+    const groundRows = Math.min(2, b.h);
+    tilemap.blockRect(b.col, b.row + b.h - groundRows, b.w, groundRows);
+  });
+  DECOR_HOUSES.forEach((h) => {
+    const groundRows = Math.min(2, h.h);
+    tilemap.blockRect(h.col, h.row + h.h - groundRows, h.w, groundRows);
+  });
 
   const waterFX = new Container();
   world.addChild(waterFX);
@@ -67,6 +75,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   const animated: Animated[] = [];
   const sheep: Sheep[] = [];
   const ducks: Duck[] = [];
+  const butterflies: Butterfly[] = [];
   let waterfallStreaks: {
     streaks: { g: Graphics; x: number; y: number; speed: number; len: number }[];
     y0: number;
@@ -367,6 +376,47 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     }
   }
 
+  // ── Butterflies ────────────────────────────────────────────────────────────
+  const BUTTERFLY_COLORS = [0xff88cc, 0xffcc44, 0x44ddff, 0x88ff88, 0xee88ff, 0xff9966];
+  const bfRng = mulberry32(3141);
+  const butterflyLayer = new Container();
+  world.addChild(butterflyLayer);
+  for (let i = 0; i < 18; i++) {
+    // Spawn in grassy town/wild areas, away from water and mountains
+    const col = 2 + Math.floor(bfRng() * (COLS - 4));
+    const row = 6 + Math.floor(bfRng() * 18);
+    const color = BUTTERFLY_COLORS[Math.floor(bfRng() * BUTTERFLY_COLORS.length)];
+    const size = 5 + bfRng() * 4; // wing half-size in world px
+
+    // Two wing triangles drawn from a centre point
+    const g = new Graphics();
+    // Left wing
+    g.moveTo(0, 0).lineTo(-size * 1.4, -size * 0.6).lineTo(-size * 0.3, size * 0.5).fill({ color, alpha: 0.85 });
+    // Right wing
+    g.moveTo(0, 0).lineTo(size * 1.4, -size * 0.6).lineTo(size * 0.3, size * 0.5).fill({ color, alpha: 0.85 });
+    // Body dot
+    g.circle(0, 0, 1.5).fill({ color: 0x220022, alpha: 0.7 });
+
+    g.x = (col + 0.5) * TILE;
+    g.y = (row + 0.5) * TILE;
+    butterflyLayer.addChild(g);
+
+    butterflies.push({
+      g,
+      x: g.x,
+      y: g.y,
+      tx: g.x,
+      ty: g.y,
+      vx: 0,
+      vy: 0,
+      flapPhase: bfRng() * Math.PI * 2,
+      flapSpeed: 6 + bfRng() * 5,
+      wanderTimer: bfRng() * 3,
+      baseColor: color,
+      size,
+    });
+  }
+
   // ── Player ─────────────────────────────────────────────────────────────────
   const player = await createPlayer((SPAWN.col + 0.5) * TILE, (SPAWN.row + 0.9) * TILE);
   entities.addChild(player.container);
@@ -505,6 +555,52 @@ export async function buildTownScene(app: Application): Promise<SceneController>
       d.sprite.x = d.baseX + Math.sin(d.phase * 0.5) * 8;
     }
 
+    // butterflies
+    for (const bf of butterflies) {
+      bf.flapPhase += bf.flapSpeed * dt;
+      bf.wanderTimer -= dt;
+
+      // Pick a new wander target
+      if (bf.wanderTimer <= 0) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 40 + Math.random() * 80;
+        bf.tx = bf.x + Math.cos(angle) * dist;
+        bf.ty = bf.y + Math.sin(angle) * dist;
+        // Clamp target inside world bounds with a margin
+        bf.tx = Math.max(TILE * 2, Math.min(WORLD_W - TILE * 2, bf.tx));
+        bf.ty = Math.max(TILE * 6, Math.min(WORLD_H - TILE * 2, bf.ty));
+        bf.wanderTimer = 1.5 + Math.random() * 3;
+      }
+
+      // Smoothly glide toward target
+      const ddx = bf.tx - bf.x;
+      const ddy = bf.ty - bf.y;
+      const spd = 38;
+      bf.vx += ddx * 2.5 * dt;
+      bf.vy += ddy * 2.5 * dt;
+      bf.vx *= 0.92;
+      bf.vy *= 0.92;
+      const vel = Math.hypot(bf.vx, bf.vy);
+      if (vel > spd) { bf.vx = (bf.vx / vel) * spd; bf.vy = (bf.vy / vel) * spd; }
+      bf.x += bf.vx * dt;
+      bf.y += bf.vy * dt;
+
+      // Wing flap — scale X sinusoidally to simulate wing beat
+      const flapAmt = Math.abs(Math.sin(bf.flapPhase)); // 0..1
+      const facing = bf.vx < -0.5 ? -1 : 1;
+
+      bf.g.clear();
+      // Squish wings horizontally based on flap
+      const wx = bf.size * 1.4 * (0.15 + flapAmt * 0.85);
+      const wy = bf.size * 0.6 + flapAmt * bf.size * 0.3;
+      bf.g.moveTo(0, 0).lineTo(-wx * facing, -wy).lineTo(-bf.size * 0.3 * facing, bf.size * 0.5).fill({ color: bf.baseColor, alpha: 0.82 });
+      bf.g.moveTo(0, 0).lineTo(wx * facing, -wy).lineTo(bf.size * 0.3 * facing, bf.size * 0.5).fill({ color: bf.baseColor, alpha: 0.82 });
+      bf.g.circle(0, 0, 1.5).fill({ color: 0x220022, alpha: 0.7 });
+
+      bf.g.x = Math.round(bf.x);
+      bf.g.y = Math.round(bf.y) + Math.sin(elapsed * 1.2 + bf.flapPhase * 0.1) * 3; // gentle vertical drift
+    }
+
     // waterfall
     if (waterfallStreaks) {
       for (const st of waterfallStreaks.streaks) {
@@ -551,3 +647,17 @@ type Sheep = {
   region: { col: number; row: number; w: number; h: number };
 };
 type Duck = { sprite: Sprite; baseX: number; baseY: number; phase: number };
+type Butterfly = {
+  g: Graphics;
+  x: number;
+  y: number;
+  tx: number;
+  ty: number;
+  vx: number;
+  vy: number;
+  flapPhase: number;
+  flapSpeed: number;
+  wanderTimer: number;
+  baseColor: number;
+  size: number;
+};
