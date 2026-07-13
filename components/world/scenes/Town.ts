@@ -3,6 +3,8 @@ import {
   Container,
   Graphics,
   Sprite,
+  Text,
+  TextStyle,
   Texture,
 } from "pixi.js";
 import { buildTilemap } from "@/components/world/Tilemap";
@@ -182,6 +184,68 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   };
   BUILDINGS.forEach(placeBuilding);
   DECOR_HOUSES.forEach(placeBuilding);
+
+  // ── Floating building name labels (always visible, guides newcomers) ────────
+  //  Each label hovers above the building door so players know what to expect
+  //  before they're close enough to trigger the [E] prompt.
+  const labelStyle = new TextStyle({
+    fontFamily: "'Press Start 2P', monospace",
+    fontSize: 7,
+    fill: "#f0c050",
+    align: "center",
+    stroke: { color: "#000000", width: 3, join: "round" },
+  });
+  const subLabelStyle = new TextStyle({
+    fontFamily: "monospace",
+    fontSize: 14,
+    fontWeight: "bold",
+    fill: "#f0c050",
+    align: "center",
+    stroke: { color: "#000000", width: 3 },
+  });
+
+  // Map each building id to a short content description shown as a sub-label
+  const BUILDING_DESC: Record<string, string> = {
+    sanctum:     "About",
+    chronicles:  "Experience",
+    relics:      "Projects",
+    armory:      "Skills",
+    testimonies: "Testimonials",
+    contact:     "Contact",
+  };
+
+  for (const b of BUILDINGS) {
+    const door = doorPos(b);
+    const labelY = door.y - TILE * 0.6;
+
+    // Small bounce arrow above the label
+    const arrow = new Text({ text: "▼", style: new TextStyle({
+      fontFamily: "monospace", fontSize: 9, fill: "#c8861e",
+      stroke: { color: "#000", width: 2 },
+    }) });
+    arrow.anchor.set(0.5, 1);
+    arrow.x = door.x;
+    arrow.y = labelY;
+    arrow.zIndex = 9000;
+    entities.addChild(arrow);
+
+    const nameLabel = new Text({ text: b.name.toUpperCase(), style: labelStyle });
+    nameLabel.anchor.set(0.5, 1);
+    nameLabel.x = door.x;
+    nameLabel.y = labelY - 12;
+    nameLabel.zIndex = 9000;
+    entities.addChild(nameLabel);
+
+    const desc = BUILDING_DESC[b.id];
+    if (desc) {
+      const descLabel = new Text({ text: `[ ${desc} ]`, style: subLabelStyle });
+      descLabel.anchor.set(0.5, 1);
+      descLabel.x = door.x;
+      descLabel.y = labelY - 26; // Moved up slightly to accommodate larger font
+      descLabel.zIndex = 9000;
+      entities.addChild(descLabel);
+    }
+  }
 
   // ── Cave mouth in the eastern mountain face ────────────────────────────────
   {
@@ -461,7 +525,9 @@ export async function buildTownScene(app: Application): Promise<SceneController>
 
   // ── Interaction / proximity ────────────────────────────────────────────────
   const caveMouth = { x: (CAVE.col + CAVE.w / 2) * TILE, y: (CAVE.row + CAVE.h + 1) * TILE };
-  const TRIGGER = 70;
+  // Larger trigger radius (120 px) so the [E] prompt appears well before the door
+  // — much more discoverable for first-time visitors.
+  const TRIGGER = 120;
   const detectNear = () => {
     let best: { id: string; label: string; action: string } | null = null;
     let bestD = TRIGGER;
@@ -495,6 +561,9 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   const update = (dt: number) => {
     elapsed += dt;
     player.update(dt, canWalk);
+    // Expose player position for the React minimap (polled via rAF, no React state).
+    worldState.playerX = player.x;
+    worldState.playerY = player.y;
     detectNear();
 
     if (input.justPressed(...KEY.interact) && worldState.near) {

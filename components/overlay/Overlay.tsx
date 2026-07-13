@@ -10,6 +10,8 @@ import ArmoryPanel from "./panels/ArmoryPanel";
 import TestimoniesPanel from "./panels/TestimoniesPanel";
 import ContactPanel from "./panels/ContactPanel";
 import CavePanel from "./panels/CavePanel";
+import TutorialOverlay from "./TutorialOverlay";
+import Minimap from "./Minimap";
 
 /**
  * Routes the bus `emitOpen` id to the correct content panel.
@@ -66,6 +68,10 @@ export default function Overlay() {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 select-none">
+      <TutorialOverlay />
+      
+      {/* ── Minimap (top-right) ─────────────────────────────────────────── */}
+      {!openId && <Minimap />}
 
       {/* ── Pixel title bar (top-centre) ────────────────────────────────── */}
       <div className="absolute left-1/2 top-4 -translate-x-1/2 text-center">

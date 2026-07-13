@@ -20,6 +20,13 @@ export const worldState = {
   },
   /** The interactable the player is currently next to (drives the HUD prompt). */
   near: null as NearInfo,
+  /**
+   * Player world-pixel position — written every frame by the Pixi ticker.
+   * React components (e.g. Minimap) poll these via requestAnimationFrame so
+   * no re-renders are triggered. Do NOT read these in React state/effects.
+   */
+  playerX: 0,
+  playerY: 0,
 };
 
 /**
