@@ -5,17 +5,14 @@ import projects from "@/lib/data/projects.json";
 
 export type StationsController = {
   container: Container;
-  update: () => void;
+  update: (scale: number, currentKnightScreenX: number) => void;
 };
 
-/** World-X of the first station and spacing between them (world pixels). */
 const FIRST_X = 1400;
 const SPACING = 2800;
-/** How close (world px) the knight must be for a station to be "active". */
 const NEAR_RANGE = 90;
-// Building frames have a little transparent padding + baked shadow at the
-// bottom; anchoring slightly above 1 seats them on the ground line.
-const BASE_ANCHOR_Y = 0.94;
+// Building sprite bottom = ground line. Using anchor 1.0 ensures they sit ON it.
+const BASE_ANCHOR_Y = 1.0;
 
 // Tiny Swords buildings, cycled per project as the landmark for each station.
 const BUILDING_URLS = [
@@ -36,6 +33,14 @@ function buildStation(
   building.anchor.set(0.5, BASE_ANCHOR_Y);
   building.height = displayH;
   building.width = displayH * (texture.width / texture.height);
+  
+  // Add a contact shadow under the building base
+  const shadowW = building.width * 0.45;
+  const shadowH = shadowW * 0.2;
+  const shadow = new Graphics()
+    .ellipse(0, 0, shadowW, shadowH)
+    .fill({ color: 0x000000, alpha: 0.28 });
+  node.addChild(shadow);
   node.addChild(building);
 
   const labelY = -displayH - 14;
@@ -91,7 +96,7 @@ export async function createStations(
   const stations = projects.map((p, i) => {
     const texture = textures[i % textures.length];
     const { node, prompt } = buildStation(p.title, texture, displayH);
-    node.y = groundY;
+    node.y = 0; // relative Y inside the container
     node.eventMode = "static";
     node.cursor = "pointer";
     node.on("pointertap", () => bus.emitOpen(p.id));
@@ -101,12 +106,11 @@ export async function createStations(
 
   let nearId: string | null = null;
 
-  const update = () => {
+  const update = (scale: number, currentKnightScreenX: number) => {
     let newNear: string | null = null;
     for (const s of stations) {
-      // Foreground plane: 1 world px = 1 screen px, so stations slide past the
-      // knight at full speed and reach him exactly when worldX == station.worldX.
-      s.node.x = knightScreenX + (s.worldX - worldState.worldX);
+      // Divide by scale because the container itself is scaled horizontally by Pixi
+      s.node.x = currentKnightScreenX / scale + (s.worldX - worldState.worldX);
       const near = Math.abs(s.worldX - worldState.worldX) < NEAR_RANGE;
       s.prompt.visible = near;
       if (near) newNear = s.id;

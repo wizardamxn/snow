@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { Application, Ticker } from "pixi.js";
-import { buildOverworldScene } from "./scenes/Overworld";
+import { buildTownScene } from "./scenes/Town";
+import { initInput, input } from "./input";
 
 export default function PixiCanvas() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -13,12 +14,13 @@ export default function PixiCanvas() {
 
     let app: Application | null = null;
     let cancelled = false;
+    const disposeInput = initInput();
 
     (async () => {
       const instance = new Application();
       await instance.init({
         resizeTo: host,
-        backgroundAlpha: 0,
+        background: 0x1f3b2a,
         antialias: false,
       });
 
@@ -30,20 +32,20 @@ export default function PixiCanvas() {
         return;
       }
 
-      // buildOverworldScene awaits Assets.load, so cancellation can still land
-      // mid-build — check again before this instance goes live.
-      const scene = await buildOverworldScene(instance);
+      const town = await buildTownScene(instance);
 
       if (cancelled) {
         instance.destroy(true, { children: true });
         return;
       }
 
-      // The ticker is Pixi's per-frame loop. It runs scene.update every frame
-      // with the real elapsed time (deltaMS), so animation speed stays constant
-      // regardless of the monitor's refresh rate.
+      instance.stage.addChild(town.container);
+
       instance.ticker.add((ticker: Ticker) => {
-        scene.update(ticker.deltaMS / 1000);
+        // Clamp long frame gaps (tab switches) so nothing tunnels through walls.
+        const dt = Math.min(ticker.deltaMS / 1000, 0.05);
+        town.update(dt);
+        input.endFrame();
       });
 
       app = instance;
@@ -52,6 +54,7 @@ export default function PixiCanvas() {
 
     return () => {
       cancelled = true;
+      disposeInput();
       if (app) {
         host.removeChild(app.canvas);
         app.destroy(true, { children: true });

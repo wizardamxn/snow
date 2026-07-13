@@ -4,41 +4,49 @@
  *
  * The Pixi loop checks proximity every frame, but we DON'T want React
  * re-rendering every frame. So the world only emits DISCRETE events — "the
- * near station changed" or "open this station" — and React subscribes and sets
- * state only when those fire. This keeps the two worlds decoupled and cheap.
+ * thing I'm standing next to changed", "open this panel", "the scene changed" —
+ * and React subscribes and sets state only when those fire.
  */
 
-type StationId = string | null;
-type Handler = (id: StationId) => void;
-type GateHandler = (atGate: boolean) => void;
+/** "town" for the overworld, or "interior:<buildingId>" for a building interior. */
+export type Scene = "town" | (string & {});
 
-const nearHandlers = new Set<Handler>();
-const openHandlers = new Set<Handler>();
-const gateHandlers = new Set<GateHandler>();
+/** What the player is currently standing next to (a door, an exhibit, a feature). */
+export type NearInfo = { id: string; label: string; action: string } | null;
+
+type SceneHandler = (scene: Scene) => void;
+type NearHandler = (info: NearInfo) => void;
+type OpenHandler = (id: string) => void;
+
+const sceneHandlers = new Set<SceneHandler>();
+const nearHandlers = new Set<NearHandler>();
+const openHandlers = new Set<OpenHandler>();
 
 export const bus = {
-  emitNear(id: StationId) {
-    nearHandlers.forEach((h) => h(id));
+  emitScene(scene: Scene) {
+    sceneHandlers.forEach((h) => h(scene));
   },
-  emitOpen(id: StationId) {
-    openHandlers.forEach((h) => h(id));
+  /** Fires when the scene changes (town ⇄ interior). */
+  onScene(h: SceneHandler): () => void {
+    sceneHandlers.add(h);
+    return () => sceneHandlers.delete(h);
   },
-  emitGate(atGate: boolean) {
-    gateHandlers.forEach((h) => h(atGate));
+
+  emitNear(info: NearInfo) {
+    nearHandlers.forEach((h) => h(info));
   },
-  /** Fires when the station the knight is standing at changes (or null). */
-  onNear(h: Handler): () => void {
+  /** Fires when the interactable in range changes (or null when nothing is near). */
+  onNear(h: NearHandler): () => void {
     nearHandlers.add(h);
     return () => nearHandlers.delete(h);
   },
-  /** Fires when a station should open its panel. */
-  onOpen(h: Handler): () => void {
+
+  emitOpen(id: string) {
+    openHandlers.forEach((h) => h(id));
+  },
+  /** Fires when a panel should open for the given content id. */
+  onOpen(h: OpenHandler): () => void {
     openHandlers.add(h);
     return () => openHandlers.delete(h);
-  },
-  /** Fires when the knight reaches (or leaves) the castle gate. */
-  onGate(h: GateHandler): () => void {
-    gateHandlers.add(h);
-    return () => gateHandlers.delete(h);
   },
 };
