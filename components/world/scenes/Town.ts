@@ -657,13 +657,16 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   spawnCritter(wizardIdleFrames, wizardRunFrames, { col: 2, row: 20, w: 48, h: 17 }, 2, {
     displayH: 48, idleFps: 6, moveFps: 9, speed: 26,
   });
+  spawnCritter(knightIdleFrames, knightRunFrames, { col: 18, row: 20, w: 20, h: 12 }, 2, {
+    displayH: 48, idleFps: 6, moveFps: 9, speed: 32,
+  });
 
   // Wild mobs roam the frontier, north of the river.
   spawnCritter(orcIdleFrames, orcRunFrames, { col: 20, row: 7, w: 16, h: 9 }, 3, {
-    displayH: TILE * 0.95, idleFps: 6, moveFps: 9, speed: 30,
+    displayH: 48, idleFps: 6, moveFps: 9, speed: 30,
   });
   spawnCritter(skeletonIdleFrames, skeletonRunFrames, { col: 30, row: 7, w: 8, h: 9 }, 2, {
-    displayH: TILE * 0.9, idleFps: 6, moveFps: 9, speed: 28,
+    displayH: 48, idleFps: 6, moveFps: 9, speed: 28,
   });
 
   // ── Interaction / proximity ────────────────────────────────────────────────
