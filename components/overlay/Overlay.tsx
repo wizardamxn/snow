@@ -3,6 +3,50 @@
 import { useEffect, useState } from "react";
 import { bus, type NearInfo } from "@/lib/world/bus";
 import { worldState } from "@/lib/world/worldState";
+import SanctumPanel from "./panels/SanctumPanel";
+import ChroniclesPanel from "./panels/ChroniclesPanel";
+import RelicsPanel from "./panels/RelicsPanel";
+import ArmoryPanel from "./panels/ArmoryPanel";
+import TestimoniesPanel from "./panels/TestimoniesPanel";
+import ContactPanel from "./panels/ContactPanel";
+import CavePanel from "./panels/CavePanel";
+
+/**
+ * Routes the bus `emitOpen` id to the correct content panel.
+ */
+function PanelRouter({
+  openId,
+  onClose,
+}: {
+  openId: string;
+  onClose: () => void;
+}) {
+  switch (openId) {
+    case "sanctum":
+      return <SanctumPanel onClose={onClose} />;
+    case "chronicles":
+      return <ChroniclesPanel onClose={onClose} />;
+    case "relics":
+      return <RelicsPanel onClose={onClose} />;
+    case "armory":
+      return <ArmoryPanel onClose={onClose} />;
+    case "testimonies":
+      return <TestimoniesPanel onClose={onClose} />;
+    case "contact":
+      return <ContactPanel onClose={onClose} />;
+    case "cave":
+      return <CavePanel onClose={onClose} />;
+    default:
+      return null;
+  }
+}
+
+/** Pixel RPG box-shadow border style */
+const pixelBox: React.CSSProperties = {
+  background: "#0d0b08",
+  border: "2px solid #c8861e",
+  boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
+};
 
 export default function Overlay() {
   const [near, setNear] = useState<NearInfo>(null);
@@ -18,90 +62,96 @@ export default function Overlay() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!openId) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpenId(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [openId]);
+  const closePanel = () => setOpenId(null);
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 select-none">
-      {/* Title */}
+
+      {/* ── Pixel title bar (top-centre) ────────────────────────────────── */}
       <div className="absolute left-1/2 top-4 -translate-x-1/2 text-center">
-        <p className="text-[10px] uppercase tracking-[0.35em] text-amber-200/70">
-          Aman Ahmad
+        <p
+          className="font-pixel text-[8px]"
+          style={{ color: "#f0c050", letterSpacing: "0.1em" }}
+        >
+          AMAN AHMAD
         </p>
-        <p className="text-[9px] uppercase tracking-[0.3em] text-amber-100/40">
-          the frontier portfolio
+        <p
+          className="font-pixel text-[6px] mt-1.5"
+          style={{ color: "#5a4020" }}
+        >
+          THE FRONTIER PORTFOLIO
         </p>
       </div>
 
-      {/* Controls hint */}
-      <div className="absolute bottom-4 left-4 rounded-md border border-amber-200/15 bg-black/40 px-3 py-2 font-mono text-[11px] leading-relaxed text-amber-100/70 backdrop-blur-sm">
-        <div>
-          <span className="text-amber-200">WASD</span> / Arrows — move
+      {/* ── Pixel HUD (bottom-left) ──────────────────────────────────────── */}
+      <div
+        className="absolute bottom-4 left-4 px-3 py-2.5"
+        style={pixelBox}
+      >
+        <div
+          className="font-pixel text-[8px] mb-2"
+          style={{ color: "#8a6820" }}
+        >
+          CONTROLS
         </div>
-        <div>
-          <span className="text-amber-200">Shift</span> — sprint ·{" "}
-          <span className="text-amber-200">E</span> — interact
+        <div
+          className="font-pixel text-[7px] leading-loose"
+          style={{ color: "#c8861e" }}
+        >
+          <div>
+            <span style={{ color: "#f0c050" }}>WASD</span>
+            <span style={{ color: "#5a4020" }}> / ARROWS</span>
+          </div>
+          <div>
+            <span style={{ color: "#f0c050" }}>SHIFT</span>
+            <span style={{ color: "#5a4020" }}> SPRINT</span>
+          </div>
+          <div>
+            <span style={{ color: "#f0c050" }}>[E]</span>
+            <span style={{ color: "#5a4020" }}> INTERACT</span>
+          </div>
         </div>
       </div>
 
-      {/* Proximity prompt */}
+      {/* ── Pixel proximity prompt (bottom-centre) ──────────────────────── */}
       {near && !openId && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-pulse rounded-lg border border-amber-300/40 bg-black/60 px-5 py-2.5 text-center backdrop-blur-sm">
-          <p className="font-mono text-sm text-amber-100">
-            <span className="rounded bg-amber-300/90 px-1.5 py-0.5 text-xs font-bold text-black">
+        <div
+          className="absolute bottom-5 left-1/2 -translate-x-1/2 px-5 py-3 text-center"
+          style={{
+            ...pixelBox,
+            animation: "none",
+          }}
+        >
+          {/* Animated cursor blink */}
+          <p
+            className="font-pixel text-[8px] leading-loose"
+            style={{ color: "#f0c050" }}
+          >
+            <span
+              className="inline-block px-2 py-0.5 mr-2"
+              style={{
+                background: "#f0c050",
+                color: "#000",
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: "8px",
+                boxShadow: "2px 2px 0 #7a5010",
+              }}
+            >
               E
-            </span>{" "}
-            {near.action}{" "}
-            <span className="font-semibold text-amber-200">{near.label}</span>
+            </span>
+            {near.action.toUpperCase()}
+          </p>
+          <p
+            className="font-pixel text-[7px] mt-1.5"
+            style={{ color: "#c8861e" }}
+          >
+            {near.label.toUpperCase()}
           </p>
         </div>
       )}
 
-      {/* Placeholder panel (Phase 2 replaces this with real content) */}
-      {openId && (
-        <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="relative w-[min(90vw,440px)] rounded-xl border border-amber-300/30 bg-[#1a1206] p-8 text-center shadow-2xl">
-            <button
-              onClick={() => setOpenId(null)}
-              className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-md border border-amber-200/20 text-amber-200/70 hover:bg-amber-200/10"
-              aria-label="Close"
-            >
-              ✕
-            </button>
-            <p className="mb-2 text-[10px] uppercase tracking-[0.3em] text-amber-200/50">
-              You have arrived at
-            </p>
-            <h2 className="mb-4 text-2xl font-bold text-amber-100">
-              {labelFor(openId)}
-            </h2>
-            <p className="text-sm text-amber-100/60">
-              The doors are being furnished. Interiors &amp; content arrive next.
-            </p>
-            <p className="mt-6 text-xs text-amber-100/40">
-              Press <span className="text-amber-200">Esc</span> to step back out.
-            </p>
-          </div>
-        </div>
-      )}
+      {/* ── Content panels ──────────────────────────────────────────────── */}
+      {openId && <PanelRouter openId={openId} onClose={closePanel} />}
     </div>
   );
-}
-
-function labelFor(id: string): string {
-  const map: Record<string, string> = {
-    sanctum: "The Sanctum",
-    chronicles: "Hall of Chronicles",
-    relics: "Vault of Relics",
-    armory: "The Armory",
-    testimonies: "Hall of Testimonies",
-    contact: "Contact Spire",
-    cave: "The Hollow Cave",
-  };
-  return map[id] ?? id;
 }
