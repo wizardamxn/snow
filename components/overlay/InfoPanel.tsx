@@ -2,6 +2,15 @@
 
 import { useEffect, useId, useRef } from "react";
 
+/**
+ * Grace period, in ms, before the backdrop will act on a click. Opening a
+ * panel (e.g. tapping the on-screen [E] button) unmounts that button mid-tap,
+ * so the same tap's synthesized `click` lands on the freshly-mounted backdrop
+ * that now sits under the finger — without this, that phantom click closes
+ * the panel the instant it opens.
+ */
+const BACKDROP_CLOSE_GRACE_MS = 300;
+
 type Props = {
   title: string;
   subtitle?: string;
@@ -28,6 +37,15 @@ export default function InfoPanel({
 }: Props) {
   const titleId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
+  const canCloseOnBackdropRef = useRef(false);
+
+  useEffect(() => {
+    canCloseOnBackdropRef.current = false;
+    const timer = setTimeout(() => {
+      canCloseOnBackdropRef.current = true;
+    }, BACKDROP_CLOSE_GRACE_MS);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const handle = (e: KeyboardEvent) => {
@@ -66,7 +84,9 @@ export default function InfoPanel({
     <div
       className="backdrop-fade-in pointer-events-auto absolute inset-0 flex items-center justify-center p-6"
       style={{ background: "rgba(0,0,0,0.88)" }}
-      onClick={onClose}
+      onClick={() => {
+        if (canCloseOnBackdropRef.current) onClose();
+      }}
     >
       {/*
         Pixel RPG window
