@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Application, Ticker } from "pixi.js";
 import { buildTownScene } from "./scenes/Town";
 import { initInput, initMouseInput, input } from "./input";
 
 export default function PixiCanvas() {
   const hostRef = useRef<HTMLDivElement>(null);
+  // Texture loading (trees, mobs, NPCs, buildings, decorations — dozens of
+  // individual fetches) can take a visible moment, and the canvas isn't
+  // appended to the DOM until it's done. Without this, that whole window is
+  // just a blank/black gap. Show something immediately instead.
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -52,6 +57,7 @@ export default function PixiCanvas() {
       app = instance;
       host.appendChild(instance.canvas);
       disposeMouse = initMouseInput(instance.canvas);
+      setLoading(false);
     })();
 
     return () => {
@@ -66,5 +72,37 @@ export default function PixiCanvas() {
     };
   }, []);
 
-  return <div ref={hostRef} className="absolute inset-0" />;
+  return (
+    <div className="absolute inset-0">
+      <div ref={hostRef} className="absolute inset-0" style={{ background: "#1f3b2a" }} />
+      {loading && (
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-4"
+          style={{ background: "#0a1026" }}
+        >
+          <p
+            className="font-pixel animate-pulse"
+            style={{ fontSize: "10px", color: "#f0c050", letterSpacing: "0.15em" }}
+          >
+            LOADING THE FRONTIER…
+          </p>
+          <div
+            style={{
+              width: "160px",
+              height: "10px",
+              background: "#0d0b08",
+              border: "2px solid #5a4020",
+              boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              className="loading-bar-fill"
+              style={{ height: "100%", background: "#c8861e", width: "40%" }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

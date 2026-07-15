@@ -9,6 +9,7 @@ import testimonials from "@/lib/data/testimonials.json";
 export const metadata: Metadata = {
   title: "Aman Ahmad — Full Stack Developer",
   description: "Experience, projects, and skills — the classic, non-game view.",
+  alternates: { canonical: "/resume" },
 };
 
 const NAV = [

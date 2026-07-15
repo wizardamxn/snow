@@ -103,6 +103,15 @@ body {
   animation: backdrop-fade-in 0.12s ease-out;
 }
 
+/* ── Indeterminate loading bar (no real progress data — just "still working") ── */
+@keyframes loading-bar-sweep {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(340%); }
+}
+.loading-bar-fill {
+  animation: loading-bar-sweep 1.1s ease-in-out infinite;
+}
+
 /* ── Respect reduced-motion (DOM/CSS UI only — the Pixi canvas game itself is
    unaffected, since motion there is gameplay, not decoration). ──────────── */
 @media (prefers-reduced-motion: reduce) {

@@ -12,9 +12,51 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://amanahmad.xyz";
+const TITLE = "Snow — Aman Ahmad's Pixel-Art Portfolio";
+const DESCRIPTION =
+  "An explorable pixel-art RPG portfolio for Aman Ahmad, full-stack developer — walk through a frontier town to find projects, skills, and experience.";
+
 export const metadata: Metadata = {
-  title: "SIGMA — Aman Ahmad",
-  description: "A pixelated open-world portfolio.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: TITLE,
+    template: "%s · Snow",
+  },
+  description: DESCRIPTION,
+  keywords: [
+    "Aman Ahmad",
+    "portfolio",
+    "full-stack developer",
+    "software engineer",
+    "pixel art",
+    "interactive portfolio",
+    "Next.js",
+    "Pixi.js",
+  ],
+  authors: [{ name: "Aman Ahmad", url: "https://github.com/wizardamxn" }],
+  creator: "Aman Ahmad",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "Snow",
+    type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: TITLE }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/opengraph-image"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
