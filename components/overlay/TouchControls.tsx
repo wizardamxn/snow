@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { input } from "@/components/world/input";
 
 /**
@@ -34,17 +34,36 @@ function TouchButton({
   label: string;
 }) {
   const [pressed, setPressed] = useState(false);
+  // Which finger is currently holding this button — a plain per-instance
+  // `pressed` boolean isn't enough with multiple simultaneous touches: an
+  // unrelated finger's pointerup/pointerleave over this element (e.g. while
+  // holding SPRINT and also tapping a D-pad button) would otherwise release
+  // a press it never made, leaving the code's "held" state and the button's
+  // visual out of sync ("toggling" instead of tracking the actual finger).
+  const pointerIdRef = useRef<number | null>(null);
+
+  const release = useCallback(() => {
+    if (pointerIdRef.current === null) return;
+    pointerIdRef.current = null;
+    setPressed(false);
+    codes.forEach((c) => input.setVirtualKey(c, false));
+  }, [codes]);
 
   const press = (e: React.PointerEvent) => {
     e.preventDefault();
+    pointerIdRef.current = e.pointerId;
     setPressed(true);
     codes.forEach((c) => input.setVirtualKey(c, true));
   };
-  const release = (e: React.PointerEvent) => {
-    e.preventDefault();
-    setPressed(false);
-    codes.forEach((c) => input.setVirtualKey(c, false));
-  };
+
+  useEffect(() => {
+    // Safety net: tapping [E] can open a panel that unmounts this whole
+    // touch-control layer mid-tap (Overlay hides <TouchControls /> while any
+    // panel is open) — when that happens, this button's own onPointerUp
+    // never gets a chance to fire, so the key would stay "held" forever and
+    // every future tap would silently do nothing. Force the release here.
+    return () => release();
+  }, [release]);
 
   return (
     <div
@@ -57,9 +76,16 @@ function TouchButton({
         background: pressed ? "rgba(200,134,30,0.55)" : btnBase.background,
       }}
       onPointerDown={press}
-      onPointerUp={release}
-      onPointerLeave={release}
-      onPointerCancel={release}
+      onPointerUp={(e) => {
+        e.preventDefault();
+        if (e.pointerId === pointerIdRef.current) release();
+      }}
+      onPointerLeave={(e) => {
+        if (e.pointerId === pointerIdRef.current) release();
+      }}
+      onPointerCancel={(e) => {
+        if (e.pointerId === pointerIdRef.current) release();
+      }}
     >
       {children}
     </div>

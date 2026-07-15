@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { worldState } from "@/lib/world/worldState";
 import { playBlip } from "@/lib/audio/ambient";
 import { WORLD_W, WORLD_H } from "@/components/world/world.config";
@@ -39,10 +39,13 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
   }, []);
 
   // ── Typewriter Effect ────────────────────────────────────────────────────
+  const blipIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const typeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     setDisplayedText("");
     let charIdx = 0;
-    
+
     // Play blips slightly offset to text speed to sound retro
     const blipInterval = setInterval(() => {
       if (charIdx < fullText.length) {
@@ -62,11 +65,36 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
       }
     }, 30);
 
+    blipIntervalRef.current = blipInterval;
+    typeIntervalRef.current = typeInterval;
+
     return () => {
       clearInterval(blipInterval);
       clearInterval(typeInterval);
     };
   }, [fullText]);
+
+  // ── Advance the dialogue (skip typing → next page → close) ──────────────
+  // Shared by the keyboard [E] handler and a direct tap/click on the bubble —
+  // there's no physical keyboard on mobile, and the on-screen [E] button gets
+  // hidden the instant this panel opens (see Overlay.tsx), so touch users
+  // need to be able to tap the bubble itself to progress.
+  const advance = () => {
+    if (displayedText.length < fullText.length) {
+      // Skip typing — also stop the still-running intervals, otherwise the
+      // next tick overwrites this back down to a partial string a moment
+      // later, making the skip look like it silently didn't work.
+      if (typeIntervalRef.current) clearInterval(typeIntervalRef.current);
+      if (blipIntervalRef.current) clearInterval(blipIntervalRef.current);
+      setDisplayedText(fullText);
+    } else if (pageIdx < DIALOGUE_PAGES.length - 1) {
+      // Next page
+      setPageIdx((p) => p + 1);
+    } else {
+      // Close dialogue
+      onClose();
+    }
+  };
 
   // ── Global Input to Advance ──────────────────────────────────────────────
   useEffect(() => {
@@ -74,19 +102,10 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
       if (e.key.toLowerCase() === "e") {
         e.preventDefault();
         e.stopPropagation();
-        if (displayedText.length < fullText.length) {
-          // Skip typing
-          setDisplayedText(fullText);
-        } else if (pageIdx < DIALOGUE_PAGES.length - 1) {
-          // Next page
-          setPageIdx((p) => p + 1);
-        } else {
-          // Close dialogue
-          onClose();
-        }
+        advance();
       }
     };
-    
+
     // Add listener after a tiny delay so we don't catch the 'E' press that opened it
     const timer = setTimeout(() => {
       window.addEventListener("keydown", handleKey, { capture: true });
@@ -106,9 +125,14 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
         top: `${pos.y}px`,
         transform: "translate(-50%, -100%)", // Anchor bottom-center above head
       }}
-      onClick={(e) => e.stopPropagation()} // don't close immediately on click
     >
       <div
+        role="button"
+        aria-label="Continue"
+        onClick={(e) => {
+          e.stopPropagation();
+          advance();
+        }}
         className="font-pixel relative p-3 text-center"
         style={{
           background: "rgba(0,0,0,0.88)", // Consistent panel backdrop
@@ -120,6 +144,7 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
           minWidth: "180px",
           maxWidth: "240px",
           minHeight: "48px", // Prevent jumping when text is short
+          cursor: "pointer",
         }}
       >
         <p>{displayedText}</p>
