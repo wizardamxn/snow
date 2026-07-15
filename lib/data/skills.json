@@ -1,18 +1,22 @@
 [
   {
+    "category": "Languages",
+    "skills": ["TypeScript", "JavaScript", "Python", "SQL"]
+  },
+  {
     "category": "Frontend",
-    "skills": ["TypeScript", "React", "Next.js", "React Native", "Tailwind CSS"]
+    "skills": ["React", "Next.js", "React Native", "Tailwind CSS", "Redux Toolkit / RTK Query"]
   },
   {
     "category": "Backend",
-    "skills": ["Node.js", "Express", "Python", "FastAPI", "Socket.io"]
+    "skills": ["Node.js", "Express.js", "FastAPI", "Socket.io", "BullMQ"]
   },
   {
-    "category": "Database & Cache",
-    "skills": ["MongoDB", "PostgreSQL", "Redis", "Firebase", "Supabase"]
+    "category": "Databases",
+    "skills": ["MongoDB (Atlas Vector Search)", "PostgreSQL", "Redis", "Firebase", "Supabase"]
   },
   {
-    "category": "Infrastructure & Tooling",
-    "skills": ["Docker", "AWS EC2", "Cloudinary", "GraphQL"]
+    "category": "Gen AI & Infra",
+    "skills": ["Vercel AI SDK", "Google Gemini API", "RAG Pipelines", "AWS EC2", "Nginx", "Cloudflare", "Prisma", "FFmpeg"]
   }
 ]

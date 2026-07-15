@@ -10,6 +10,11 @@ const INSCRIPTIONS = [
   "A cold draught flows outward, as if the mountain itself exhales.",
 ];
 
+// Edit these to your actual favorites — this is the "off the clock" side of the portfolio.
+const FAVORITE_GAMES = ["Skyrim", "The Witcher 3", "Valorant"];
+const HOBBIES = ["Playing recorder", "Gym"];
+const VALORANT = { rank: "Ascendant 1", role: "" };
+
 export default function CavePanel({ onClose }: Props) {
   return (
     <InfoPanel
@@ -51,7 +56,7 @@ export default function CavePanel({ onClose }: Props) {
           ))}
         </div>
 
-        {/* Inscription block */}
+        {/* Inscription block — the off-the-clock side of the portfolio */}
         <div
           className="p-4 text-left"
           style={{
@@ -61,20 +66,25 @@ export default function CavePanel({ onClose }: Props) {
           }}
         >
           <p
-            className="font-pixel text-[6px] mb-2"
+            className="font-pixel text-[6px] mb-3"
             style={{ color: "#3a2808" }}
           >
             ❝ CAVE INSCRIPTION
           </p>
-          <p
-            className="font-mono text-sm italic leading-relaxed"
-            style={{ color: "#5a4828" }}
-          >
-            Beyond the frontier, beyond the code —{" "}
-            <span style={{ color: "#8a6830" }}>
-              the work speaks for itself.
-            </span>
-          </p>
+          <div className="space-y-2 font-mono text-sm leading-relaxed" style={{ color: "#5a4828" }}>
+            <p>
+              <span style={{ color: "#8a6830" }}>Favorite games — </span>
+              {FAVORITE_GAMES.join(", ")}
+            </p>
+            <p>
+              <span style={{ color: "#8a6830" }}>Hobbies — </span>
+              {HOBBIES.join(", ")}
+            </p>
+            <p>
+              <span style={{ color: "#8a6830" }}>Valorant — </span>
+              {VALORANT.role ? `${VALORANT.rank} · ${VALORANT.role}` : VALORANT.rank}
+            </p>
+          </div>
         </div>
 
         <p

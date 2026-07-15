@@ -148,7 +148,7 @@ export default function TutorialOverlay() {
                 marginBottom: "12px",
               }}
             >
-              ▸ HOW TO PLAY
+              &gt; HOW TO PLAY
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <Row keys={["W", "A", "S", "D"]} desc="MOVE YOUR HERO" />
@@ -170,7 +170,7 @@ export default function TutorialOverlay() {
                 marginBottom: "12px",
               }}
             >
-              ▸ WHAT EACH BUILDING HOLDS
+              &gt; WHAT EACH BUILDING HOLDS
             </p>
             <div
               style={{

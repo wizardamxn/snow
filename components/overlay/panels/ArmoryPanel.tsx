@@ -6,6 +6,11 @@ import skills from "@/lib/data/skills.json";
 type Props = { onClose: () => void };
 
 const CATEGORY_META: Record<string, { icon: string; accent: string; chipColor: string }> = {
+  "Languages": {
+    icon: "📖",
+    accent: "#1a1a40",
+    chipColor: "#2a2a70",
+  },
   "Frontend": {
     icon: "⚔",
     accent: "#0a3060",
@@ -16,12 +21,12 @@ const CATEGORY_META: Record<string, { icon: string; accent: string; chipColor: s
     accent: "#0a3010",
     chipColor: "#1a5020",
   },
-  "Database & Cache": {
+  "Databases": {
     icon: "📦",
     accent: "#300a50",
     chipColor: "#501a80",
   },
-  "Infrastructure & Tooling": {
+  "Gen AI & Infra": {
     icon: "⚙",
     accent: "#3a2000",
     chipColor: "#6a4010",

@@ -34,6 +34,10 @@ export const SPRITE_TRIM: Record<string, { ax: number; ay: number; wf: number; h
   "/pixel/deco/sheep_idle.png": { ax: 0.4961, ay: 0.6562, wf: 0.3516, hf: 0.3438 },
   "/pixel/deco/sheep_move.png": { ax: 0.4922, ay: 0.6562, wf: 0.3594, hf: 0.3516 },
   "/pixel/deco/duck.png": { ax: 0.5, ay: 0.875, wf: 1 },
+  "/pixel/deco/bard.png": { ax: 0.5781, ay: 0.9375, wf: 0.7813, hf: 0.9063 },
+  "/pixel/knight/Raven_Idle.png": { ax: 0.5, ay: 0.7031, wf: 0.3021, hf: 0.3854 },
+  "/pixel/props/terminal_computer.png": { ax: 0.5, ay: 1, wf: 1, hf: 1 },
+  "/pixel/props/gold_trophy.png": { ax: 0.4922, ay: 0.5859, wf: 0.1875, hf: 0.2031 },
   "/pixel/npcs/knight_idle.png": { ax: 0.4531, ay: 1, wf: 0.5938, hf: 0.9062 },
   "/pixel/npcs/rogue_idle.png": { ax: 0.5156, ay: 1, wf: 0.5938, hf: 0.9375 },
   "/pixel/npcs/wizard_idle.png": { ax: 0.5156, ay: 1, wf: 0.7812, hf: 1 },
@@ -51,6 +55,5 @@ export const SPRITE_TRIM: Record<string, { ax: number; ay: number; wf: number; h
   "/pixel/mobs/orc_warrior_run.png": { ax: 0.5156, ay: 1, wf: 0.375, hf: 0.5 },
   "/pixel/mobs/skeleton_run.png": { ax: 0.5078, ay: 1, wf: 0.3281, hf: 0.4688 },
   "/pixel/terrain/cave_mouth.webp": { ax: 0.4922, ay: 0.8125, wf: 0.8281 },
-  "/pixel/terrain/waterfall.png": { ax: 0.4961, ay: 0.8984, wf: 0.8828 },
 };
 

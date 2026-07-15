@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Application, Ticker } from "pixi.js";
 import { buildTownScene } from "./scenes/Town";
-import { initInput, input } from "./input";
+import { initInput, initMouseInput, input } from "./input";
 
 export default function PixiCanvas() {
   const hostRef = useRef<HTMLDivElement>(null);
@@ -14,6 +14,7 @@ export default function PixiCanvas() {
 
     let app: Application | null = null;
     let cancelled = false;
+    let disposeMouse: (() => void) | null = null;
     const disposeInput = initInput();
 
     (async () => {
@@ -50,11 +51,13 @@ export default function PixiCanvas() {
 
       app = instance;
       host.appendChild(instance.canvas);
+      disposeMouse = initMouseInput(instance.canvas);
     })();
 
     return () => {
       cancelled = true;
       disposeInput();
+      disposeMouse?.();
       if (app) {
         host.removeChild(app.canvas);
         app.destroy(true, { children: true });

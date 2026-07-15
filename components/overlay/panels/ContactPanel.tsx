@@ -14,6 +14,13 @@ const LINKS = [
     external: true,
   },
   {
+    label: "LINKEDIN",
+    handle: "amanahmad1",
+    href: "https://linkedin.com/in/amanahmad1",
+    icon: "in",
+    external: true,
+  },
+  {
     label: "RESUME",
     handle: "DOWNLOAD PDF",
     href: "/resume.pdf",
@@ -61,7 +68,7 @@ export default function ContactPanel({ onClose }: Props) {
             className="font-pixel text-[7px] mb-3"
             style={{ color: "#4a3210" }}
           >
-            ▸ EMAIL ADDRESS
+            &gt; EMAIL ADDRESS
           </p>
           <div className="flex items-center gap-3">
             <code
@@ -100,7 +107,7 @@ export default function ContactPanel({ onClose }: Props) {
             className="font-pixel text-[7px] mb-2"
             style={{ color: "#2a1a00" }}
           >
-            ▸ LINKS
+            &gt; LINKS
           </p>
           <div className="space-y-2">
             {LINKS.map((link) => (
@@ -142,7 +149,7 @@ export default function ContactPanel({ onClose }: Props) {
                   className="ml-auto font-pixel text-[8px]"
                   style={{ color: "#3a2808" }}
                 >
-                  ▸
+                  &gt;
                 </span>
               </a>
             ))}

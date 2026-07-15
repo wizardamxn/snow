@@ -4,11 +4,11 @@
     "title": "AVMG",
     "description": "An all-in-one media converter that pulls audio and video from virtually any source, converts it to the format you need, and even drafts AI-generated notes from YouTube transcripts.",
     "highlights": [
-      "Built a download-and-convert pipeline around FFmpeg, queued and cached through Redis for fast repeat requests.",
+      "Designed a distributed video transcoding pipeline (FFmpeg + BullMQ workers) with job pickup latency under 500ms.",
+      "Implemented subtitle harvesting via yt-dlp metadata-only fetches, cutting per-video transfer from ~400MB to under 1MB.",
+      "Built a live job dashboard that streams transcode progress to users, with automatic retries and dead-letter handling for failed jobs.",
       "Handled large file uploads with Multer and persisted assets via Supabase storage and PostgreSQL.",
-      "Shipped an AI notes generator that summarizes YouTube videos straight from their transcripts.",
-      "Built on a Next.js front end backed by a MERN-stack API layer.",
-      "Deployed and operated the backend on an AWS EC2 instance, handling production traffic end to end."
+      "Shipped an AI notes generator that summarizes YouTube videos straight from their transcripts."
     ],
     "image": "/avmg.png",
     "liveUrl": "https://avmg.amanahmad.xyz",
@@ -16,7 +16,7 @@
       { "label": "Backend", "url": "https://github.com/wizardamxn/avmg-b" },
       { "label": "Frontend", "url": "https://github.com/wizardamxn/avmg-f" }
     ],
-    "technologies": ["Next.js", "React", "Node.js", "Express", "MongoDB", "Redis", "FFmpeg", "Supabase", "PostgreSQL", "AWS EC2"]
+    "technologies": ["Next.js", "React", "Node.js", "Express", "MongoDB", "Redis", "BullMQ", "FFmpeg", "Supabase", "PostgreSQL", "AWS EC2"]
   },
   {
     "id": "projectteams",
@@ -73,8 +73,8 @@
     "highlights": [
       "Built real-time order and listing updates with Socket.io across a MERN/Next.js stack.",
       "Used RTK Query to keep marketplace listings and orders fast and in sync on the client.",
-      "Implemented role-based flows for kisan, buyers, and admins, including marketplace moderation.",
-      "Handled produce imagery and media uploads through Cloudinary."
+      "Implemented role-based access control (RBAC) and multi-tier admin workflows for kisan, buyers, and admins, including marketplace moderation.",
+      "Optimized image delivery with Cloudinary transformations and lazy loading, improving page load performance on low-bandwidth connections."
     ],
     "image": "/kropigo.png",
     "liveUrl": "https://kropigo.in",

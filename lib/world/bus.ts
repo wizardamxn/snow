@@ -17,10 +17,12 @@ export type NearInfo = { id: string; label: string; action: string } | null;
 type SceneHandler = (scene: Scene) => void;
 type NearHandler = (info: NearInfo) => void;
 type OpenHandler = (id: string) => void;
+type VisitHandler = (id: string) => void;
 
 const sceneHandlers = new Set<SceneHandler>();
 const nearHandlers = new Set<NearHandler>();
 const openHandlers = new Set<OpenHandler>();
+const visitHandlers = new Set<VisitHandler>();
 
 export const bus = {
   emitScene(scene: Scene) {
@@ -48,5 +50,14 @@ export const bus = {
   onOpen(h: OpenHandler): () => void {
     openHandlers.add(h);
     return () => openHandlers.delete(h);
+  },
+
+  emitVisit(id: string) {
+    visitHandlers.forEach((h) => h(id));
+  },
+  /** Fires whenever the player interacts with ANY landmark (panel or not — e.g. the bard). */
+  onVisit(h: VisitHandler): () => void {
+    visitHandlers.add(h);
+    return () => visitHandlers.delete(h);
   },
 };

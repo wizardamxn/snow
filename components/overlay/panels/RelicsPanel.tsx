@@ -170,7 +170,7 @@ export default function RelicsPanel({ onClose }: Props) {
                 className="font-pixel text-[7px]"
                 style={{ color: "#4a3210" }}
               >
-                ▸
+                &gt;
               </span>
             </div>
           </button>

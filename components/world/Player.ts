@@ -8,6 +8,7 @@ const SPEED = 155; // walk speed, world px/s
 const SPRINT = 1.7;
 const IDLE_FPS = 7;
 const RUN_FPS = 13;
+const ATTACK_FPS = 12; // 4 frames ≈ a 1/3s swing
 
 /** A point is walkable if this predicate returns true. */
 export type CanWalk = (x: number, y: number) => boolean;
@@ -18,16 +19,20 @@ export type Player = {
   update: (dt: number, canWalk: CanWalk) => boolean;
   get x(): number;
   get y(): number; // feet position
+  /** True only on the single frame a sword swing begins — a hit-detection pulse. */
+  get justSwung(): boolean;
   setPosition: (x: number, y: number) => void;
 };
 
 export async function createPlayer(startX: number, startY: number): Promise<Player> {
-  const [idleTex, runTex] = await Promise.all([
+  const [idleTex, runTex, attackTex] = await Promise.all([
     loadTex("/pixel/knight/Warrior_Idle.png"),
     loadTex("/pixel/knight/Warrior_Run.png"),
+    loadTex("/pixel/knight/Warrior_Attack1.png"),
   ]);
   const idleFrames: Texture[] = sliceFrames(idleTex, FRAME, FRAME);
   const runFrames: Texture[] = sliceFrames(runTex, FRAME, FRAME);
+  const attackFrames: Texture[] = sliceFrames(attackTex, FRAME, FRAME);
 
   const container = new Container();
 
@@ -47,6 +52,9 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
   let facing = 1;
   let animTime = 0;
   let bob = 0;
+  let attacking = false;
+  let attackTime = 0;
+  let swungThisFrame = false;
 
   container.x = x;
   container.y = y;
@@ -60,6 +68,7 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
     canWalk(cx + HW, cy - 16);
 
   const update = (dt: number, canWalk: CanWalk): boolean => {
+    swungThisFrame = false;
     let dx = 0;
     let dy = 0;
     if (input.isDown(...KEY.left)) dx -= 1;
@@ -100,6 +109,23 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
     
     sprite.texture = frames[currentFrameIdx];
 
+    // Left-click swings the sword — a one-shot overlay on top of idle/run, so
+    // movement keeps working mid-swing instead of locking the player in place.
+    if (input.justPressed(...KEY.attack) && !attacking) {
+      attacking = true;
+      attackTime = 0;
+      swungThisFrame = true;
+    }
+    if (attacking) {
+      attackTime += dt;
+      const attackIdx = Math.floor(attackTime * ATTACK_FPS);
+      if (attackIdx >= attackFrames.length) {
+        attacking = false;
+      } else {
+        sprite.texture = attackFrames[attackIdx];
+      }
+    }
+
     // Subtle walk bob
     bob = moving ? bob + dt * 12 : 0;
     sprite.y = moving ? -Math.abs(Math.sin(bob)) * 3 : 0;
@@ -120,6 +146,9 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
     },
     get y() {
       return y;
+    },
+    get justSwung() {
+      return swungThisFrame;
     },
     setPosition(nx: number, ny: number) {
       x = nx;

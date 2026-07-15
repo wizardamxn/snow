@@ -29,7 +29,7 @@ export const WATERFALL: Rect = { col: 8, row: 5, w: 4, h: 5 };
 export const CAVE: Rect = { col: 40, row: 5, w: 4, h: 2 };
 
 /** Where the player starts (tile coords). */
-export const SPAWN = { col: 26, row: 35 };
+export const SPAWN = { col: 26, row: 35};
 
 export type TileCode =
   | "grass"
@@ -86,6 +86,21 @@ export const PATH_SEGMENTS: Rect[] = [
   { col: 26, row: STREET_2, w: 1, h: SPAWN.row - STREET_2 + 1 }, // second street → spawn
 ];
 
+/** The busker's fixed spot — Second Street, a lively crossroads in the town square. */
+export const BARD = { col: 24, row: STREET_2 };
+
+/** The Raven's perch — just off spawn, so new visitors meet the guide immediately. */
+export const RAVEN_SPOT = { col: 23, row: 34 };
+
+/** A fourth-wall-breaking CRT terminal, clustered near the Bard and Raven. */
+export const TERMINAL_SPOT = { col: 21, row: 32 };
+
+/** A stationary orc chieftain, north of the river — a fixed boss encounter, not a wandering critter. */
+export const ORC_CHIEF_SPOT = { col: 26, row: 11 };
+
+/** Where the chieftain's gold trophy appears near spawn, once defeated. */
+export const TROPHY_SPOT = { col: 24, row: 35 };
+
 /** Bottom-centre door position of a building, in world pixels. */
 export function doorPos(b: { col: number; row: number; w: number; h: number }): {
   x: number;
@@ -113,7 +128,12 @@ export function buildTileGrid(): TileCode[][] {
         else code = "cliff";
       }
 
-      if (inRect(col, row, POND) || inRect(col, row, WATERFALL)) code = "water";
+      if (inRect(col, row, POND)) code = "water";
+      // Only the WATERFALL rect's pool (south of the mountain wall) is water —
+      // its northern rows stay cliff, so the falls reads as a gap in the SAME
+      // rock face as the rest of the mountain, not a patch of flat water cut
+      // into it.
+      if (inRect(col, row, WATERFALL) && row >= MOUNTAIN_ROWS) code = "water";
       if (row >= RIVER.row && row < RIVER.row + RIVER.rows) code = "water";
 
       if (

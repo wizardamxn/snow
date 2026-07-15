@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { bus, type NearInfo } from "@/lib/world/bus";
 import { worldState } from "@/lib/world/worldState";
 import { playBlip, setMuted, getAudioState } from "@/lib/audio/ambient";
@@ -12,8 +13,12 @@ import TestimoniesPanel from "./panels/TestimoniesPanel";
 import ContactPanel from "./panels/ContactPanel";
 import CavePanel from "./panels/CavePanel";
 import RavenBubble from "./panels/RavenBubble";
+import BardBubble from "./panels/BardBubble";
+import TerminalPanel from "./panels/TerminalPanel";
 import TutorialOverlay from "./TutorialOverlay";
 import Minimap from "./Minimap";
+import TouchControls from "./TouchControls";
+import AchievementTracker from "./AchievementTracker";
 
 /**
  * Routes the bus `emitOpen` id to the correct content panel.
@@ -42,6 +47,8 @@ function PanelRouter({
       return <CavePanel onClose={onClose} />;
     case "raven":
       return <RavenBubble onClose={onClose} />;
+    case "terminal":
+      return <TerminalPanel onClose={onClose} />;
     default:
       return null;
   }
@@ -54,11 +61,33 @@ const pixelBox: React.CSSProperties = {
   boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
 };
 
+/**
+ * [T] cycles through these — a null hour means "keep auto-advancing".
+ * DAWN/DUSK are deliberately offset from the exact 6h/18h sunrise/sunset
+ * instants (where sampleDayNight's night-alpha is exactly 0, so the tint
+ * would look identical to full DAY) so they actually show a dim, warm-tinted
+ * transitional sky instead of reading as plain daylight. DUSK also has to stay
+ * OUT of the 20:00–04:00 band where night-alpha is fully saturated at 1 (any
+ * hour in there looks identical to true NIGHT), so it sits at 19h, not 20h.
+ */
+const TIME_PRESETS: { label: string; hour: number | null }[] = [
+  { label: "DYNAMIC", hour: null },
+  { label: "DAWN", hour: 5 },
+  { label: "DAY", hour: 12 },
+  { label: "DUSK", hour: 19 },
+  { label: "NIGHT", hour: 0 },
+];
+
 export default function Overlay() {
   const [near, setNear] = useState<NearInfo>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [isMuted, setIsMuted] = useState(false);
-  const [isDynamicTime, setIsDynamicTime] = useState(true);
+  const [timePresetIdx, setTimePresetIdx] = useState(0);
+  const [isTouch, setIsTouch] = useState(false);
+
+  useEffect(() => {
+    setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+  }, []);
 
   useEffect(() => {
     // Initial audio state sync
@@ -78,8 +107,17 @@ export default function Overlay() {
         setIsMuted(!current);
       }
       if (e.key.toLowerCase() === "t") {
-        worldState.cycleRunning = !worldState.cycleRunning;
-        setIsDynamicTime(worldState.cycleRunning);
+        setTimePresetIdx((prev) => {
+          const next = (prev + 1) % TIME_PRESETS.length;
+          const preset = TIME_PRESETS[next];
+          if (preset.hour === null) {
+            worldState.cycleRunning = true;
+          } else {
+            worldState.cycleRunning = false;
+            worldState.timeOfDay = preset.hour;
+          }
+          return next;
+        });
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -103,6 +141,33 @@ export default function Overlay() {
       {/* ── Minimap (top-right) ─────────────────────────────────────────── */}
       {!openId && <Minimap />}
 
+      {/* ── Achievement tracker (below minimap) + completion banner ──────── */}
+      <AchievementTracker />
+
+      {/* ── Bard's now-playing speech bubble (floats above him always) ──── */}
+      {!openId && <BardBubble />}
+
+      {/* ── On-screen D-pad + action buttons (touch devices only) ────────── */}
+      {!openId && <TouchControls />}
+
+      {/* ── Classic (non-game) view link (bottom-left, above the controls legend) ── */}
+      <Link
+        href="/resume"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="pointer-events-auto absolute left-4 font-pixel px-2.5 py-2 transition-colors"
+        style={{
+          bottom: "210px",
+          fontSize: "6px",
+          color: "#c8861e",
+          background: "#0d0b08",
+          border: "2px solid #5a4020",
+          boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
+        }}
+      >
+        CLASSIC VIEW &gt;
+      </Link>
+
       {/* ── Pixel title bar (top-centre) ────────────────────────────────── */}
       <div className="absolute left-1/2 top-4 -translate-x-1/2 text-center">
         <p
@@ -119,7 +184,8 @@ export default function Overlay() {
         </p>
       </div>
 
-      {/* ── Pixel HUD (bottom-left) ──────────────────────────────────────── */}
+      {/* ── Pixel HUD (bottom-left) — keyboard legend, hidden on touch ────── */}
+      {!isTouch && (
       <div
         className="absolute bottom-4 left-4 px-3 py-2.5"
         style={pixelBox}
@@ -152,10 +218,11 @@ export default function Overlay() {
           </div>
           <div>
             <span style={{ color: "#f0c050" }}>[T]</span>
-            <span style={{ color: "#5a4020" }}> TIME: {isDynamicTime ? "DYNAMIC" : "STATIC"}</span>
+            <span style={{ color: "#5a4020" }}> TIME: {TIME_PRESETS[timePresetIdx].label}</span>
           </div>
         </div>
       </div>
+      )}
 
       {/* ── Pixel proximity prompt (bottom-centre) ──────────────────────── */}
       {near && !openId && (

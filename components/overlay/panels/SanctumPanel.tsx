@@ -6,14 +6,15 @@ import InfoPanel from "../InfoPanel";
 type Props = { onClose: () => void };
 
 const STATS = [
-  { label: "EXP", value: "2+ YRS" },
-  { label: "JOBS", value: "2" },
+  { label: "EXP", value: "9+ MO" },
+  { label: "INTERNS", value: "2" },
   { label: "PROJ", value: "5" },
   { label: "STACK", value: "FULL" },
 ];
 
 const LINKS = [
   { label: "GITHUB", handle: "@wizardamxn", href: "https://github.com/wizardamxn" },
+  { label: "LINKEDIN", handle: "amanahmad1", href: "https://linkedin.com/in/amanahmad1" },
   { label: "EMAIL", handle: "amank225566", href: "mailto:amank225566@gmail.com" },
   { label: "RESUME", handle: "DOWNLOAD PDF", href: "/resume.pdf" },
 ];
@@ -68,7 +69,7 @@ export default function SanctumPanel({ onClose }: Props) {
               style={{ color: "#a09070" }}
             >
               Shipping production-grade apps — React, Next.js, Node,
-              React Native, AWS EC2 infrastructure.
+              React Native, AWS EC2 — while finishing a B.Tech in ECE (2027).
             </p>
           </div>
         </div>
@@ -100,14 +101,15 @@ export default function SanctumPanel({ onClose }: Props) {
         {/* ── Bio ────────────────────────────────────────────────────────── */}
         <div className="p-4 space-y-3" style={box("#3a2808")}>
           <p className="font-mono text-xs leading-relaxed" style={{ color: "#c0a878" }}>
-            Currently at{" "}
+            Interning at{" "}
             <span className="font-pixel text-[8px]" style={{ color: "#f0c050" }}>CEROPE</span>
-            {" "}— Next.js + MERN stack + React Native mobile, Redis caching, AWS EC2.
+            {" "}— Next.js + MERN stack + React Native mobile, Redis caching that cut API
+            latency from ~10s to under 200ms.
           </p>
           <p className="font-mono text-xs leading-relaxed" style={{ color: "#6a5838" }}>
-            Previously{" "}
+            Previously interned at{" "}
             <span className="font-pixel text-[8px]" style={{ color: "#8a6820" }}>KODECOMPILER</span>
-            {" "}— built browser code compiler + LeetCode test runner from scratch. Freelance
+            {" "}— built a sandboxed LeetCode-style code execution engine from scratch. Freelance
             projects include AI media converter AVMG, RAG chat platform ProjectTeams,
             agri-marketplace KropiGo, and CRM SolarVistar.
           </p>

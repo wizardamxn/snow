@@ -7,17 +7,23 @@ import { BUILDING_MASK } from "@/components/world/buildingCollision";
 import { input, KEY } from "@/components/world/input";
 import { setNear, worldState } from "@/lib/world/worldState";
 import { bus } from "@/lib/world/bus";
+import { sampleDayNight, lerpColor } from "@/lib/world/dayNight";
 import {
+  BARD,
   BUILDINGS,
   CAVE,
   COLS,
   DECOR_HOUSES,
   doorPos,
   MOUNTAIN_ROWS,
+  ORC_CHIEF_SPOT,
   PATH_SEGMENTS,
   POND,
+  RAVEN_SPOT,
   ROWS,
   SPAWN,
+  TERMINAL_SPOT,
+  TROPHY_SPOT,
   WATERFALL,
   WORLD_H,
   WORLD_W,
@@ -27,6 +33,9 @@ export type SceneController = {
   container: Container;
   update: (dtSeconds: number) => void;
 };
+
+/** Real-world seconds for one full in-game day when the cycle is running. */
+const DAY_CYCLE_SECONDS = 480;
 
 const TREE_URLS = [1, 2, 3, 4].map((n) => `/pixel/bg/trees/Tree${n}.png`);
 const BUSH_URLS = [1, 2, 3, 4].map((n) => `/pixel/bg/bushes/Bushe${n}.png`);
@@ -72,6 +81,19 @@ type Butterfly = {
   wanderTimer: number;
   baseColor: number;
   size: number;
+};
+/** Hand-drawn (no sprite asset) — a soft glowing dot that only shows once night falls. */
+type Firefly = {
+  g: Graphics;
+  x: number;
+  y: number;
+  tx: number;
+  ty: number;
+  vx: number;
+  vy: number;
+  glowPhase: number;
+  glowSpeed: number;
+  wanderTimer: number;
 };
 
 const trimOf = (url: string) => SPRITE_TRIM[url] ?? { ax: 0.5, ay: 1, wf: 1 };
@@ -122,6 +144,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   const critters: Critter[] = [];
   const ducks: Duck[] = [];
   const butterflies: Butterfly[] = [];
+  const fireflies: Firefly[] = [];
 
   // ── Load textures ──────────────────────────────────────────────────────────
   const [
@@ -136,8 +159,12 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     sheepIdleTex,
     sheepMoveTex,
     duckTex,
+    bardTex,
+    ravenTex,
+    terminalTex,
+    goldTrophyTex,
     caveTex,
-    waterfallTex,
+    waterfallFlowTex,
     peasantIdleTex,
     peasantRunTex,
     tavernIdleTex,
@@ -163,8 +190,12 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     loadTex("/pixel/deco/sheep_idle.png"),
     loadTex("/pixel/deco/sheep_move.png"),
     loadTex("/pixel/deco/duck.png"),
+    loadTex("/pixel/deco/bard.png"),
+    loadTex("/pixel/knight/Raven_Idle.png"),
+    loadTex("/pixel/props/terminal_computer.png"),
+    loadTex("/pixel/props/gold_trophy.png"),
     loadTex("/pixel/terrain/cave_mouth.webp"),
-    loadTex("/pixel/terrain/waterfall.png"),
+    loadTex("/pixel/fx/waterfall_flow.png"),
     loadTex("/pixel/npcs/peasant_idle.png"),
     loadTex("/pixel/npcs/peasant_run.png"),
     loadTex("/pixel/npcs/tavern_idle.png"),
@@ -190,10 +221,15 @@ export async function buildTownScene(app: Application): Promise<SceneController>
 
   const foamFrames = sliceFrames(foamTex, 192, 192);
   const splashFrames = sliceFrames(splashTex, 192, 192);
+  const waterfallFlowFrames = sliceFrames(waterfallFlowTex, 256, 512);
   const fireFrames = sliceFrames(fireTex, 64, 64);
   const sheepIdleFrames = sliceFrames(sheepIdleTex, 128, 128);
   const sheepMoveFrames = sliceFrames(sheepMoveTex, 128, 128);
   const duckFrames = sliceFrames(duckTex, 32, 32);
+  const bardFrames = sliceFrames(bardTex, 32, 32);
+  const ravenFrames = sliceFrames(ravenTex, 192, 192);
+  const terminalFrames = sliceFrames(terminalTex, 32, 32);
+  const goldTrophyFrames = sliceFrames(goldTrophyTex, goldTrophyTex.width, goldTrophyTex.height);
   // trees/bushes/water-rocks are strips — keep first pose, indexed to their url
   const treeFrames = treeTexes.map((t) => sliceFrames(t, 192, t.height)[0]);
   const bushFrames = bushTexes.map((t) => sliceFrames(t, 128, 128)[0]);
@@ -357,37 +393,40 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     }
   }
 
-  // ── Waterfall: a standalone cliff+tree+falls diorama feeding the pond ───────
+  // ── Waterfall: water spilling through a gap in the same mountain cliff face ─
+  // (built entirely from native Tiny Swords pieces — the old custom diorama
+  // image was a stylistic mismatch with the rest of the world's art.)
   {
-    const t = trimOf("/pixel/terrain/waterfall.png");
-    const cx = (WATERFALL.col + WATERFALL.w / 2) * TILE;
-    const displayH = WATERFALL.h * TILE * 1.25;
-    const displayW = displayH * (waterfallTex.width / waterfallTex.height);
-    const feetY = (WATERFALL.row + WATERFALL.h) * TILE + TILE * 0.3;
-    const s = new Sprite(waterfallTex);
-    s.anchor.set(t.ax, t.ay);
-    s.width = displayW;
-    s.height = displayH;
-    s.x = cx;
-    s.y = feetY;
-    s.zIndex = feetY;
-    waterFX.addChild(s);
-    // Block the rock footprint (centre of the diorama), leave the pool open —
-    // the pond's own water tiles already stop the player there.
-    const footCols = Math.max(2, Math.round(WATERFALL.w * 0.6));
-    const footCol0 = WATERFALL.col + Math.floor((WATERFALL.w - footCols) / 2);
-    tilemap.blockRect(footCol0, WATERFALL.row, footCols, 2);
-    // Splash where the falls meet the pool.
-    for (let i = 0; i < 2; i++) {
+    const fallsTopY = (MOUNTAIN_ROWS - 1.7) * TILE;
+    const fallsBottomY = MOUNTAIN_ROWS * TILE + TILE * 0.2;
+    const rng = mulberry32(4040);
+
+    // One stream per tile column, spanning the full mountain gap so the falls
+    // reads as the whole cliff face pouring into the pool, not a single spout.
+    for (let i = 0; i < WATERFALL.w; i++) {
+      const x = (WATERFALL.col + i + 0.5) * TILE;
+      const cascade = new Sprite(waterfallFlowFrames[0]);
+      cascade.anchor.set(0.5, 0);
+      cascade.x = x;
+      cascade.y = fallsTopY;
+      cascade.width = TILE * (0.85 + rng() * 0.3);
+      cascade.height = fallsBottomY - fallsTopY;
+      cascade.zIndex = fallsBottomY;
+      waterFX.addChild(cascade);
+      animated.push({ sprite: cascade, frames: waterfallFlowFrames, fps: 7 + rng() * 3, phase: rng() * 4 });
+
       const sp = new Sprite(splashFrames[0]);
       sp.anchor.set(0.5, 0.5);
       sp.width = TILE * 1.3;
       sp.height = TILE * 1.3;
-      sp.x = cx + (i - 0.5) * TILE * 0.6;
-      sp.y = feetY - displayH * 0.02;
+      sp.x = x;
+      sp.y = fallsBottomY;
       waterFX.addChild(sp);
-      animated.push({ sprite: sp, frames: splashFrames, fps: 10, phase: Math.random() * 2 });
+      animated.push({ sprite: sp, frames: splashFrames, fps: 10, phase: rng() * 2 });
     }
+
+    // A pine perched at the top of the falls, matching the mountain's own tree dressing.
+    placeEntity(treeFrames[0], TREE_URLS[0], (WATERFALL.col + WATERFALL.w + 0.4) * TILE, (MOUNTAIN_ROWS - 3) * TILE, TILE * 2, false);
   }
 
   // ── Pond: water rocks + duck ────────────────────────────────────────────────
@@ -495,6 +534,56 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     world.addChildAt(cobbleLayer, world.getChildIndex(entities));
   }
 
+  // ── Bard: a lute-strumming busker on Second Street ─────────────────────────
+  const bardPos = { x: 0, y: 0 };
+  {
+    const feetX = (BARD.col + 0.5) * TILE;
+    const feetY = (BARD.row + 1) * TILE;
+    const bardDisplayH = 34;
+    const bard = placeEntity(bardFrames[0], "/pixel/deco/bard.png", feetX, feetY, bardDisplayH, true);
+    animated.push({ sprite: bard, frames: bardFrames, fps: 10, phase: 0 });
+    bardPos.x = feetX;
+    bardPos.y = feetY;
+    worldState.bardX = feetX;
+    // Head-top world-Y (not feet), so the floating bubble anchors right above his head.
+    worldState.bardY = feetY - bardDisplayH * trimOf("/pixel/deco/bard.png").ay;
+  }
+
+  // ── Raven: a hooded guide perched just off spawn ────────────────────────────
+  const ravenPos = { x: 0, y: 0 };
+  {
+    const feetX = (RAVEN_SPOT.col + 0.5) * TILE;
+    const feetY = (RAVEN_SPOT.row + 1) * TILE;
+    const ravenDisplayH = 70;
+    const raven = placeEntity(ravenFrames[0], "/pixel/knight/Raven_Idle.png", feetX, feetY, ravenDisplayH, true);
+    animated.push({ sprite: raven, frames: ravenFrames, fps: 6, phase: Math.random() * 2 });
+    ravenPos.x = feetX;
+    ravenPos.y = feetY;
+    worldState.ravenX = feetX;
+    // Head-top world-Y (not feet), so the dialogue bubble anchors right above its head.
+    worldState.ravenY = feetY - ravenDisplayH * trimOf("/pixel/knight/Raven_Idle.png").ay;
+  }
+
+  // ── Terminal: a fourth-wall-breaking retro computer in the open grass ──────
+  const terminalPos = { x: 0, y: 0 };
+  {
+    const feetX = (TERMINAL_SPOT.col + 0.5) * TILE;
+    const feetY = (TERMINAL_SPOT.row + 1) * TILE;
+    const displayH = 48;
+    const term = placeEntity(terminalFrames[0], "/pixel/props/terminal_computer.png", feetX, feetY, displayH, true);
+    animated.push({ sprite: term, frames: terminalFrames, fps: 5, phase: 0 });
+
+    const label = new Text({ text: "THE TERMINAL", style: labelStyle });
+    label.anchor.set(0.5, 1);
+    label.x = feetX;
+    label.y = feetY - displayH - 6;
+    label.zIndex = 9000;
+    entities.addChild(label);
+
+    terminalPos.x = feetX;
+    terminalPos.y = feetY;
+  }
+
   // ── Scattered decoration (scaled up for the bigger map) ────────────────────
   {
     const rng = mulberry32(4242);
@@ -516,6 +605,10 @@ export async function buildTownScene(app: Application): Promise<SceneController>
         if (!freeGrass(c, r) || onPath(c, r)) continue;
         if (Math.abs(c - SPAWN.col) < 2 && Math.abs(r - SPAWN.row) < 2) continue;
         if (c >= CAVE.col - 2 && c <= CAVE.col + CAVE.w + 1 && r >= MOUNTAIN_ROWS && r <= MOUNTAIN_ROWS + CAVE.h + 2) continue;
+        // Keep the landmark NPCs/props clear so scattered trees/bushes never hide them.
+        if (Math.abs(c - BARD.col) < 2 && Math.abs(r - BARD.row) < 2) continue;
+        if (Math.abs(c - RAVEN_SPOT.col) < 2 && Math.abs(r - RAVEN_SPOT.row) < 2) continue;
+        if (Math.abs(c - TERMINAL_SPOT.col) < 2 && Math.abs(r - TERMINAL_SPOT.row) < 2) continue;
         const idx = Math.floor(rng() * frames.length);
         placeEntity(frames[idx], urls[idx], (c + 0.5) * TILE, (r + 1) * TILE, hMin + rng() * (hMax - hMin), shadow);
         placed++;
@@ -591,6 +684,26 @@ export async function buildTownScene(app: Application): Promise<SceneController>
         g, x: g.x, y: g.y, tx: g.x, ty: g.y, vx: 0, vy: 0,
         flapPhase: bfRng() * Math.PI * 2, flapSpeed: 6 + bfRng() * 5,
         wanderTimer: bfRng() * 3, baseColor: color, size,
+      });
+    }
+  }
+
+  // ── Fireflies — hand-drawn glowing dots, only visible once night falls ─────
+  {
+    const ffRng = mulberry32(9182);
+    const fireflyLayer = new Container();
+    world.addChild(fireflyLayer);
+    for (let i = 0; i < 24; i++) {
+      const col = 2 + Math.floor(ffRng() * (COLS - 4));
+      const row = MOUNTAIN_ROWS + Math.floor(ffRng() * (ROWS - MOUNTAIN_ROWS - 4));
+      const g = new Graphics();
+      g.x = (col + 0.5) * TILE;
+      g.y = (row + 0.5) * TILE;
+      fireflyLayer.addChild(g);
+      fireflies.push({
+        g, x: g.x, y: g.y, tx: g.x, ty: g.y, vx: 0, vy: 0,
+        glowPhase: ffRng() * Math.PI * 2, glowSpeed: 1.2 + ffRng() * 1.6,
+        wanderTimer: ffRng() * 4,
       });
     }
   }
@@ -690,6 +803,77 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     contentH: HUMANOID_H, idleFps: 6, moveFps: 9, speed: 28,
   });
 
+  // ── Orc Chieftain: a stationary boss fight, north of the river ──────────────
+  // Persisted in localStorage — once defeated, the fight never respawns and the
+  // trophy shows permanently near spawn instead.
+  const ORC_DEFEATED_KEY = "sigma_orc_chieftain_defeated";
+  const ATTACK_RANGE = 70;
+  const placeTrophy = () => {
+    const tx = (TROPHY_SPOT.col + 0.5) * TILE;
+    const ty = (TROPHY_SPOT.row + 1) * TILE;
+    // The source sprite's actual gold-nugget content is a small fraction of its
+    // padded canvas (hf≈0.2) — displayH scales the WHOLE canvas, so it has to be
+    // large for the visible content to actually read as a reward prop.
+    placeEntity(goldTrophyFrames[0], "/pixel/props/gold_trophy.png", tx, ty, TILE * 1.8, true);
+  };
+
+  let chief: {
+    sprite: Sprite;
+    shadow: Graphics;
+    label: Text;
+    pips: Graphics[];
+    health: number;
+    alive: boolean;
+    dying: boolean;
+    dyingTime: number;
+    hitFlash: number;
+  } | null = null;
+
+  if (localStorage.getItem(ORC_DEFEATED_KEY) === "1") {
+    placeTrophy();
+  } else {
+    const feetX = (ORC_CHIEF_SPOT.col + 0.5) * TILE;
+    const feetY = (ORC_CHIEF_SPOT.row + 1) * TILE;
+    const chiefTrim = trimOf("/pixel/mobs/orc_idle.png");
+    const frameDisplay = (HUMANOID_H * 1.5) / (chiefTrim.hf ?? 1);
+
+    const sprite = new Sprite(orcIdleFrames[0]);
+    sprite.anchor.set(chiefTrim.ax, chiefTrim.ay);
+    sprite.width = frameDisplay;
+    sprite.height = frameDisplay;
+    sprite.x = feetX;
+    sprite.y = feetY;
+    sprite.zIndex = feetY;
+    entities.addChild(sprite);
+    animated.push({ sprite, frames: orcIdleFrames, fps: 6, phase: 0 });
+
+    const shadow = new Graphics()
+      .ellipse(feetX, feetY, HUMANOID_H * 0.5, HUMANOID_H * 0.18)
+      .fill({ color: 0, alpha: 0.25 });
+    shadow.zIndex = feetY - 0.5;
+    entities.addChild(shadow);
+
+    const headTopY = feetY - frameDisplay;
+    const label = new Text({ text: "ORC CHIEFTAIN", style: labelStyle });
+    label.anchor.set(0.5, 1);
+    label.x = feetX;
+    label.y = headTopY - 14;
+    label.zIndex = 9000;
+    entities.addChild(label);
+
+    const pips: Graphics[] = [];
+    for (let i = 0; i < 3; i++) {
+      const pip = new Graphics().rect(0, 0, 8, 8).fill({ color: 0xd03030 });
+      pip.x = feetX - 14 + i * 12;
+      pip.y = headTopY - 10;
+      pip.zIndex = 9000;
+      entities.addChild(pip);
+      pips.push(pip);
+    }
+
+    chief = { sprite, shadow, label, pips, health: 3, alive: true, dying: false, dyingTime: 0, hitFlash: 0 };
+  }
+
   // ── Interaction / proximity ────────────────────────────────────────────────
   const TRIGGER = 90;
   const detectNear = () => {
@@ -703,8 +887,24 @@ export async function buildTownScene(app: Application): Promise<SceneController>
         best = { id: b.id, label: b.name, action: b.action };
       }
     }
-    if (Math.hypot(player.x - caveMouth.x, player.y - caveMouth.y) < bestD) {
+    const dCave = Math.hypot(player.x - caveMouth.x, player.y - caveMouth.y);
+    if (dCave < bestD) {
+      bestD = dCave;
       best = { id: "cave", label: "The Hollow Cave", action: "Peer inside" };
+    }
+    const dBard = Math.hypot(player.x - bardPos.x, player.y - bardPos.y);
+    if (dBard < bestD) {
+      bestD = dBard;
+      best = { id: "bard", label: "The Wandering Bard", action: "Listen" };
+    }
+    const dRaven = Math.hypot(player.x - ravenPos.x, player.y - ravenPos.y);
+    if (dRaven < bestD) {
+      bestD = dRaven;
+      best = { id: "raven", label: "The Raven", action: "Talk" };
+    }
+    const dTerminal = Math.hypot(player.x - terminalPos.x, player.y - terminalPos.y);
+    if (dTerminal < bestD) {
+      best = { id: "terminal", label: "The Terminal", action: "Access" };
     }
     setNear(best);
   };
@@ -731,11 +931,67 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   let elapsed = 0;
   const update = (dt: number) => {
     elapsed += dt;
+
+    // Day/night: a full 24h cycle takes DAY_CYCLE_SECONDS of real time when
+    // running; [T] in the overlay HUD can also jump straight to a fixed hour.
+    if (worldState.cycleRunning) {
+      worldState.timeOfDay = (worldState.timeOfDay + (dt / DAY_CYCLE_SECONDS) * 24) % 24;
+    }
+    const sky = sampleDayNight(worldState.timeOfDay / 24);
+    // Deep indigo, not plain navy — reads as moody/dreamy rather than just "dim".
+    // nightAlpha^1.4 steepens the ramp so full night visibly outdoes dusk instead
+    // of both flattening out at the same overlay alpha once nightAlpha saturates.
+    nightOverlay.tint = lerpColor(0xff9a4d, 0x140a30, sky.nightAlpha);
+    nightOverlay.alpha = Math.pow(sky.nightAlpha, 1.4) * 0.72;
+
     player.update(dt, canWalk);
+    worldState.playerX = player.x;
+    worldState.playerY = player.y;
     detectNear();
 
     if (input.justPressed(...KEY.interact) && worldState.near) {
-      bus.emitOpen(worldState.near.id);
+      bus.emitVisit(worldState.near.id);
+      if (worldState.near.id === "bard") {
+        const url = worldState.bardTrack?.songUrl;
+        if (url) window.open(url, "_blank", "noopener,noreferrer");
+      } else {
+        bus.emitOpen(worldState.near.id);
+      }
+    }
+
+    // ── Orc Chieftain combat ─────────────────────────────────────────────────
+    if (chief && chief.alive) {
+      if (!chief.dying && player.justSwung) {
+        const d = Math.hypot(player.x - chief.sprite.x, player.y - chief.sprite.y);
+        if (d < ATTACK_RANGE) {
+          chief.health -= 1;
+          chief.hitFlash = 0.15;
+          const lostPip = chief.pips[chief.health];
+          if (lostPip) lostPip.alpha = 0.15;
+          if (chief.health <= 0) chief.dying = true;
+        }
+      }
+      if (chief.hitFlash > 0) {
+        chief.hitFlash -= dt;
+        chief.sprite.tint = 0xff6666;
+      } else {
+        chief.sprite.tint = 0xffffff;
+      }
+      if (chief.dying) {
+        chief.dyingTime += dt;
+        const t = Math.min(1, chief.dyingTime / 0.6);
+        chief.sprite.alpha = 1 - t;
+        chief.sprite.scale.set((1 - t * 0.4) * (chief.sprite.scale.x < 0 ? -1 : 1), 1 - t * 0.4);
+        chief.label.alpha = 1 - t;
+        chief.shadow.alpha = 0.25 * (1 - t);
+        for (const pip of chief.pips) pip.alpha *= 1 - dt * 3;
+        if (t >= 1) {
+          chief.alive = false;
+          entities.removeChild(chief.sprite, chief.shadow, chief.label, ...chief.pips);
+          localStorage.setItem(ORC_DEFEATED_KEY, "1");
+          placeTrophy();
+        }
+      }
     }
 
     // wandering critters (sheep, townsfolk, mobs) — pose (size/anchor) is only
@@ -831,6 +1087,40 @@ export async function buildTownScene(app: Application): Promise<SceneController>
       bf.g.y = Math.round(bf.y) + Math.sin(elapsed * 1.2 + bf.flapPhase * 0.1) * 3;
     }
 
+    // fireflies — lazy drift, glow fades in/out with the night tint itself
+    for (const ff of fireflies) {
+      ff.glowPhase += ff.glowSpeed * dt;
+      ff.wanderTimer -= dt;
+      if (ff.wanderTimer <= 0) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 20 + Math.random() * 36;
+        ff.tx = Math.max(TILE * 2, Math.min(WORLD_W - TILE * 2, ff.x + Math.cos(angle) * dist));
+        ff.ty = Math.max(TILE * (MOUNTAIN_ROWS + 1), Math.min(WORLD_H - TILE * 2, ff.y + Math.sin(angle) * dist));
+        ff.wanderTimer = 3 + Math.random() * 4;
+      }
+      const ddx = ff.tx - ff.x;
+      const ddy = ff.ty - ff.y;
+      const spd = 12;
+      ff.vx += ddx * 1.2 * dt;
+      ff.vy += ddy * 1.2 * dt;
+      ff.vx *= 0.94;
+      ff.vy *= 0.94;
+      const vel = Math.hypot(ff.vx, ff.vy);
+      if (vel > spd) { ff.vx = (ff.vx / vel) * spd; ff.vy = (ff.vy / vel) * spd; }
+      ff.x += ff.vx * dt;
+      ff.y += ff.vy * dt;
+
+      const twinkle = 0.35 + 0.65 * Math.abs(Math.sin(ff.glowPhase));
+      const a = twinkle * sky.nightAlpha;
+      ff.g.clear();
+      if (a > 0.02) {
+        ff.g.circle(0, 0, 6).fill({ color: 0xccff88, alpha: 0.16 * a });
+        ff.g.circle(0, 0, 1.8).fill({ color: 0xf2ffc4, alpha: 0.95 * a });
+      }
+      ff.g.x = Math.round(ff.x);
+      ff.g.y = Math.round(ff.y) + Math.sin(elapsed * 0.8 + ff.glowPhase * 0.2) * 4;
+    }
+
     // environment frame animation (torches, splashes, foam, duck)
     for (const a of animated) {
       a.sprite.texture = a.frames[Math.floor((elapsed + a.phase) * a.fps) % a.frames.length];
@@ -847,6 +1137,17 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     entities.sortChildren();
     applyCamera();
   };
+
+  // ── Day/night tint — a full-world overlay, added last so it paints over
+  // everything (buildings, entities, water) but still lets them show through
+  // at partial alpha, like a screen-space lighting tint. ─────────────────────
+  const nightOverlay = new Sprite(Texture.WHITE);
+  nightOverlay.x = 0;
+  nightOverlay.y = 0;
+  nightOverlay.width = WORLD_W;
+  nightOverlay.height = WORLD_H;
+  nightOverlay.alpha = 0;
+  world.addChild(nightOverlay);
 
   if (DEBUG_COLLISION) {
     const dbg = new Graphics();

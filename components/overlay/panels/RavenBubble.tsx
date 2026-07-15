@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { worldState } from "@/lib/world/worldState";
 import { playBlip } from "@/lib/audio/ambient";
+import { WORLD_W, WORLD_H } from "@/components/world/world.config";
 
-const WORLD_W = 100 * 32;
-const WORLD_H = 100 * 32;
+/** Mirrors Town.ts's `applyCamera` scale/clamp so the bubble tracks the raven through camera pans. */
+const CAM_SCALE_MIN = 1.2;
+const CAM_SCALE_MAX = 2.6;
 
 const DIALOGUE_PAGES = [
   "Caw! Welcome to the Frontier, traveler.",
@@ -20,30 +22,16 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
 
   const fullText = DIALOGUE_PAGES[pageIdx];
 
-  // ── Follow Raven in World Space ──────────────────────────────────────────
+  // ── Follow the Raven in world space (fixed position, camera still pans/zooms) ──
   useEffect(() => {
     let handle: number;
     const updatePos = () => {
-      // Calculate where ravenX/Y is on the screen right now based on player position.
-      // (This replicates the camera logic from minimap/Town.ts)
-      if (typeof window !== "undefined") {
-        const cx = window.innerWidth / 2;
-        const cy = window.innerHeight / 2;
-        
-        let camX = worldState.playerX;
-        let camY = worldState.playerY;
-
-        // Clamp camera (matches Town.ts camera clamping)
-        if (camX < cx) camX = cx;
-        if (camY < cy) camY = cy;
-        if (camX > WORLD_W - cx) camX = WORLD_W - cx;
-        if (camY > WORLD_H - cy) camY = WORLD_H - cy;
-
-        const screenX = worldState.ravenX - camX + cx;
-        const screenY = worldState.ravenY - camY + cy;
-
-        setPos({ x: screenX, y: screenY });
-      }
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const scale = Math.max(CAM_SCALE_MIN, Math.min(Math.max(vw / 1000, vh / 620), CAM_SCALE_MAX));
+      const camX = Math.max(vw - WORLD_W * scale, Math.min(0, vw / 2 - worldState.playerX * scale));
+      const camY = Math.max(vh - WORLD_H * scale, Math.min(0, vh / 2 - worldState.playerY * scale));
+      setPos({ x: worldState.ravenX * scale + camX, y: worldState.ravenY * scale + camY });
       handle = requestAnimationFrame(updatePos);
     };
     handle = requestAnimationFrame(updatePos);

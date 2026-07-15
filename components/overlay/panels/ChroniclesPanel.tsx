@@ -97,7 +97,7 @@ export default function ChroniclesPanel({ onClose }: Props) {
                       className="font-pixel text-[7px] flex-shrink-0 mt-0.5"
                       style={{ color: "#c8861e" }}
                     >
-                      ▸
+                      &gt;
                     </span>
                     <span
                       className="font-mono text-xs leading-relaxed"

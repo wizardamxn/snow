@@ -1,35 +1,32 @@
 [
   {
     "id": "cerope",
-    "role": "Full Stack Developer",
+    "role": "Full Stack Developer Intern",
     "company": "Cerope",
     "location": "Remote",
-    "period": "2025 — Present",
+    "period": "Mar 2026 — Present",
     "current": true,
-    "summary": "Building features end-to-end across a Next.js front end and a MERN-stack backend, plus a React Native mobile app, with Redis caching to keep API response times low.",
+    "summary": "Building features end-to-end across a Next.js front end and a MERN-stack backend, plus a React Native mobile app, with a Redis caching layer that cut API latency from ~10s to under 200ms.",
     "highlights": [
-      "Developed and shipped full-stack features across a Next.js front end and a MERN (MongoDB, Express, React, Node.js) backend.",
-      "Built and maintained a React Native mobile app alongside the web platform.",
-      "Introduced Redis caching on key API routes, cutting response times and easing load on the backend.",
-      "Owned production infrastructure end-to-end — provisioning, deploying, and keeping services humming across AWS EC2 instances and VPS environments.",
-      "Collaborated closely with the team to plan, build, and ship features from idea to production."
+      "Reduced response latency on high-traffic APIs from ~10s to under 200ms and cut database load by 60%+ by designing a Redis caching layer with invalidation on writes.",
+      "Shipped user-facing features across a production Next.js web platform and its React Native app, keeping both clients in sync on a shared API.",
+      "Integrated third-party APIs and background jobs to automate recurring workflows, cutting manual operations effort for the team."
     ],
-    "technologies": ["Next.js", "React", "React Native", "Node.js", "Express", "MongoDB", "Redis", "AWS EC2"]
+    "technologies": ["Next.js", "React", "React Native", "Node.js", "Redis"]
   },
   {
     "id": "kodecompiler",
-    "role": "Full Stack Developer",
+    "role": "Full Stack Developer Intern",
     "company": "KodeCompiler",
     "location": "Remote",
-    "period": "2025",
+    "period": "Nov 2025 — Feb 2026",
     "current": false,
-    "summary": "Worked across a React front end and a Python FastAPI backend, fixing bugs and building features including an in-browser code compiler and LeetCode-style test running.",
+    "summary": "Built a sandboxed, LeetCode-style code execution engine (React + FastAPI) evaluating submissions against 100+ test cases across 10+ languages, plus a real-time MongoDB query playground.",
     "highlights": [
-      "Built and maintained features across a React front end and a Python FastAPI backend.",
-      "Built an in-browser code compiler letting users write, run, and test code directly on the platform.",
-      "Developed LeetCode-style problem test running, including automated test execution and result feedback.",
-      "Diagnosed and fixed bugs across the stack to improve stability and the overall user experience."
+      "Built a sandboxed, LeetCode-style code execution engine (React + FastAPI) that evaluates submissions against 100+ test cases across 10+ languages.",
+      "Engineered an isolated MongoDB query playground letting hundreds of users run custom database scripts safely in real time.",
+      "Added real-time submission feedback that streams execution output to users as test cases run, replacing the previous wait-for-completion flow."
     ],
-    "technologies": ["React", "Python", "FastAPI"]
+    "technologies": ["React", "Python", "FastAPI", "MongoDB"]
   }
 ]

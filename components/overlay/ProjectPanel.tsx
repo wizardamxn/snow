@@ -179,13 +179,13 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
               style={{ borderBottom: "2px solid #000", background: "#0a0800" }}
             >
               <h3 className="font-pixel text-[7px]" style={{ color: "#c8861e" }}>
-                ▸ KEY HIGHLIGHTS
+                &gt; KEY HIGHLIGHTS
               </h3>
             </div>
             <ul className="p-4 space-y-2">
               {project.highlights.map((h) => (
                 <li key={h} className="flex gap-2">
-                  <span className="font-pixel text-[7px] flex-shrink-0 mt-0.5" style={{ color: "#c8861e" }}>▸</span>
+                  <span className="font-pixel text-[7px] flex-shrink-0 mt-0.5" style={{ color: "#c8861e" }}>&gt;</span>
                   <span className="font-mono text-xs leading-relaxed" style={{ color: "#a09070" }}>{h}</span>
                 </li>
               ))}
@@ -195,7 +195,7 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
           {/* Technologies */}
           <div>
             <h3 className="font-pixel text-[7px] mb-2" style={{ color: "#4a3210" }}>
-              ▸ TECHNOLOGIES
+              &gt; TECHNOLOGIES
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {project.technologies.map((t) => (
@@ -283,7 +283,7 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
           ) : markdown ? (
             <div style={{ borderTop: "2px solid #000", paddingTop: "20px" }}>
               <h3 className="font-pixel text-[7px] mb-4" style={{ color: "#4a3210" }}>
-                ▸ CASE STUDY
+                &gt; CASE STUDY
               </h3>
               <article className="prose prose-stone prose-invert max-w-none text-stone-300 text-sm leading-relaxed prose-headings:font-mono prose-headings:text-amber-400/90 prose-a:text-amber-300 prose-strong:text-stone-100">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>

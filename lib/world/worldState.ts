@@ -5,6 +5,7 @@
  * overlay) read/write the exact same state without prop-drilling.
  */
 import { bus, type Scene, type NearInfo } from "@/lib/world/bus";
+import type { NowPlaying } from "@/lib/data/lastfm";
 
 let currentScene: Scene = "town";
 
@@ -38,6 +39,18 @@ export const worldState = {
    */
   ravenX: 0,
   ravenY: 0,
+  /**
+   * Bard NPC world-pixel position (fixed), for the floating now-playing bubble.
+   */
+  bardX: 0,
+  bardY: 0,
+  /**
+   * Last track fetched by the bard's now-playing bubble — read synchronously
+   * by the [E] interact handler so opening the track link stays inside the
+   * keypress's user-activation window (no popup-blocker issues from an async
+   * fetch at interact time).
+   */
+  bardTrack: null as NowPlaying | null,
 };
 
 /**

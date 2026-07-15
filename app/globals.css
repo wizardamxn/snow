@@ -77,3 +77,39 @@ body {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
+
+/* ── Gentle bob for floating world-space UI (e.g. the bard's speech bubble) ─ */
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.float-bob {
+  animation: float-bob 3s ease-in-out infinite;
+}
+
+/* ── Info panel entrance — a quick pop-in, not a slide (pixel art snaps, doesn't ease) ── */
+@keyframes panel-pop-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: scale(1); }
+}
+.panel-pop-in {
+  animation: panel-pop-in 0.14s steps(4, end);
+}
+@keyframes backdrop-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.backdrop-fade-in {
+  animation: backdrop-fade-in 0.12s ease-out;
+}
+
+/* ── Respect reduced-motion (DOM/CSS UI only — the Pixi canvas game itself is
+   unaffected, since motion there is gameplay, not decoration). ──────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
