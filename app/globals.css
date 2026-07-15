@@ -103,6 +103,16 @@ body {
   animation: backdrop-fade-in 0.12s ease-out;
 }
 
+/* ── Rotate-device hint — a phone icon flipping between portrait and
+   landscape, snapping between frames rather than smoothly easing ─────────── */
+@keyframes rotate-hint {
+  0%, 20% { transform: rotate(0deg); }
+  50%, 100% { transform: rotate(-90deg); }
+}
+.rotate-hint {
+  animation: rotate-hint 1.8s steps(6, end) infinite alternate;
+}
+
 /* ── Indeterminate loading bar (no real progress data — just "still working") ── */
 @keyframes loading-bar-sweep {
   0% { transform: translateX(-120%); }
