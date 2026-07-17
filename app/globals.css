@@ -122,6 +122,64 @@ body {
   animation: loading-bar-sweep 1.1s ease-in-out infinite;
 }
 
+/* ── Themed resume ("Adventurer's Quest Log") ──────────────────────────────
+   Shared pixel-panel chrome (mirrors InfoPanel.tsx's window recipe) plus the
+   CSS-sprite-sheet animation used for the idle knight/raven/torch. ───────── */
+.pixel-panel {
+  background: #0d0b08;
+  border: 3px solid #c8861e;
+  box-shadow:
+    0 0 0 3px #000,
+    inset 0 0 0 3px #000,
+    0 0 0 8px rgba(200, 134, 30, 0.15);
+}
+
+/* A sprite-sheet frame is stepped via background-position, not eased — each
+   instance sets --sprite-w (frameW * frameCount) and its own duration/steps
+   inline, since those vary per asset. */
+@keyframes pixel-sprite-play {
+  from { background-position-x: 0; }
+  to { background-position-x: calc(-1 * var(--sprite-w)); }
+}
+.pixel-sprite-anim {
+  animation-name: pixel-sprite-play;
+  animation-iteration-count: infinite;
+}
+
+@keyframes torch-flicker {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 6px rgba(255, 154, 40, 0.5)); }
+  50% { filter: brightness(1.15) drop-shadow(0 0 10px rgba(255, 154, 40, 0.7)); }
+}
+.torch-flicker {
+  animation: torch-flicker 1.6s ease-in-out infinite;
+}
+
+/* Fireflies drifting over the night backdrop — each element sets its own
+   --fx/--fy drift vector + --dur/--delay inline, so one keyframe animates the
+   whole swarm with staggered, varied motion. */
+@keyframes firefly-drift {
+  0%   { opacity: 0; transform: translate(0, 0) scale(0.7); }
+  15%  { opacity: 1; }
+  50%  { opacity: 0.85; transform: translate(var(--fx, 12px), var(--fy, -18px)) scale(1); }
+  85%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(0, 0) scale(0.7); }
+}
+.firefly {
+  animation: firefly-drift var(--dur, 8s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* Now-playing equalizer bars — only rendered while a track is actually
+   playing, so the motion doubles as a "live" indicator. */
+@keyframes eq-bounce {
+  0%, 100% { transform: scaleY(0.25); }
+  50%      { transform: scaleY(1); }
+}
+.eq-bar {
+  transform-origin: bottom;
+  animation: eq-bounce 0.7s ease-in-out infinite;
+}
+
 /* ── Respect reduced-motion (DOM/CSS UI only — the Pixi canvas game itself is
    unaffected, since motion there is gameplay, not decoration). ──────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -130,5 +188,25 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  /* The generic override above would still rapidly cycle a stepped sprite
+     sheet near-instantly (steps() at 0.01ms reads as a flicker/blur, not
+     "still") — freeze explicitly on the first frame instead. */
+  .pixel-sprite-anim {
+    animation: none !important;
+    background-position-x: 0 !important;
+  }
+  .firefly {
+    animation: none !important;
+    opacity: 0.6 !important;
+    transform: none !important;
+  }
+  .eq-bar {
+    animation: none !important;
+    transform: scaleY(0.5) !important;
+  }
+  .torch-flicker {
+    animation: none !important;
+    filter: none !important;
   }
 }

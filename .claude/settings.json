@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ' *)",
+      "Bash(pkill -f \"next start\")",
+      "Bash(pkill -f \"next-server\")"
+    ]
+  }
+}
