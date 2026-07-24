@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import InfoPanel from "../InfoPanel";
+import { track } from "@/lib/analytics/track";
 
 type Props = { onClose: () => void };
 
@@ -42,7 +43,7 @@ export default function SanctumPanel({ onClose }: Props) {
             style={box()}
           >
             <Image
-              src="/avatar.png"
+              src="/avatar.webp"
               alt="Aman Ahmad"
               fill
               sizes="80px"
@@ -123,6 +124,7 @@ export default function SanctumPanel({ onClose }: Props) {
               href={l.href}
               target={l.href.startsWith("mailto") || l.href.startsWith("/") ? "_self" : "_blank"}
               rel="noopener noreferrer"
+              onClick={l.href === "/resume.pdf" ? () => track("resume_download") : undefined}
               className="group flex items-center gap-2 px-3 py-2 font-pixel text-[7px] transition-colors"
               style={box()}
               onMouseEnter={(e) => {

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tailwindcss/typography": "^0.5.20",
+    "@upstash/redis": "^1.38.0",
     "jpeg-js": "^0.4.4",
     "next": "16.2.10",
     "pixi.js": "^8.19.0",

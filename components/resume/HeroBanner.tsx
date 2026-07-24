@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import CharacterSprite from "./CharacterSprite";
+import { track } from "@/lib/analytics/track";
 
 const LINKS = [
   { label: "amank225566@gmail.com", href: "mailto:amank225566@gmail.com" },
@@ -29,7 +32,7 @@ export default function HeroBanner() {
           style={{ background: "#050300", border: "3px solid #c8861e", boxShadow: "0 0 0 3px #000, 4px 4px 0 #000" }}
         >
           <div className="relative" style={{ width: 104, height: 104 }}>
-            <Image src="/avatar.png" alt="Aman Ahmad" fill sizes="104px" className="object-cover object-top" priority />
+            <Image src="/avatar.webp" alt="Aman Ahmad" fill sizes="104px" className="object-cover object-top" priority />
           </div>
         </div>
 
@@ -66,6 +69,7 @@ export default function HeroBanner() {
                 target={l.href.startsWith("http") ? "_blank" : undefined}
                 rel={l.href.startsWith("http") ? "noopener noreferrer" : undefined}
                 download={l.label.includes("PDF") ? true : undefined}
+                onClick={l.label.includes("PDF") ? () => track("resume_download") : undefined}
                 className="font-pixel text-[6px] px-2.5 py-2 transition-colors"
                 style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e", boxShadow: "2px 2px 0 #000" }}
               >

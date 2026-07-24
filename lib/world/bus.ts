@@ -14,15 +14,22 @@ export type Scene = "town" | (string & {});
 /** What the player is currently standing next to (a door, an exhibit, a feature). */
 export type NearInfo = { id: string; label: string; action: string } | null;
 
+/** Recruiter Mode: the auto-walk tour's current stop, or null while inactive. */
+export type TourInfo = { index: number; total: number; id: string; label: string; caption: string } | null;
+
 type SceneHandler = (scene: Scene) => void;
 type NearHandler = (info: NearInfo) => void;
 type OpenHandler = (id: string) => void;
 type VisitHandler = (id: string) => void;
+type TourHandler = (info: TourInfo) => void;
+type TourCommandHandler = (cmd: "start" | "skip") => void;
 
 const sceneHandlers = new Set<SceneHandler>();
 const nearHandlers = new Set<NearHandler>();
 const openHandlers = new Set<OpenHandler>();
 const visitHandlers = new Set<VisitHandler>();
+const tourHandlers = new Set<TourHandler>();
+const tourCommandHandlers = new Set<TourCommandHandler>();
 
 export const bus = {
   emitScene(scene: Scene) {
@@ -59,5 +66,23 @@ export const bus = {
   onVisit(h: VisitHandler): () => void {
     visitHandlers.add(h);
     return () => visitHandlers.delete(h);
+  },
+
+  emitTour(info: TourInfo) {
+    tourHandlers.forEach((h) => h(info));
+  },
+  /** Fires on every Recruiter Mode tour stop change, and once with `null` when it ends. */
+  onTour(h: TourHandler): () => void {
+    tourHandlers.add(h);
+    return () => tourHandlers.delete(h);
+  },
+
+  emitTourCommand(cmd: "start" | "skip") {
+    tourCommandHandlers.forEach((h) => h(cmd));
+  },
+  /** UI → world: request the Recruiter Mode tour start or be skipped. */
+  onTourCommand(h: TourCommandHandler): () => void {
+    tourCommandHandlers.add(h);
+    return () => tourCommandHandlers.delete(h);
   },
 };

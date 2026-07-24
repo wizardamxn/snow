@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -59,6 +60,27 @@ export const metadata: Metadata = {
   },
 };
 
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
+// Person schema — helps search engines connect "Aman Ahmad" searches to this
+// site and its profiles, and can surface in rich results.
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Aman Ahmad",
+  url: SITE_URL,
+  image: `${SITE_URL}/avatar.webp`,
+  jobTitle: "Full Stack Developer",
+  description:
+    "Full-stack developer building end-to-end web and mobile products with React, Next.js, Node, and React Native.",
+  email: "mailto:amank225566@gmail.com",
+  worksFor: {
+    "@type": "Organization",
+    name: "Cerope",
+  },
+  sameAs: ["https://github.com/wizardamxn", "https://linkedin.com/in/amanahmad1"],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -69,7 +91,26 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd).replace(/</g, "\\u003c") }}
+        />
+        {children}
+        {GA_MEASUREMENT_ID && (
+          <>
+            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}');
+              `}
+            </Script>
+          </>
+        )}
+      </body>
     </html>
   );
 }

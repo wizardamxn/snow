@@ -5,6 +5,7 @@ import World from "./World";
 import Overlay from "@/components/overlay/Overlay";
 import RotatePrompt from "@/components/overlay/RotatePrompt";
 import ThemedResume from "@/components/resume/ThemedResume";
+import VisitPing from "@/components/analytics/VisitPing";
 
 /**
  * The D-pad/attack/interact touch controls work, but a full top-down RPG
@@ -30,10 +31,17 @@ export default function HomeGate() {
 
   // Unconstrained — ThemedResume brings its own min-h-dvh <main> and needs to
   // scroll normally, unlike the game's fixed one-viewport canvas below.
-  if (decided === "resume") return <ThemedResume />;
+  if (decided === "resume")
+    return (
+      <>
+        <VisitPing mode="resume" />
+        <ThemedResume />
+      </>
+    );
 
   return (
     <main className="relative h-dvh w-full overflow-hidden" style={{ background: "#0a1026" }}>
+      <VisitPing mode="game" />
       <World />
       <Overlay />
       <RotatePrompt />

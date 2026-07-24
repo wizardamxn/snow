@@ -5,6 +5,7 @@ import InfoPanel from "../InfoPanel";
 import experience from "@/lib/data/experience.json";
 import projects from "@/lib/data/projects.json";
 import skills from "@/lib/data/skills.json";
+import { track } from "@/lib/analytics/track";
 
 type Props = { onClose: () => void };
 type Line = { text: string; kind: "output" | "echo" };
@@ -122,6 +123,7 @@ export default function TerminalPanel({ onClose }: Props) {
         break;
       case "resume":
         print(["Downloading resume.pdf..."]);
+        track("resume_download");
         window.open("/resume.pdf", "_blank");
         break;
       case "ls":

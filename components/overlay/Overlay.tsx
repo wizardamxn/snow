@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { bus, type NearInfo } from "@/lib/world/bus";
+import { bus, type NearInfo, type TourInfo } from "@/lib/world/bus";
 import { worldState } from "@/lib/world/worldState";
 import { playBlip, setMuted, getAudioState } from "@/lib/audio/ambient";
 import SanctumPanel from "./panels/SanctumPanel";
@@ -19,6 +19,10 @@ import TutorialOverlay from "./TutorialOverlay";
 import Minimap from "./Minimap";
 import TouchControls from "./TouchControls";
 import AchievementTracker from "./AchievementTracker";
+import AnalyticsBridge from "./AnalyticsBridge";
+import ChroniclePanel from "./panels/ChroniclePanel";
+import RecruiterTourPrompt from "./panels/RecruiterTourPrompt";
+import RecruiterTourHUD from "./RecruiterTourHUD";
 
 /**
  * Routes the bus `emitOpen` id to the correct content panel.
@@ -49,6 +53,10 @@ function PanelRouter({
       return <RavenBubble onClose={onClose} />;
     case "terminal":
       return <TerminalPanel onClose={onClose} />;
+    case "chronicle":
+      return <ChroniclePanel onClose={onClose} />;
+    case "recruiterSignpost":
+      return <RecruiterTourPrompt onClose={onClose} />;
     default:
       return null;
   }
@@ -81,6 +89,7 @@ const TIME_PRESETS: { label: string; hour: number | null }[] = [
 export default function Overlay() {
   const [near, setNear] = useState<NearInfo>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [tour, setTour] = useState<TourInfo>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [timePresetIdx, setTimePresetIdx] = useState(0);
   const [isTouch, setIsTouch] = useState(false);
@@ -99,6 +108,7 @@ export default function Overlay() {
       playBlip();
       setOpenId(id);
     });
+    const offTour = bus.onTour(setTour);
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "m") {
@@ -125,6 +135,7 @@ export default function Overlay() {
     return () => {
       offNear();
       offOpen();
+      offTour();
       window.removeEventListener("keydown", onKeyDown);
     };
   }, []);
@@ -136,6 +147,7 @@ export default function Overlay() {
 
   return (
     <div className="pointer-events-none absolute inset-0 z-10 select-none">
+      <AnalyticsBridge />
       <TutorialOverlay />
       
       {/* ── Minimap (top-right) ─────────────────────────────────────────── */}
@@ -148,7 +160,10 @@ export default function Overlay() {
       {!openId && <BardBubble />}
 
       {/* ── On-screen D-pad + action buttons (touch devices only) ────────── */}
-      {!openId && <TouchControls />}
+      {!openId && !tour && <TouchControls />}
+
+      {/* ── Recruiter Mode: caption card + progress dots (bottom-centre) ─── */}
+      {!openId && <RecruiterTourHUD />}
 
       {/* ── Classic (non-game) view link (bottom-left, above the controls legend) ── */}
       <Link
@@ -225,7 +240,7 @@ export default function Overlay() {
       )}
 
       {/* ── Pixel proximity prompt (bottom-centre) ──────────────────────── */}
-      {near && !openId && (
+      {near && !openId && !tour && (
         <div
           className="absolute bottom-5 left-1/2 -translate-x-1/2 px-5 py-3 text-center"
           style={{

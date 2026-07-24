@@ -3,7 +3,12 @@
     "allow": [
       "Bash(node -e ' *)",
       "Bash(pkill -f \"next start\")",
-      "Bash(pkill -f \"next-server\")"
+      "Bash(pkill -f \"next-server\")",
+      "PowerShell($p='c:\\\\KAAMKAAJ\\\\Personal\\\\SIGMA-SIGMA\\\\public'; if\\(Test-Path $p\\){ $total=\\(Get-ChildItem $p -Recurse -File | Measure-Object -Property Length -Sum\\).Sum; \"TOTAL public bytes: $total\"; \"TOTAL public MB: {0:N2}\" -f \\($total/1MB\\); \"---- TOP 15 ----\"; Get-ChildItem $p -Recurse -File | Sort-Object Length -Descending | Select-Object -First 15 | ForEach-Object { \"{0,10:N0}  {1}\" -f $_.Length, $_.FullName } } else { \"NO public folder\" })",
+      "Bash(grep -iE '\\\\.\\(ts|tsx|js|jsx|json|md|mdx|css|xml|txt|html\\)$')",
+      "Bash(grep -vE '\\\\.\\(png|jpg|jpeg|gif|svg|ico|mp3|wav|ogg|ttf|woff|woff2\\)$')",
+      "PowerShell($p='c:\\\\KAAMKAAJ\\\\Personal\\\\SIGMA-SIGMA\\\\public'; Get-ChildItem $p -Recurse -File | Group-Object Extension | Sort-Object { \\($_.Group | Measure-Object Length -Sum\\).Sum } -Descending | ForEach-Object { \"{0,-6} count={1,-4} total={2:N2}MB\" -f $_.Name, $_.Count, \\(\\($_.Group | Measure-Object Length -Sum\\).Sum/1MB\\) })",
+      "Bash(rtk du *)"
     ]
   }
 }

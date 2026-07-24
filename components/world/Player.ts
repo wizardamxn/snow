@@ -1,11 +1,12 @@
 import { Container, Graphics, Sprite, Texture } from "pixi.js";
-import { loadTex, sliceFrames } from "./tiles";
+import { getTex, sliceFrames } from "./tiles";
 import { input, KEY } from "./input";
 
 const PLAYER_H = 74; // display height in world px
 const FRAME = 192; // source frame size of the Warrior strips
 const SPEED = 155; // walk speed, world px/s
 const SPRINT = 1.7;
+const AUTOPILOT_SPEED = 3.0; // faster than manual sprint — this is a guided tour, not a walk
 const IDLE_FPS = 7;
 const RUN_FPS = 13;
 const ATTACK_FPS = 12; // 4 frames ≈ a 1/3s swing
@@ -22,14 +23,21 @@ export type Player = {
   /** True only on the single frame a sword swing begins — a hit-detection pulse. */
   get justSwung(): boolean;
   setPosition: (x: number, y: number) => void;
+  /** Steers toward `target` each frame (ignoring keyboard input) until it arrives, then clears itself. Pass null to cancel. */
+  setAutopilotTarget: (target: { x: number; y: number } | null) => void;
+  get isAutopiloting(): boolean;
 };
 
+export const PLAYER_URLS = [
+  "/pixel/knight/Warrior_Idle.png",
+  "/pixel/knight/Warrior_Run.png",
+  "/pixel/knight/Warrior_Attack1.png",
+];
+
 export async function createPlayer(startX: number, startY: number): Promise<Player> {
-  const [idleTex, runTex, attackTex] = await Promise.all([
-    loadTex("/pixel/knight/Warrior_Idle.png"),
-    loadTex("/pixel/knight/Warrior_Run.png"),
-    loadTex("/pixel/knight/Warrior_Attack1.png"),
-  ]);
+  const idleTex = getTex(PLAYER_URLS[0]);
+  const runTex = getTex(PLAYER_URLS[1]);
+  const attackTex = getTex(PLAYER_URLS[2]);
   const idleFrames: Texture[] = sliceFrames(idleTex, FRAME, FRAME);
   const runFrames: Texture[] = sliceFrames(runTex, FRAME, FRAME);
   const attackFrames: Texture[] = sliceFrames(attackTex, FRAME, FRAME);
@@ -55,6 +63,10 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
   let attacking = false;
   let attackTime = 0;
   let swungThisFrame = false;
+  let autopilotTarget: { x: number; y: number } | null = null;
+  // Tour waypoints sit in open street, not against a wall, so this can stay
+  // tight enough for crisp corner-turning without overshooting.
+  const AUTOPILOT_ARRIVE = 16; // px — close enough to count as "reached this waypoint"
 
   container.x = x;
   container.y = y;
@@ -71,10 +83,26 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
     swungThisFrame = false;
     let dx = 0;
     let dy = 0;
-    if (input.isDown(...KEY.left)) dx -= 1;
-    if (input.isDown(...KEY.right)) dx += 1;
-    if (input.isDown(...KEY.up)) dy -= 1;
-    if (input.isDown(...KEY.down)) dy += 1;
+    let onAutopilot = false;
+
+    if (autopilotTarget) {
+      const tdx = autopilotTarget.x - x;
+      const tdy = autopilotTarget.y - y;
+      const dist = Math.hypot(tdx, tdy);
+      if (dist <= AUTOPILOT_ARRIVE) {
+        autopilotTarget = null;
+      } else {
+        dx = tdx / dist;
+        dy = tdy / dist;
+        onAutopilot = true;
+      }
+    }
+    if (!onAutopilot) {
+      if (input.isDown(...KEY.left)) dx -= 1;
+      if (input.isDown(...KEY.right)) dx += 1;
+      if (input.isDown(...KEY.up)) dy -= 1;
+      if (input.isDown(...KEY.down)) dy += 1;
+    }
 
     const moving = dx !== 0 || dy !== 0;
     if (moving) {
@@ -82,7 +110,7 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
       const len = Math.hypot(dx, dy);
       dx /= len;
       dy /= len;
-      const sprint = input.isDown(...KEY.sprint) ? SPRINT : 1;
+      const sprint = onAutopilot ? AUTOPILOT_SPEED : input.isDown(...KEY.sprint) ? SPRINT : 1;
       const step = SPEED * sprint * dt;
 
       const nx = x + dx * step;
@@ -96,7 +124,7 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
 
     // Frame animation (driven manually, no reliance on a shared ticker).
     const frames = moving ? runFrames : idleFrames;
-    const fps = moving ? RUN_FPS : IDLE_FPS;
+    const fps = moving ? (onAutopilot ? RUN_FPS * (AUTOPILOT_SPEED / SPRINT) : RUN_FPS) : IDLE_FPS;
     animTime += dt;
     const currentFrameIdx = Math.floor(animTime * fps) % frames.length;
     
@@ -155,6 +183,12 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
       y = ny;
       container.x = nx;
       container.y = ny;
+    },
+    setAutopilotTarget(target: { x: number; y: number } | null) {
+      autopilotTarget = target;
+    },
+    get isAutopiloting() {
+      return autopilotTarget !== null;
     },
   };
 }

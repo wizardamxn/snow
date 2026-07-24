@@ -1,5 +1,5 @@
 import { Container, Graphics, Sprite, Texture } from "pixi.js";
-import { extractTile, loadTex, mulberry32, TILE } from "./tiles";
+import { extractTile, getTex, mulberry32, TILE } from "./tiles";
 import {
   buildTileGrid,
   COLS,
@@ -24,11 +24,11 @@ export type TileMap = {
  * Builds the ground layer by mapping each tile code to a texture sliced from
  * the Tiny Swords tileset, and derives the collision grid from the codes.
  */
+export const TILEMAP_URLS = ["/pixel/terrain/Tilemap_color1.png", "/pixel/terrain/water.png"];
+
 export async function buildTilemap(): Promise<TileMap> {
-  const [tm, water] = await Promise.all([
-    loadTex("/pixel/terrain/Tilemap_color1.png"),
-    loadTex("/pixel/terrain/water.png"),
-  ]);
+  const tm = getTex(TILEMAP_URLS[0]);
+  const water = getTex(TILEMAP_URLS[1]);
 
   // (1,1) is the only fully-interior grass tile — every other grass cell in the
   // tileset carries a dark island edge, which would tile into a maze pattern.

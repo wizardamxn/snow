@@ -44,7 +44,7 @@
       "Crafted a responsive React front end for browsing, searching, and saving titles.",
       "Designed detail views covering cast, ratings, synopsis, and related recommendations."
     ],
-    "image": "/WatchThis.png",
+    "image": "/WatchThis.webp",
     "liveUrl": "https://watchthis.amanahmad.xyz",
     "repoUrl": "https://github.com/wizardamxn/watchthis",
     "technologies": ["React", "Firebase", "TMDB"]
@@ -76,7 +76,7 @@
       "Implemented role-based access control (RBAC) and multi-tier admin workflows for kisan, buyers, and admins, including marketplace moderation.",
       "Optimized image delivery with Cloudinary transformations and lazy loading, improving page load performance on low-bandwidth connections."
     ],
-    "image": "/kropigo.png",
+    "image": "/kropigo.webp",
     "liveUrl": "https://kropigo.in",
     "repoUrl": "https://github.com/wizardamxn/kropigo",
     "technologies": ["Socket.io", "RTK Query", "Next.js", "React", "Node.js", "Express", "MongoDB", "Cloudinary"]

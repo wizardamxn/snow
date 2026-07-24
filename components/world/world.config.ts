@@ -95,6 +95,12 @@ export const RAVEN_SPOT = { col: 23, row: 34 };
 /** A fourth-wall-breaking CRT terminal, clustered near the Bard and Raven. */
 export const TERMINAL_SPOT = { col: 21, row: 32 };
 
+/** A wooden notice board displaying live site stats — open ground south of Contact Spire. */
+export const CHRONICLE_SPOT = { col: 30, row: 33 };
+
+/** Recruiter Mode's signpost — right next to spawn, so it's the first thing a new visitor sees. */
+export const RECRUITER_SIGNPOST_SPOT = { col: 28, row: 34 };
+
 /** A stationary orc chieftain, north of the river — a fixed boss encounter, not a wandering critter. */
 export const ORC_CHIEF_SPOT = { col: 26, row: 11 };
 

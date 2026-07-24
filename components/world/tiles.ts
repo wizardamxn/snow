@@ -3,16 +3,25 @@ import { Assets, Rectangle, Texture } from "pixi.js";
 /** One tile is 64×64 source pixels across all Tiny Swords terrain art. */
 export const TILE = 64;
 
-/** Load a texture and keep it crisp (nearest-neighbour, no smoothing). */
-export async function loadTex(url: string): Promise<Texture> {
-  const tex = (await Assets.load(url)) as Texture;
-  tex.source.scaleMode = "nearest";
-  return tex;
+/**
+ * Loads every URL in the world's full asset manifest as ONE batch, so
+ * `onProgress` reports real aggregate progress (0..1) across the whole
+ * scene instead of per-module guesswork. Must resolve before any getTex().
+ */
+export async function preloadAll(urls: string[], onProgress?: (fraction: number) => void): Promise<void> {
+  const unique = [...new Set(urls)];
+  await Assets.load(unique, onProgress);
+  for (const url of unique) {
+    const tex = Assets.get<Texture>(url);
+    if (tex) tex.source.scaleMode = "nearest";
+  }
 }
 
-/** Load several textures in parallel, all set to nearest-neighbour. */
-export function loadTextures(urls: string[]): Promise<Texture[]> {
-  return Promise.all(urls.map(loadTex));
+/** Synchronously fetch a texture already loaded by preloadAll (nearest-neighbour applied there). */
+export function getTex(url: string): Texture {
+  const tex = Assets.get<Texture>(url);
+  if (!tex) throw new Error(`Texture not preloaded: ${url}`);
+  return tex;
 }
 
 /**

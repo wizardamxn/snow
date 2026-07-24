@@ -11,6 +11,7 @@ import GithubChronicle from "./GithubChronicle";
 import TrophyHall from "./TrophyHall";
 import AllyWords from "./AllyWords";
 import RavenContact from "./RavenContact";
+import StatsFooter from "./StatsFooter";
 
 const NAV = [
   { href: "#campaign", label: "Campaign" },
@@ -39,7 +40,7 @@ export default function ThemedResume() {
         aria-hidden
         className="fixed inset-0 z-0"
         style={{
-          backgroundImage: "url(/cbg.png)",
+          backgroundImage: "url(/cbg.webp)",
           backgroundSize: "cover",
           backgroundPosition: "center 45%",
           imageRendering: "pixelated",
@@ -118,6 +119,7 @@ export default function ThemedResume() {
         <div id="contact" className="scroll-mt-24">
           <RavenContact />
         </div>
+        <StatsFooter variant="pixel" />
       </div>
     </main>
   );

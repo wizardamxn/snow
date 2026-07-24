@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import experience from "@/lib/data/experience.json";
@@ -5,6 +7,8 @@ import projects from "@/lib/data/projects.json";
 import skills from "@/lib/data/skills.json";
 import testimonials from "@/lib/data/testimonials.json";
 import ViewToggle from "./ViewToggle";
+import StatsFooter from "./StatsFooter";
+import { track } from "@/lib/analytics/track";
 
 const NAV = [
   { href: "#experience", label: "Experience" },
@@ -71,7 +75,7 @@ export default function ClassicResume() {
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <section className="flex flex-col sm:flex-row items-start gap-6">
           <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full ring-1 ring-neutral-200 dark:ring-neutral-800">
-            <Image src="/avatar.png" alt="Aman Ahmad" fill sizes="80px" className="object-cover object-top" priority />
+            <Image src="/avatar.webp" alt="Aman Ahmad" fill sizes="80px" className="object-cover object-top" priority />
           </div>
           <div className="min-w-0">
             <h1 className="text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
@@ -103,7 +107,7 @@ export default function ClassicResume() {
                 linkedin.com/in/amanahmad1
               </a>
               <span className="text-neutral-300 dark:text-neutral-700">·</span>
-              <a href="/resume.pdf" download className="font-medium text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400">
+              <a href="/resume.pdf" download onClick={() => track("resume_download")} className="font-medium text-amber-600 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-400">
                 Download PDF
               </a>
             </div>
@@ -283,13 +287,14 @@ export default function ClassicResume() {
             <a href="https://linkedin.com/in/amanahmad1" target="_blank" rel="noopener noreferrer" className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100">
               LinkedIn
             </a>
-            <a href="/resume.pdf" download className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100">
+            <a href="/resume.pdf" download onClick={() => track("resume_download")} className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100">
               Resume (PDF)
             </a>
             <Link href="/?play=1" className="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100">
               Play the game
             </Link>
           </div>
+          <StatsFooter variant="plain" />
         </section>
       </div>
     </main>

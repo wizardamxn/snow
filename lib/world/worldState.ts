@@ -4,7 +4,7 @@
  * A plain module singleton so both Pixi (the render loop) and React (the HUD
  * overlay) read/write the exact same state without prop-drilling.
  */
-import { bus, type Scene, type NearInfo } from "@/lib/world/bus";
+import { bus, type Scene, type NearInfo, type TourInfo } from "@/lib/world/bus";
 import type { NowPlaying } from "@/lib/data/lastfm";
 
 let currentScene: Scene = "town";
@@ -51,6 +51,13 @@ export const worldState = {
    * fetch at interact time).
    */
   bardTrack: null as NowPlaying | null,
+  /**
+   * Recruiter Mode's current tour stop (or null while inactive) — read
+   * synchronously on mount so a HUD that mounts right as the tour starts
+   * (closing the confirm panel is a state update, not instant) doesn't miss
+   * the first bus.emitTour() the way a pure subscription would.
+   */
+  tour: null as TourInfo,
 };
 
 /**

@@ -5,6 +5,15 @@ import { Application, Ticker } from "pixi.js";
 import { buildTownScene } from "./scenes/Town";
 import { initInput, initMouseInput, input } from "./input";
 
+const LOADING_TIPS = [
+  "The Bard plays what Aman is listening to — live.",
+  "Press [E] near a building to step inside.",
+  "Hold SHIFT to sprint across the Frontier.",
+  "There's a hidden terminal near spawn — try typing \"help\".",
+  "A chieftain guards the north — bring your sword.",
+  "Press [T] to fast-forward through the day/night cycle.",
+];
+
 export default function PixiCanvas() {
   const hostRef = useRef<HTMLDivElement>(null);
   // Texture loading (trees, mobs, NPCs, buildings, decorations — dozens of
@@ -12,12 +21,21 @@ export default function PixiCanvas() {
   // appended to the DOM until it's done. Without this, that whole window is
   // just a blank/black gap. Show something immediately instead.
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [tipIndex, setTipIndex] = useState(0);
+
+  useEffect(() => {
+    if (!loading) return;
+    const id = setInterval(() => setTipIndex((i) => (i + 1) % LOADING_TIPS.length), 3200);
+    return () => clearInterval(id);
+  }, [loading]);
 
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
 
     let app: Application | null = null;
+    let sceneDispose: (() => void) | null = null;
     let cancelled = false;
     let disposeMouse: (() => void) | null = null;
     const disposeInput = initInput();
@@ -38,13 +56,17 @@ export default function PixiCanvas() {
         return;
       }
 
-      const town = await buildTownScene(instance);
+      const town = await buildTownScene(instance, (fraction) => {
+        if (!cancelled) setProgress(fraction);
+      });
 
       if (cancelled) {
+        town.dispose?.();
         instance.destroy(true, { children: true });
         return;
       }
 
+      sceneDispose = town.dispose ?? null;
       instance.stage.addChild(town.container);
 
       instance.ticker.add((ticker: Ticker) => {
@@ -62,6 +84,7 @@ export default function PixiCanvas() {
 
     return () => {
       cancelled = true;
+      sceneDispose?.();
       disposeInput();
       disposeMouse?.();
       if (app) {
@@ -97,10 +120,20 @@ export default function PixiCanvas() {
             }}
           >
             <div
-              className="loading-bar-fill"
-              style={{ height: "100%", background: "#c8861e", width: "40%" }}
+              style={{
+                height: "100%",
+                background: "#c8861e",
+                width: `${Math.round(progress * 100)}%`,
+                transition: "width 120ms linear",
+              }}
             />
           </div>
+          <p
+            className="font-pixel text-center px-6"
+            style={{ fontSize: "6px", color: "#8a6820", lineHeight: 1.8, maxWidth: "280px" }}
+          >
+            {LOADING_TIPS[tipIndex]}
+          </p>
         </div>
       )}
     </div>

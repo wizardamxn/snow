@@ -1,17 +1,19 @@
 import { Application, Container, Graphics, Sprite, Texture, Text, TextStyle } from "pixi.js";
-import { buildTilemap } from "@/components/world/Tilemap";
-import { createPlayer } from "@/components/world/Player";
-import { loadTex, mulberry32, sliceFrames, TILE } from "@/components/world/tiles";
+import { buildTilemap, TILEMAP_URLS } from "@/components/world/Tilemap";
+import { createPlayer, PLAYER_URLS } from "@/components/world/Player";
+import { getTex, mulberry32, preloadAll, sliceFrames, TILE } from "@/components/world/tiles";
 import { SPRITE_TRIM } from "@/components/world/spriteTrim";
 import { BUILDING_MASK } from "@/components/world/buildingCollision";
 import { input, KEY } from "@/components/world/input";
 import { setNear, worldState } from "@/lib/world/worldState";
 import { bus } from "@/lib/world/bus";
+import { track } from "@/lib/analytics/track";
 import { sampleDayNight, lerpColor } from "@/lib/world/dayNight";
 import {
   BARD,
   BUILDINGS,
   CAVE,
+  CHRONICLE_SPOT,
   COLS,
   DECOR_HOUSES,
   doorPos,
@@ -20,6 +22,7 @@ import {
   PATH_SEGMENTS,
   POND,
   RAVEN_SPOT,
+  RECRUITER_SIGNPOST_SPOT,
   ROWS,
   SPAWN,
   TERMINAL_SPOT,
@@ -32,6 +35,8 @@ import {
 export type SceneController = {
   container: Container;
   update: (dtSeconds: number) => void;
+  /** Releases anything that outlives the Pixi Application itself (e.g. bus subscriptions). */
+  dispose?: () => void;
 };
 
 /** Real-world seconds for one full in-game day when the cycle is running. */
@@ -42,6 +47,37 @@ const BUSH_URLS = [1, 2, 3, 4].map((n) => `/pixel/bg/bushes/Bushe${n}.png`);
 const ROCK_URLS = [1, 2, 3, 4].map((n) => `/pixel/terrain/Rock${n}.png`);
 const STUMP_URLS = [1, 2, 3, 4].map((n) => `/pixel/deco/stump_${n}.png`);
 const WATER_ROCK_URLS = [1, 2, 3, 4].map((n) => `/pixel/deco/water_rock_${n}.png`);
+
+/** Every single-file texture Town.ts loads on its own (outside the batch-of-4 URL lists above). */
+const TOWN_SINGLE_URLS = [
+  "/pixel/terrain/water_foam.png",
+  "/pixel/fx/water_splash.png",
+  "/pixel/fx/fire_01.png",
+  "/pixel/deco/sheep_idle.png",
+  "/pixel/deco/sheep_move.png",
+  "/pixel/deco/duck.png",
+  "/pixel/deco/bard.png",
+  "/pixel/knight/Raven_Idle.png",
+  "/pixel/props/terminal_computer.png",
+  "/pixel/props/gold_trophy.png",
+  "/pixel/terrain/cave_mouth.webp",
+  "/pixel/fx/waterfall_flow.png",
+  "/pixel/npcs/peasant_idle.png",
+  "/pixel/npcs/peasant_run.png",
+  "/pixel/npcs/tavern_idle.png",
+  "/pixel/npcs/tavern_run.png",
+  "/pixel/npcs/knight_idle.png",
+  "/pixel/npcs/knight_run.png",
+  "/pixel/npcs/wizard_idle.png",
+  "/pixel/npcs/wizard_run.png",
+  "/pixel/mobs/orc_idle.png",
+  "/pixel/mobs/orc_run.png",
+  "/pixel/mobs/skeleton_idle.png",
+  "/pixel/mobs/skeleton_run.png",
+  // Appended, not inserted: the destructuring below reads this list positionally.
+  "/pixel/props/sign_trail.png",
+  "/pixel/props/sign_chronicle.png",
+];
 
 type Animated = { sprite: Sprite; frames: Texture[]; fps: number; phase: number };
 type Critter = {
@@ -98,13 +134,25 @@ type Firefly = {
 
 const trimOf = (url: string) => SPRITE_TRIM[url] ?? { ax: 0.5, ay: 1, wf: 1 };
 
-export async function buildTownScene(app: Application): Promise<SceneController> {
+export async function buildTownScene(
+  app: Application,
+  onProgress?: (fraction: number) => void,
+): Promise<SceneController> {
   const scene = new Container();
   const world = new Container();
   scene.addChild(world);
 
   const DEBUG_COLLISION =
     typeof window !== "undefined" && window.location.search.includes("debug");
+
+  // ── Preload every texture the scene needs as ONE batch, so onProgress
+  // reports real aggregate load progress instead of a fake sweep. Everything
+  // below reads from the cache via getTex() — no more awaiting individual loads.
+  const buildingUrls = [...new Set([...BUILDINGS.map((b) => b.sprite), ...DECOR_HOUSES.map((h) => h.sprite)])];
+  await preloadAll(
+    [...TILEMAP_URLS, ...PLAYER_URLS, ...TREE_URLS, ...BUSH_URLS, ...ROCK_URLS, ...STUMP_URLS, ...WATER_ROCK_URLS, ...TOWN_SINGLE_URLS, ...buildingUrls],
+    onProgress,
+  );
 
   // ── Ground + collision ─────────────────────────────────────────────────────
   const tilemap = await buildTilemap();
@@ -146,13 +194,13 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   const butterflies: Butterfly[] = [];
   const fireflies: Firefly[] = [];
 
-  // ── Load textures ──────────────────────────────────────────────────────────
+  // ── Read textures (already loaded — see preloadAll above) ──────────────────
+  const treeTexes = TREE_URLS.map(getTex);
+  const bushTexes = BUSH_URLS.map(getTex);
+  const rockTexes = ROCK_URLS.map(getTex);
+  const stumpTexes = STUMP_URLS.map(getTex);
+  const waterRockTexes = WATER_ROCK_URLS.map(getTex);
   const [
-    treeTexes,
-    bushTexes,
-    rockTexes,
-    stumpTexes,
-    waterRockTexes,
     foamTex,
     splashTex,
     fireTex,
@@ -177,47 +225,8 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     orcRunTex,
     skeletonIdleTex,
     skeletonRunTex,
-    buildingTexes,
-  ] = await Promise.all([
-    Promise.all(TREE_URLS.map(loadTex)),
-    Promise.all(BUSH_URLS.map(loadTex)),
-    Promise.all(ROCK_URLS.map(loadTex)),
-    Promise.all(STUMP_URLS.map(loadTex)),
-    Promise.all(WATER_ROCK_URLS.map(loadTex)),
-    loadTex("/pixel/terrain/water_foam.png"),
-    loadTex("/pixel/fx/water_splash.png"),
-    loadTex("/pixel/fx/fire_01.png"),
-    loadTex("/pixel/deco/sheep_idle.png"),
-    loadTex("/pixel/deco/sheep_move.png"),
-    loadTex("/pixel/deco/duck.png"),
-    loadTex("/pixel/deco/bard.png"),
-    loadTex("/pixel/knight/Raven_Idle.png"),
-    loadTex("/pixel/props/terminal_computer.png"),
-    loadTex("/pixel/props/gold_trophy.png"),
-    loadTex("/pixel/terrain/cave_mouth.webp"),
-    loadTex("/pixel/fx/waterfall_flow.png"),
-    loadTex("/pixel/npcs/peasant_idle.png"),
-    loadTex("/pixel/npcs/peasant_run.png"),
-    loadTex("/pixel/npcs/tavern_idle.png"),
-    loadTex("/pixel/npcs/tavern_run.png"),
-    loadTex("/pixel/npcs/knight_idle.png"),
-    loadTex("/pixel/npcs/knight_run.png"),
-    loadTex("/pixel/npcs/wizard_idle.png"),
-    loadTex("/pixel/npcs/wizard_run.png"),
-    loadTex("/pixel/mobs/orc_idle.png"),
-    loadTex("/pixel/mobs/orc_run.png"),
-    loadTex("/pixel/mobs/skeleton_idle.png"),
-    loadTex("/pixel/mobs/skeleton_run.png"),
-    (async () => {
-      const map = new Map<string, Texture>();
-      const urls = new Set<string>([
-        ...BUILDINGS.map((b) => b.sprite),
-        ...DECOR_HOUSES.map((h) => h.sprite),
-      ]);
-      await Promise.all([...urls].map(async (u) => map.set(u, await loadTex(u))));
-      return map;
-    })(),
-  ]);
+  ] = TOWN_SINGLE_URLS.map(getTex);
+  const buildingTexes = new Map<string, Texture>(buildingUrls.map((u) => [u, getTex(u)]));
 
   const foamFrames = sliceFrames(foamTex, 192, 192);
   const splashFrames = sliceFrames(splashTex, 192, 192);
@@ -584,6 +593,44 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     terminalPos.y = feetY;
   }
 
+  // ── Chronicle Board: a wooden notice board displaying live site stats ──────
+  const chroniclePos = { x: 0, y: 0 };
+  {
+    const feetX = (CHRONICLE_SPOT.col + 0.5) * TILE;
+    const feetY = (CHRONICLE_SPOT.row + 1) * TILE;
+    const displayH = 58;
+    placeEntity(getTex("/pixel/props/sign_chronicle.png"), "/pixel/props/sign_chronicle.png", feetX, feetY, displayH, true);
+
+    const label = new Text({ text: "TOWN CHRONICLE", style: labelStyle });
+    label.anchor.set(0.5, 1);
+    label.x = feetX;
+    label.y = feetY - displayH - 6;
+    label.zIndex = 9000;
+    entities.addChild(label);
+
+    chroniclePos.x = feetX;
+    chroniclePos.y = feetY;
+  }
+
+  // ── Recruiter Signpost: launches the guided auto-walk tour ──────────────────
+  const signpostPos = { x: 0, y: 0 };
+  {
+    const feetX = (RECRUITER_SIGNPOST_SPOT.col + 0.5) * TILE;
+    const feetY = (RECRUITER_SIGNPOST_SPOT.row + 1) * TILE;
+    const displayH = 54;
+    placeEntity(getTex("/pixel/props/sign_trail.png"), "/pixel/props/sign_trail.png", feetX, feetY, displayH, true);
+
+    const label = new Text({ text: "RECRUITER'S TRAIL", style: labelStyle });
+    label.anchor.set(0.5, 1);
+    label.x = feetX;
+    label.y = feetY - displayH - 6;
+    label.zIndex = 9000;
+    entities.addChild(label);
+
+    signpostPos.x = feetX;
+    signpostPos.y = feetY;
+  }
+
   // ── Scattered decoration (scaled up for the bigger map) ────────────────────
   {
     const rng = mulberry32(4242);
@@ -904,10 +951,104 @@ export async function buildTownScene(app: Application): Promise<SceneController>
     }
     const dTerminal = Math.hypot(player.x - terminalPos.x, player.y - terminalPos.y);
     if (dTerminal < bestD) {
+      bestD = dTerminal;
       best = { id: "terminal", label: "The Terminal", action: "Access" };
+    }
+    const dChronicle = Math.hypot(player.x - chroniclePos.x, player.y - chroniclePos.y);
+    if (dChronicle < bestD) {
+      bestD = dChronicle;
+      best = { id: "chronicle", label: "The Town Chronicle", action: "Read" };
+    }
+    const dSignpost = Math.hypot(player.x - signpostPos.x, player.y - signpostPos.y);
+    if (dSignpost < bestD) {
+      best = { id: "recruiterSignpost", label: "Recruiter's Trail", action: "Read" };
     }
     setNear(best);
   };
+
+  // ── Recruiter Mode: guided auto-walk tour ────────────────────────────────────
+  const TOUR_PAUSE_S = 1.2;
+  const TOUR_WALK_TIMEOUT_S = 6; // safety net — never let a leg get stuck forever
+  type TourStop = { id: string; caption: string };
+  const TOUR_STOPS: TourStop[] = [
+    { id: "sanctum", caption: "Full-stack developer, B.Tech '27 — two production internships, shipping end-to-end." },
+    { id: "chronicles", caption: "Currently at Cerope — Redis caching cut API latency from ~10s to under 200ms." },
+    { id: "armory", caption: "The stack: React, Next.js, Node, FastAPI, Postgres, Redis, and some Gen AI." },
+    { id: "testimonies", caption: "What the people I've worked with say — real quotes, real teams." },
+    { id: "relics", caption: "5 shipped projects — live demos, real repos, real metrics." },
+    { id: "contact", caption: "Open to opportunities — let's talk. Opening contact details..." },
+  ];
+  let tourStopIdx = -1; // -1 = inactive
+  let tourWalking = false;
+  let tourPauseTimer = 0;
+  let tourWalkTimer = 0;
+  let tourWaypoints: { x: number; y: number }[] = [];
+
+  /**
+   * Where the tour actually walks to: half a tile BELOW the door, out in the
+   * open street. The door itself sits exactly on the building's collision edge
+   * and the player's feet-box extends 16px above its feet, so the literal door
+   * pixel is unreachable — steering straight at it just grinds into the wall.
+   */
+  const approachPos = (id: string) => {
+    const b = BUILDINGS.find((x) => x.id === id);
+    if (!b) return { x: player.x, y: player.y };
+    const d = doorPos(b);
+    return { x: d.x, y: d.y + TILE * 0.5 };
+  };
+
+  /**
+   * A 3-waypoint route that always does its horizontal travel on the LOWER of
+   * the two street lanes. Every approach point sits directly below its own
+   * building, so turning vertically at the current X while heading up would
+   * walk straight back into the building you're standing under; routing along
+   * the lower lane keeps both vertical legs in door columns, which are always
+   * clear of the other street's footprints. Cheaper than real pathfinding, and
+   * the street rows themselves are clear of every building.
+   */
+  const routeTo = (target: { x: number; y: number }) => {
+    const lowerY = Math.max(player.y, target.y);
+    return [
+      { x: player.x, y: lowerY },
+      { x: target.x, y: lowerY },
+      target,
+    ];
+  };
+
+  const tourLabel = (id: string) => BUILDINGS.find((b) => b.id === id)?.name ?? id;
+  const emitTourStop = (idx: number) => {
+    const stop = TOUR_STOPS[idx];
+    const info = { index: idx, total: TOUR_STOPS.length, id: stop.id, label: tourLabel(stop.id), caption: stop.caption };
+    worldState.tour = info;
+    bus.emitTour(info);
+  };
+
+  const beginLeg = (idx: number) => {
+    tourStopIdx = idx;
+    tourWalking = true;
+    tourWalkTimer = 0;
+    tourWaypoints = routeTo(approachPos(TOUR_STOPS[idx].id));
+    player.setAutopilotTarget(tourWaypoints.shift() ?? null);
+    emitTourStop(idx);
+  };
+  const startTour = () => {
+    if (tourStopIdx >= 0) return;
+    beginLeg(0);
+    track("tour_start");
+  };
+  const stopTour = (completed: boolean) => {
+    if (tourStopIdx < 0) return;
+    tourStopIdx = -1;
+    tourWaypoints = [];
+    player.setAutopilotTarget(null);
+    worldState.tour = null;
+    bus.emitTour(null);
+    if (completed) track("tour_complete");
+  };
+  const offTourCommand = bus.onTourCommand((cmd) => {
+    if (cmd === "start") startTour();
+    else stopTour(false);
+  });
 
   // ── Camera ─────────────────────────────────────────────────────────────────
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -959,6 +1100,39 @@ export async function buildTownScene(app: Application): Promise<SceneController>
       }
     }
 
+    // ── Recruiter Mode stepping ────────────────────────────────────────────────
+    if (tourStopIdx >= 0) {
+      const manualControl =
+        input.isDown(...KEY.left, ...KEY.right, ...KEY.up, ...KEY.down) ||
+        input.justPressed(...KEY.attack) ||
+        input.justPressed(...KEY.interact);
+      if (manualControl) {
+        stopTour(false);
+      } else if (tourWalking) {
+        tourWalkTimer += dt;
+        if (!player.isAutopiloting && tourWaypoints.length > 0) {
+          player.setAutopilotTarget(tourWaypoints.shift() ?? null);
+        } else if (!player.isAutopiloting || tourWalkTimer > TOUR_WALK_TIMEOUT_S) {
+          tourWalking = false;
+          tourPauseTimer = 0;
+          bus.emitVisit(TOUR_STOPS[tourStopIdx].id);
+          if (TOUR_STOPS[tourStopIdx].id === "contact") {
+            bus.emitOpen("contact");
+          }
+        }
+      } else {
+        tourPauseTimer += dt;
+        if (tourPauseTimer >= TOUR_PAUSE_S) {
+          const next = tourStopIdx + 1;
+          if (next >= TOUR_STOPS.length) {
+            stopTour(true);
+          } else {
+            beginLeg(next);
+          }
+        }
+      }
+    }
+
     // ── Orc Chieftain combat ─────────────────────────────────────────────────
     if (chief && chief.alive) {
       if (!chief.dying && player.justSwung) {
@@ -989,6 +1163,7 @@ export async function buildTownScene(app: Application): Promise<SceneController>
           chief.alive = false;
           entities.removeChild(chief.sprite, chief.shadow, chief.label, ...chief.pips);
           localStorage.setItem(ORC_DEFEATED_KEY, "1");
+          track("boss_kill");
           placeTrophy();
         }
       }
@@ -1162,5 +1337,5 @@ export async function buildTownScene(app: Application): Promise<SceneController>
   }
 
   applyCamera();
-  return { container: scene, update };
+  return { container: scene, update, dispose: () => offTourCommand() };
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import InfoPanel from "../InfoPanel";
+import { track } from "@/lib/analytics/track";
 
 type Props = { onClose: () => void };
 
@@ -117,6 +118,7 @@ export default function ContactPanel({ onClose }: Props) {
                 target={link.external ? "_blank" : "_self"}
                 rel={link.external ? "noopener noreferrer" : undefined}
                 download={link.download}
+                onClick={link.download ? () => track("resume_download") : undefined}
                 className="flex items-center gap-3 px-4 py-3 group transition-colors"
                 style={pixelBtn}
                 onMouseEnter={(e) => {

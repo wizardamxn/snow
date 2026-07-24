@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import QuestPanel from "./QuestPanel";
 import PixelSprite from "./PixelSprite";
+import { track } from "@/lib/analytics/track";
 
 export default function RavenContact() {
   return (
@@ -39,6 +42,7 @@ export default function RavenContact() {
           <a
             href="/resume.pdf"
             download
+            onClick={() => track("resume_download")}
             className="font-pixel text-[6px] px-2.5 py-2"
             style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e" }}
           >
