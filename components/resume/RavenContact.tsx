@@ -25,7 +25,7 @@ export default function RavenContact() {
             href="https://github.com/wizardamxn"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-pixel text-[6px] px-2.5 py-2"
+            className="font-pixel text-[7px] px-2.5 py-2"
             style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e" }}
           >
             GITHUB ↗
@@ -34,7 +34,7 @@ export default function RavenContact() {
             href="https://linkedin.com/in/amanahmad1"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-pixel text-[6px] px-2.5 py-2"
+            className="font-pixel text-[7px] px-2.5 py-2"
             style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e" }}
           >
             LINKEDIN ↗
@@ -43,14 +43,14 @@ export default function RavenContact() {
             href="/resume.pdf"
             download
             onClick={() => track("resume_download")}
-            className="font-pixel text-[6px] px-2.5 py-2"
+            className="font-pixel text-[7px] px-2.5 py-2"
             style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e" }}
           >
             RESUME (PDF)
           </a>
           <Link
             href="/?play=1"
-            className="font-pixel text-[6px] px-2.5 py-2"
+            className="font-pixel text-[7px] px-2.5 py-2"
             style={{ background: "#0a2000", color: "#8ad060", border: "2px solid #2a5a10" }}
           >
             PLAY THE GAME →

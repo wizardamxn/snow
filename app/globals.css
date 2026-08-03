@@ -78,6 +78,32 @@ body {
   image-rendering: crisp-edges;
 }
 
+/* ── Custom pixel cursors ───────────────────────────────────────────────────
+   Scoped to the game canvas and its HUD so the plain resume pages keep the
+   OS cursor. `.attack-ready` is toggled on <body> by the overlay's rAF poll
+   whenever a living attackable is inside sword range. */
+canvas {
+  cursor: url("/pixel/ui/cursor.png") 0 0, default;
+}
+body.attack-ready canvas {
+  cursor: url("/pixel/ui/cursor_sword.png") 16 16, crosshair;
+}
+.pointer-events-auto button,
+.pointer-events-auto a,
+button.pointer-events-auto,
+a.pointer-events-auto {
+  cursor: url("/pixel/ui/cursor_hand.png") 8 4, pointer;
+}
+
+/* ── Classic-resume CTA: a soft attention pulse for its first few seconds ── */
+@keyframes classic-cta-pulse {
+  0%, 100% { box-shadow: 4px 4px 0 #000, 0 0 0 0 rgba(240, 192, 80, 0.55); }
+  50%      { box-shadow: 4px 4px 0 #000, 0 0 0 7px rgba(240, 192, 80, 0); }
+}
+.classic-cta-pulse {
+  animation: classic-cta-pulse 1.9s ease-out infinite;
+}
+
 /* ── Gentle bob for floating world-space UI (e.g. the bard's speech bubble) ─ */
 @keyframes float-bob {
   0%, 100% { transform: translateY(0); }
@@ -102,6 +128,38 @@ body {
 .backdrop-fade-in {
   animation: backdrop-fade-in 0.12s ease-out;
 }
+
+/* ── Staggered content reveal inside a panel ────────────────────────────────
+   Direct children of .panel-stagger fade up one after another once the panel
+   itself has popped in. Stepped, not eased, to stay in the pixel idiom. The
+   delay ramp is capped at 8 children — beyond that everything lands together
+   rather than leaving a long tail of still-invisible rows. */
+@keyframes panel-item-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Panels usually wrap their sections in a single `space-y-*` div, but some
+   render sections directly. `:only-child > *` handles the wrapped case and
+   `*:not(:only-child)` the flat one — mutually exclusive, so nothing ever
+   animates twice. */
+.panel-stagger > :only-child > *,
+.panel-stagger > *:not(:only-child) {
+  animation: panel-item-in 0.18s steps(3, end) backwards;
+}
+.panel-stagger > :only-child > *:nth-child(1),
+.panel-stagger > *:not(:only-child):nth-child(1) { animation-delay: 0.10s; }
+.panel-stagger > :only-child > *:nth-child(2),
+.panel-stagger > *:not(:only-child):nth-child(2) { animation-delay: 0.15s; }
+.panel-stagger > :only-child > *:nth-child(3),
+.panel-stagger > *:not(:only-child):nth-child(3) { animation-delay: 0.20s; }
+.panel-stagger > :only-child > *:nth-child(4),
+.panel-stagger > *:not(:only-child):nth-child(4) { animation-delay: 0.25s; }
+.panel-stagger > :only-child > *:nth-child(5),
+.panel-stagger > *:not(:only-child):nth-child(5) { animation-delay: 0.30s; }
+.panel-stagger > :only-child > *:nth-child(6),
+.panel-stagger > *:not(:only-child):nth-child(6) { animation-delay: 0.35s; }
+.panel-stagger > :only-child > *:nth-child(n + 7),
+.panel-stagger > *:not(:only-child):nth-child(n + 7) { animation-delay: 0.40s; }
 
 /* ── Rotate-device hint — a phone icon flipping between portrait and
    landscape, snapping between frames rather than smoothly easing ─────────── */
@@ -171,6 +229,66 @@ body {
   animation: eq-bounce 0.7s ease-in-out infinite;
 }
 
+/* ── Live-demo badge dot: a slow "recording" pulse on the resume project cards,
+   signalling the thumbnail is a real capture that's playing. ──────────────── */
+@keyframes live-dot {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.45; }
+}
+.live-dot {
+  animation: live-dot 1.5s ease-in-out infinite;
+}
+
+/* ── Living backdrop: a very slow ken-burns drift so the night town breathes
+   behind the quest log instead of sitting dead. Base scale > 1 leaves room to
+   pan without exposing the image edges. Transform-only → composites on the GPU,
+   never triggers layout, and (the div is empty) forms no containing block that
+   would trap the fixed layers beside it. ─────────────────────────────────── */
+@keyframes backdrop-drift {
+  0%   { transform: scale(1.08) translate(0, 0); }
+  50%  { transform: scale(1.12) translate(-1.2%, -1%); }
+  100% { transform: scale(1.08) translate(0, 0); }
+}
+.backdrop-drift {
+  animation: backdrop-drift 46s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* ── Shooting stars: a bright head with a fading tail, streaking along its own
+   --sx/--sy vector and tilted by --angle to match. Long --dur/--delay keep them
+   rare enough to feel like a lucky glimpse. ──────────────────────────────── */
+@keyframes shooting-star {
+  0%        { opacity: 0; transform: translate3d(0, 0, 0) rotate(var(--angle, 24deg)) scaleX(0.3); }
+  3%        { opacity: 1; }
+  14%       { opacity: 0.9; }
+  24%, 100% { opacity: 0; transform: translate3d(var(--sx, 260px), var(--sy, 120px), 0) rotate(var(--angle, 24deg)) scaleX(1); }
+}
+.shooting-star {
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 240, 200, 0) 0%, rgba(255, 240, 200, 0.95) 100%);
+  filter: drop-shadow(0 0 4px rgba(255, 220, 150, 0.7));
+  opacity: 0;
+  animation: shooting-star var(--dur, 16s) ease-in infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* ── Scroll-reveal: sections lift + fade into place the first time they enter
+   the viewport (see Reveal.tsx). The hidden start-state is gated behind
+   .reveal-ready — added by JS on mount — so a no-JS or pre-hydration render
+   simply shows everything. ───────────────────────────────────────────────── */
+[data-reveal] {
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal-ready [data-reveal="out"] {
+  opacity: 0;
+  transform: translateY(20px);
+}
+[data-reveal="in"] {
+  opacity: 1;
+  transform: none;
+}
+
 /* ── Respect reduced-motion (DOM/CSS UI only — the Pixi canvas game itself is
    unaffected, since motion there is gameplay, not decoration). ──────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -199,5 +317,36 @@ body {
   .torch-flicker {
     animation: none !important;
     filter: none !important;
+  }
+  /* `backwards` fill means a near-zero duration would still hold the hidden
+     from-state during the delay — drop the animation entirely so panel content
+     is simply present. */
+  .panel-stagger > *,
+  .panel-stagger > :only-child > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .classic-cta-pulse {
+    animation: none !important;
+  }
+  .live-dot {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .backdrop-drift {
+    animation: none !important;
+    transform: none !important;
+  }
+  .shooting-star {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+  /* Reveal.tsx already shows content immediately under reduced-motion; make the
+     CSS agree so nothing ever holds the hidden state or animates in. */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
 }

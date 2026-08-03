@@ -68,7 +68,7 @@ export default function GithubChronicle() {
         {/* Contribution heatmap calendar — on a warm parchment card so ghchart's
             light empty cells read as a calendar rather than glowing on the dark. */}
         <div>
-          <p className="font-pixel text-[6px] mb-2" style={{ color: "#8a6820" }}>
+          <p className="font-pixel text-[7px] mb-2" style={{ color: "#b78a2a" }}>
             &gt; CONTRIBUTION HEATMAP
           </p>
           <StatImage
@@ -87,7 +87,7 @@ export default function GithubChronicle() {
             href={`https://github.com/${USER}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="font-pixel text-[6px] inline-block px-3 py-2"
+            className="font-pixel text-[7px] inline-block px-3 py-2"
             style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e", boxShadow: "2px 2px 0 #000" }}
           >
             VIEW FULL CHRONICLE ON GITHUB ↗

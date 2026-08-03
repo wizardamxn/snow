@@ -42,13 +42,13 @@ export default function ChroniclePanel({ onClose }: Props) {
     >
       <div className="space-y-4">
         {!stats && (
-          <p className="font-pixel text-[7px] text-center" style={{ color: "#5a4020" }}>
+          <p className="font-pixel text-[7px] text-center" style={{ color: "#a7773b" }}>
             READING THE LEDGER...
           </p>
         )}
 
         {stats && !stats.available && (
-          <p className="font-mono text-sm text-center leading-relaxed" style={{ color: "#6a5838" }}>
+          <p className="font-mono text-sm text-center leading-relaxed" style={{ color: "#a18555" }}>
             The ledger is empty — no travelers have been recorded yet.
           </p>
         )}
@@ -60,7 +60,7 @@ export default function ChroniclePanel({ onClose }: Props) {
                 <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
                   {stats.visitors ?? 0}
                 </p>
-                <p className="font-pixel text-[6px] mt-2" style={{ color: "#5a4020" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
                   TRAVELERS
                 </p>
               </div>
@@ -68,7 +68,7 @@ export default function ChroniclePanel({ onClose }: Props) {
                 <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
                   {stats.bossKills ?? 0}
                 </p>
-                <p className="font-pixel text-[6px] mt-2" style={{ color: "#5a4020" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
                   CHIEFTAINS SLAIN
                 </p>
               </div>
@@ -76,7 +76,7 @@ export default function ChroniclePanel({ onClose }: Props) {
                 <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
                   {stats.gameSessions ?? 0}
                 </p>
-                <p className="font-pixel text-[6px] mt-2" style={{ color: "#5a4020" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
                   ENTERED THE FRONTIER
                 </p>
               </div>
@@ -84,7 +84,7 @@ export default function ChroniclePanel({ onClose }: Props) {
                 <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
                   {stats.resumeDownloads ?? 0}
                 </p>
-                <p className="font-pixel text-[6px] mt-2" style={{ color: "#5a4020" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
                   RESUMES CLAIMED
                 </p>
               </div>
@@ -92,7 +92,7 @@ export default function ChroniclePanel({ onClose }: Props) {
                 <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
                   {stats.tourStarts ?? 0}
                 </p>
-                <p className="font-pixel text-[6px] mt-2" style={{ color: "#5a4020" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
                   RECRUITER TOURS TAKEN
                 </p>
               </div>
@@ -100,7 +100,7 @@ export default function ChroniclePanel({ onClose }: Props) {
 
             {stats.mostVisited && (
               <div className="p-3 text-center" style={row}>
-                <p className="font-pixel text-[6px]" style={{ color: "#5a4020" }}>
+                <p className="font-pixel text-[7px]" style={{ color: "#a7773b" }}>
                   MOST VISITED HALL
                 </p>
                 <p className="font-pixel text-[9px] mt-2" style={{ color: "#f0c050" }}>

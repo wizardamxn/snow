@@ -130,7 +130,7 @@ export default function PixiCanvas() {
           </div>
           <p
             className="font-pixel text-center px-6"
-            style={{ fontSize: "6px", color: "#8a6820", lineHeight: 1.8, maxWidth: "280px" }}
+            style={{ fontSize: "7px", color: "#b78a2a", lineHeight: 1.8, maxWidth: "280px" }}
           >
             {LOADING_TIPS[tipIndex]}
           </p>

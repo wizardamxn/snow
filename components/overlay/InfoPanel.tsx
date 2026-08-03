@@ -173,7 +173,7 @@ export default function InfoPanel({
             {subtitle && (
               <p
                 className="font-pixel text-[7px] mb-1.5 truncate"
-                style={{ color: "#8a6820", letterSpacing: "0.15em" }}
+                style={{ color: "#b78a2a", letterSpacing: "0.15em" }}
               >
                 {subtitle}
               </p>
@@ -218,7 +218,7 @@ export default function InfoPanel({
 
         {/* ── Scrollable content body ───────────────────────────────────── */}
         <div
-          className="flex-1 overflow-y-auto pixel-scroll p-5"
+          className="flex-1 overflow-y-auto pixel-scroll p-5 panel-stagger"
           style={{
             backgroundImage:
               "radial-gradient(ellipse at 50% 0%, rgba(60,40,10,0.12) 0%, rgba(0,0,0,0) 60%)",
@@ -239,19 +239,19 @@ export default function InfoPanel({
           {/* Flicker cursor decoration */}
           <span
             className="font-pixel text-[7px]"
-            style={{ color: "#4a3210" }}
+            style={{ color: "#ad7525" }}
           >
             ▼
           </span>
           <p
             className="font-pixel text-[7px]"
-            style={{ color: "#4a3210", letterSpacing: "0.1em" }}
+            style={{ color: "#ad7525", letterSpacing: "0.1em" }}
           >
             [ESC] CLOSE
           </p>
           <span
             className="font-pixel text-[7px]"
-            style={{ color: "#4a3210" }}
+            style={{ color: "#ad7525" }}
           >
             ▼
           </span>

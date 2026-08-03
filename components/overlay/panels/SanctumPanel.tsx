@@ -61,7 +61,7 @@ export default function SanctumPanel({ onClose }: Props) {
             </h3>
             <p
               className="font-pixel text-[7px] mt-2"
-              style={{ color: "#8a6820" }}
+              style={{ color: "#b78a2a" }}
             >
               FULL STACK DEV
             </p>
@@ -90,8 +90,8 @@ export default function SanctumPanel({ onClose }: Props) {
                 {s.value}
               </div>
               <div
-                className="font-pixel text-[6px] mt-2"
-                style={{ color: "#4a3210" }}
+                className="font-pixel text-[7px] mt-2"
+                style={{ color: "#ad7525" }}
               >
                 {s.label}
               </div>
@@ -107,9 +107,9 @@ export default function SanctumPanel({ onClose }: Props) {
             {" "}— Next.js + MERN stack + React Native mobile, Redis caching that cut API
             latency from ~10s to under 200ms.
           </p>
-          <p className="font-mono text-xs leading-relaxed" style={{ color: "#6a5838" }}>
+          <p className="font-mono text-xs leading-relaxed" style={{ color: "#a18555" }}>
             Previously interned at{" "}
-            <span className="font-pixel text-[8px]" style={{ color: "#8a6820" }}>KODECOMPILER</span>
+            <span className="font-pixel text-[8px]" style={{ color: "#b78a2a" }}>KODECOMPILER</span>
             {" "}— built a sandboxed LeetCode-style code execution engine from scratch. Freelance
             projects include AI media converter AVMG, RAG chat platform ProjectTeams,
             agri-marketplace KropiGo, and CRM SolarVistar.
@@ -135,7 +135,7 @@ export default function SanctumPanel({ onClose }: Props) {
               }}
             >
               <span style={{ color: "#f0c050" }}>{l.label}</span>
-              <span style={{ color: "#4a3210" }}>{l.handle}</span>
+              <span style={{ color: "#ad7525" }}>{l.handle}</span>
             </a>
           ))}
         </div>

@@ -50,8 +50,8 @@ export default function RecruiterTourHUD() {
       </p>
       <button
         onClick={skip}
-        className="mt-3 font-pixel text-[6px] px-3 py-2 transition-colors"
-        style={{ background: "#1a0a00", color: "#8a6820", border: "2px solid #4a3010" }}
+        className="mt-3 font-pixel text-[7px] px-3 py-2 transition-colors"
+        style={{ background: "#1a0a00", color: "#b78a2a", border: "2px solid #4a3010" }}
       >
         SKIP TOUR ✕
       </button>

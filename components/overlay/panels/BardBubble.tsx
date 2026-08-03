@@ -104,7 +104,7 @@ export default function BardBubble() {
 
           {/* Track info */}
           <div style={{ minWidth: 0 }}>
-            <div style={{ color: "#c8861e", fontSize: "6px", letterSpacing: "0.06em" }}>
+            <div style={{ color: "#c8861e", fontSize: "7px", letterSpacing: "0.06em" }}>
               {track.isPlaying ? "NOW PLAYING" : "LAST PLAYED"}
             </div>
             <div
@@ -122,7 +122,7 @@ export default function BardBubble() {
             <div
               style={{
                 color: "#e8d8b8",
-                fontSize: "6px",
+                fontSize: "7px",
                 marginTop: "2px",
                 opacity: 0.85,
                 whiteSpace: "nowrap",

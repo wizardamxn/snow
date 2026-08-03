@@ -137,7 +137,7 @@ export default function TouchControls() {
     >
       {/* ── D-pad + sprint (bottom-left) ─────────────────────────────────── */}
       <div className="pointer-events-auto flex flex-col items-center gap-2">
-        <TouchButton codes={["ShiftLeft"]} label="Sprint" style={{ width: "108px", height: "22px", fontSize: "6px", borderRadius: "4px" }}>
+        <TouchButton codes={["ShiftLeft"]} label="Sprint" style={{ width: "108px", height: "22px", fontSize: "7px", borderRadius: "4px" }}>
           SPRINT
         </TouchButton>
         <div

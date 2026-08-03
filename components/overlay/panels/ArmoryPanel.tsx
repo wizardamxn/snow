@@ -50,7 +50,7 @@ export default function ArmoryPanel({ onClose }: Props) {
                 {category.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="font-pixel text-[6px] px-2 py-1.5"
+                    className="font-pixel text-[7px] px-2 py-1.5"
                     style={{
                       background: meta.chipColor,
                       border: "2px solid #000",
@@ -69,8 +69,8 @@ export default function ArmoryPanel({ onClose }: Props) {
       </div>
 
       <p
-        className="font-pixel text-[6px] text-center mt-4"
-        style={{ color: "#2a2010" }}
+        className="font-pixel text-[7px] text-center mt-4"
+        style={{ color: "#977339" }}
       >
         ✦ ALWAYS LEARNING · ALWAYS SHIPPING ✦
       </p>

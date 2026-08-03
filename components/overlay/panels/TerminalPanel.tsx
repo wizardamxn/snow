@@ -6,9 +6,21 @@ import experience from "@/lib/data/experience.json";
 import projects from "@/lib/data/projects.json";
 import skills from "@/lib/data/skills.json";
 import { track } from "@/lib/analytics/track";
+import { speedrun, formatTime } from "@/lib/world/speedrun";
 
 type Props = { onClose: () => void };
 type Line = { text: string; kind: "output" | "echo" };
+
+/** Only the fields `open` needs — optional flags aren't on every JSON entry. */
+type TermProject = {
+  id: string;
+  title: string;
+  liveUrl?: string;
+  livePrivate?: boolean;
+  description: string;
+  technologies: string[];
+};
+const projectList = projects as TermProject[];
 
 const PROMPT = "guest@amanahmad:~$";
 
@@ -49,6 +61,9 @@ const HELP = [
   "  skills        the stack",
   "  contact       how to reach me",
   "  resume        download the PDF",
+  "  open <name>   launch a project's live site",
+  "  git log       my latest public commits",
+  "  speedrun      time yourself finding all 10 landmarks",
   "  ls            list files",
   "  cat <file>    read a file",
   "  clear         clear the screen",
@@ -126,6 +141,63 @@ export default function TerminalPanel({ onClose }: Props) {
         track("resume_download");
         window.open("/resume.pdf", "_blank");
         break;
+      case "open": {
+        const name = args.join(" ").toLowerCase();
+        if (!name) {
+          print(["usage: open <project>", `available: ${projectList.map((p) => p.id).join(", ")}`]);
+          break;
+        }
+        const proj = projectList.find(
+          (p) => p.id.toLowerCase() === name || p.title.toLowerCase() === name
+        );
+        if (!proj) {
+          print([`open: no project named '${name}'`, `try: ${projectList.map((p) => p.id).join(", ")}`]);
+        } else if (!proj.liveUrl || proj.livePrivate) {
+          print([`${proj.title} has no public live site — it's a private client build.`]);
+        } else {
+          print([`Opening ${proj.title} → ${proj.liveUrl}`]);
+          window.open(proj.liveUrl, "_blank", "noopener,noreferrer");
+        }
+        break;
+      }
+      case "git": {
+        if (args[0]?.toLowerCase() !== "log") {
+          print([`git: '${args.join(" ") || ""}' is not supported. Try 'git log'.`]);
+          break;
+        }
+        print(["Fetching latest commits from github.com/wizardamxn ..."]);
+        fetch("/api/commits")
+          .then((r) => r.json())
+          .then((d: { available: boolean; commits: { sha: string; repo: string; message: string; date: string }[] }) => {
+            if (!d.available || d.commits.length === 0) {
+              print(["fatal: could not reach GitHub right now. Try again later."]);
+              return;
+            }
+            print(d.commits.map((c) => `${c.sha}  ${c.date}  ${c.repo.padEnd(14)} ${c.message}`));
+          })
+          .catch(() => print(["fatal: could not reach GitHub right now. Try again later."]));
+        break;
+      }
+      case "speedrun": {
+        if (args[0]?.toLowerCase() === "stop") {
+          if (!speedrun.running) print(["No run in progress."]);
+          else print([`Run stopped at ${formatTime(speedrun.stop())}.`]);
+          break;
+        }
+        if (speedrun.running) {
+          print([`Run in progress — ${formatTime(speedrun.elapsedMs)} elapsed, ${speedrun.remaining} landmark(s) left.`]);
+          break;
+        }
+        const best = speedrun.best;
+        speedrun.start();
+        print([
+          "◆ SPEEDRUN STARTED — find all 10 landmarks.",
+          `  ${speedrun.remaining} left. Timer is now in the top-right.`,
+          best !== null ? `  Your best: ${formatTime(best)}` : "  No previous best — set one.",
+          "  ('speedrun stop' to abandon)",
+        ]);
+        break;
+      }
       case "ls":
         print([LS_OUTPUT]);
         break;

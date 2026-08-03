@@ -37,7 +37,7 @@ export default function HeroBanner() {
         </div>
 
         <div className="relative z-10 min-w-0 flex-1 text-center sm:text-left">
-          <p className="font-pixel text-[6px] mb-2" style={{ color: "#8a6820", letterSpacing: "0.2em" }}>
+          <p className="font-pixel text-[7px] mb-2" style={{ color: "#b78a2a", letterSpacing: "0.2em" }}>
             ✦ THE ADVENTURER'S QUEST LOG ✦
           </p>
           <h1 className="font-pixel text-[16px]" style={{ color: "#f0c050" }}>
@@ -53,7 +53,7 @@ export default function HeroBanner() {
 
           <div className="mt-3 flex justify-center sm:justify-start">
             <span
-              className="font-pixel text-[6px] inline-flex items-center gap-1.5 px-2.5 py-1.5"
+              className="font-pixel text-[7px] inline-flex items-center gap-1.5 px-2.5 py-1.5"
               style={{ background: "#0a2000", border: "2px solid #2a5a10", color: "#8ad060" }}
             >
               <span style={{ width: 5, height: 5, background: "#8ad060", display: "inline-block" }} />
@@ -70,12 +70,25 @@ export default function HeroBanner() {
                 rel={l.href.startsWith("http") ? "noopener noreferrer" : undefined}
                 download={l.label.includes("PDF") ? true : undefined}
                 onClick={l.label.includes("PDF") ? () => track("resume_download") : undefined}
-                className="font-pixel text-[6px] px-2.5 py-2 transition-colors"
+                className="font-pixel text-[7px] px-2.5 py-2 transition-colors"
                 style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e", boxShadow: "2px 2px 0 #000" }}
               >
                 {l.label}
               </a>
             ))}
+          </div>
+
+          {/* Mobile/tablet companion — the animated Warrior you'd control in the
+              game, standing guard over the quest log. Desktop shows its own copy
+              in the row on the right (hidden lg:flex above), so this is lg:hidden
+              to avoid a double. Idle-only on purpose: an in-place breathing loop
+              can't look "wrong-facing" the way a walker can. */}
+          <div className="mt-6 flex flex-col items-center sm:items-start lg:hidden">
+            <CharacterSprite who="knight" />
+            <div
+              aria-hidden
+              style={{ width: 46, height: 5, marginTop: 1, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.55), transparent 72%)" }}
+            />
           </div>
         </div>
 

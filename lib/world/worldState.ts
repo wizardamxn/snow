@@ -58,6 +58,12 @@ export const worldState = {
    * the first bus.emitTour() the way a pure subscription would.
    */
   tour: null as TourInfo,
+  /**
+   * True while a living attackable (the orc chieftain) is inside sword range —
+   * drives the sword cursor. Written every frame by the Pixi loop and polled by
+   * rAF on the React side, never read into state.
+   */
+  attackInRange: false,
 };
 
 /**

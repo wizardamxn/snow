@@ -44,7 +44,7 @@ export default function QuestPanel({
         )}
         <div className="relative z-10 min-w-0">
           {subtitle && (
-            <p className="font-pixel text-[6px] mb-1.5" style={{ color: "#8a6820", letterSpacing: "0.15em" }}>
+            <p className="font-pixel text-[7px] mb-1.5" style={{ color: "#b78a2a", letterSpacing: "0.15em" }}>
               {subtitle}
             </p>
           )}

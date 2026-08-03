@@ -18,3 +18,7 @@ by **Reemax** (Tuomo Untinen), with collaborators **Nemisys** and
 
 These two files are redistributed under CC-BY-SA 3.0 as required by the original
 license. This applies to the art assets only, not to the source code of this project.
+
+## Cursors
+`public/pixel/ui/cursor.png`, `cursor_hand.png` and `cursor_sword.png` are
+derived from the Tiny Swords pack's own UI cursor and sword elements.

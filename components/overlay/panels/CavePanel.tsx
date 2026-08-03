@@ -43,11 +43,11 @@ export default function CavePanel({ onClose }: Props) {
             <p
               key={i}
               className="flex gap-2 font-mono text-sm leading-relaxed italic"
-              style={{ color: "#6a5838" }}
+              style={{ color: "#a18555" }}
             >
               <span
                 className="font-pixel text-[7px] flex-shrink-0 mt-1"
-                style={{ color: "#3a2808" }}
+                style={{ color: "#a27016" }}
               >
                 {i + 1}.
               </span>
@@ -66,30 +66,30 @@ export default function CavePanel({ onClose }: Props) {
           }}
         >
           <p
-            className="font-pixel text-[6px] mb-3"
-            style={{ color: "#3a2808" }}
+            className="font-pixel text-[7px] mb-3"
+            style={{ color: "#a27016" }}
           >
             ❝ CAVE INSCRIPTION
           </p>
-          <div className="space-y-2 font-mono text-sm leading-relaxed" style={{ color: "#5a4828" }}>
+          <div className="space-y-2 font-mono text-sm leading-relaxed" style={{ color: "#9b7c45" }}>
             <p>
-              <span style={{ color: "#8a6830" }}>Favorite games — </span>
+              <span style={{ color: "#b6893f" }}>Favorite games — </span>
               {FAVORITE_GAMES.join(", ")}
             </p>
             <p>
-              <span style={{ color: "#8a6830" }}>Hobbies — </span>
+              <span style={{ color: "#b6893f" }}>Hobbies — </span>
               {HOBBIES.join(", ")}
             </p>
             <p>
-              <span style={{ color: "#8a6830" }}>Valorant — </span>
+              <span style={{ color: "#b6893f" }}>Valorant — </span>
               {VALORANT.role ? `${VALORANT.rank} · ${VALORANT.role}` : VALORANT.rank}
             </p>
           </div>
         </div>
 
         <p
-          className="font-pixel text-[6px]"
-          style={{ color: "#2a1a08" }}
+          className="font-pixel text-[7px]"
+          style={{ color: "#ab6a20" }}
         >
           ✦ NOTHING VENTURED, NOTHING SHIPPED ✦
         </p>

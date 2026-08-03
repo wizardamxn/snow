@@ -39,7 +39,7 @@ export default function StatsFooter({ variant }: { variant: "pixel" | "plain" })
   }
 
   return (
-    <p className="mt-6 text-center font-pixel text-[6px] leading-loose" style={{ color: "#5a4020" }}>
+    <p className="mt-6 text-center font-pixel text-[7px] leading-loose" style={{ color: "#a7773b" }}>
       {parts.join("  ·  ")}
     </p>
   );

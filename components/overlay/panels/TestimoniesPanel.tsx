@@ -35,7 +35,7 @@ export default function TestimoniesPanel({ onClose }: Props) {
             >
               <p
                 className="font-pixel text-[7px] mb-2"
-                style={{ color: "#3a2808" }}
+                style={{ color: "#a27016" }}
               >
                 ❝ TESTIMONY
               </p>
@@ -69,8 +69,8 @@ export default function TestimoniesPanel({ onClose }: Props) {
                   {t.name.toUpperCase()}
                 </p>
                 <p
-                  className="font-pixel text-[6px] mt-1.5"
-                  style={{ color: "#4a3210" }}
+                  className="font-pixel text-[7px] mt-1.5"
+                  style={{ color: "#ad7525" }}
                 >
                   {t.role.toUpperCase()} · {t.company.toUpperCase()}
                 </p>

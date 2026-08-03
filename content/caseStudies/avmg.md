@@ -2,7 +2,7 @@
 **AVMG** is an elite, high-performance distributed media transcoding, subtitle scraping, and telemetry system powered by Next.js, Express, Redis, BullMQ, PostgreSQL, and FFmpeg.
 
 - **Status:** COMPLETED
-- **Links:** [Source Code](file:///e:/AVMG), [Live Telemetry Portal](https://avmg.amanahmad.xyz/jobs)
+- **Links:** [Backend](https://github.com/wizardamxn/avmg-b), [Frontend](https://github.com/wizardamxn/avmg-f), [Live Telemetry Portal](https://avmg.amanahmad.xyz/jobs)
 - **Role:** Lead Architect & Principal Full-Stack Engineer
 - **Team Size:** Solo
 - **Stack:**

@@ -60,7 +60,7 @@ export default async function Image() {
             display: "flex",
             marginTop: 14,
             fontSize: 24,
-            color: "#7a6a4a",
+            color: "#a38f67",
           }}
         >
           An explorable pixel-art RPG portfolio

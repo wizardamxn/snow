@@ -30,7 +30,7 @@ export default function StatBlock() {
             {s.value}
           </div>
           <MeterBar fill={s.fill} />
-          <div className="font-pixel text-[5px] mt-2" style={{ color: "#7a6020", letterSpacing: "0.1em" }}>
+          <div className="font-pixel text-[5px] mt-2" style={{ color: "#a8842c", letterSpacing: "0.1em" }}>
             {s.label}
           </div>
         </div>

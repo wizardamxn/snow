@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getCaseStudy } from "@/lib/actions/caseStudies";
 import projectsData from "@/lib/data/projects.json";
+import ProjectMedia from "@/components/resume/ProjectMedia";
 
 /**
  * Explicit type so TypeScript doesn't complain about optional fields that only
@@ -23,6 +23,9 @@ type Project = {
   repoUrls?: { label: string; url: string }[];
   repoPrivate?: boolean;
   technologies: string[];
+  tldr?: { problem: string; build: string; result: string };
+  video?: string;
+  poster?: string;
 };
 
 const projects = projectsData as Project[];
@@ -129,14 +132,15 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
           className="relative w-full overflow-hidden"
           style={{ height: "200px", borderBottom: "3px solid #000" }}
         >
-          <Image
-            src={project.image}
+          <ProjectMedia
+            video={project.video}
+            poster={project.poster}
+            image={project.image}
             alt={project.title}
-            fill
-            priority
+            autoplay
             sizes="(max-width: 768px) 100vw, 48rem"
-            className="object-cover pixel-img"
-            style={{ imageRendering: "pixelated", filter: "contrast(1.05) saturate(0.95)" }}
+            className="object-cover"
+            imageStyle={{ filter: "contrast(1.05) saturate(0.95)" }}
           />
           <div
             className="absolute inset-0"
@@ -166,6 +170,45 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
             {project.description}
           </p>
 
+          {/* TL;DR — the 20-second version. Nobody reads a 20KB case study cold,
+              so lead with Problem → Build → Result and let the deep dive follow. */}
+          {project.tldr && (
+            <div
+              style={{
+                background: "#0a0800",
+                border: "2px solid #c8861e",
+                boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
+              }}
+            >
+              <div className="px-4 py-2.5" style={{ borderBottom: "2px solid #000", background: "#140d00" }}>
+                <h3 className="font-pixel text-[7px]" style={{ color: "#f0c050" }}>
+                  ⚡ TL;DR
+                </h3>
+              </div>
+              <div className="p-4 space-y-3">
+                {(
+                  [
+                    ["PROBLEM", project.tldr.problem],
+                    ["BUILD", project.tldr.build],
+                    ["RESULT", project.tldr.result],
+                  ] as const
+                ).map(([label, text]) => (
+                  <div key={label} className="flex gap-3">
+                    <span
+                      className="font-pixel text-[7px] flex-shrink-0 pt-0.5"
+                      style={{ color: "#c8861e", width: "58px" }}
+                    >
+                      {label}
+                    </span>
+                    <span className="font-mono text-xs leading-relaxed" style={{ color: "#c0a878" }}>
+                      {text}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Key highlights */}
           <div
             style={{
@@ -194,19 +237,19 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
 
           {/* Technologies */}
           <div>
-            <h3 className="font-pixel text-[7px] mb-2" style={{ color: "#4a3210" }}>
+            <h3 className="font-pixel text-[7px] mb-2" style={{ color: "#ad7525" }}>
               &gt; TECHNOLOGIES
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {project.technologies.map((t) => (
                 <span
                   key={t}
-                  className="font-pixel text-[6px] px-2 py-1"
+                  className="font-pixel text-[7px] px-2 py-1"
                   style={{
                     background: "#050400",
                     border: "2px solid #1e1600",
                     boxShadow: "1px 1px 0 #000",
-                    color: "#6a5030",
+                    color: "#ac824e",
                   }}
                 >
                   {t}
@@ -238,8 +281,8 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
             )}
             {project.livePrivate && (
               <span
-                className="font-pixel text-[6px] px-3 py-2"
-                style={{ background: "#050400", border: "2px solid #1e1600", color: "#2a2010" }}
+                className="font-pixel text-[7px] px-3 py-2"
+                style={{ background: "#050400", border: "2px solid #1e1600", color: "#977339" }}
               >
                 LIVE — CLIENT PRIVATE
               </span>
@@ -264,8 +307,8 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
               ))}
             {project.repoPrivate && (
               <span
-                className="font-pixel text-[6px] px-3 py-2"
-                style={{ background: "#050400", border: "2px solid #1e1600", color: "#2a2010" }}
+                className="font-pixel text-[7px] px-3 py-2"
+                style={{ background: "#050400", border: "2px solid #1e1600", color: "#977339" }}
               >
                 REPO — PRIVATE
               </span>
@@ -276,13 +319,13 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
           {loading ? (
             <div
               className="py-8 text-center font-pixel text-[7px]"
-              style={{ borderTop: "2px solid #000", color: "#3a2808" }}
+              style={{ borderTop: "2px solid #000", color: "#a27016" }}
             >
               LOADING CASE STUDY...
             </div>
           ) : markdown ? (
             <div style={{ borderTop: "2px solid #000", paddingTop: "20px" }}>
-              <h3 className="font-pixel text-[7px] mb-4" style={{ color: "#4a3210" }}>
+              <h3 className="font-pixel text-[7px] mb-4" style={{ color: "#ad7525" }}>
                 &gt; CASE STUDY
               </h3>
               <article className="prose prose-stone prose-invert max-w-none text-stone-300 text-sm leading-relaxed prose-headings:font-mono prose-headings:text-amber-400/90 prose-a:text-amber-300 prose-strong:text-stone-100">

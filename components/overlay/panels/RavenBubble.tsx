@@ -158,7 +158,7 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
               border: "2px solid #000",
               color: "#000",
               padding: "2px 4px",
-              fontSize: "6px",
+              fontSize: "7px",
             }}
           >
             [E]

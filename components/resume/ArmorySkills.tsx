@@ -23,10 +23,10 @@ function SkillMeter({ skill, fill }: { skill: string; fill: number }) {
   return (
     <div className="min-w-0">
       <div className="flex items-baseline justify-between gap-2 mb-1.5">
-        <span className="font-pixel text-[6px] truncate" style={{ color: "#e0d0a0" }}>
+        <span className="font-pixel text-[7px] truncate" style={{ color: "#e0d0a0" }}>
           {skill}
         </span>
-        <span className="font-pixel text-[5px] shrink-0" style={{ color: "#7a6020" }}>
+        <span className="font-pixel text-[5px] shrink-0" style={{ color: "#a8842c" }}>
           LV {Math.round(fill * 99)}
         </span>
       </div>

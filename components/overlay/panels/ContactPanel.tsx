@@ -67,7 +67,7 @@ export default function ContactPanel({ onClose }: Props) {
         >
           <p
             className="font-pixel text-[7px] mb-3"
-            style={{ color: "#4a3210" }}
+            style={{ color: "#ad7525" }}
           >
             &gt; EMAIL ADDRESS
           </p>
@@ -106,7 +106,7 @@ export default function ContactPanel({ onClose }: Props) {
         <div>
           <p
             className="font-pixel text-[7px] mb-2"
-            style={{ color: "#2a1a00" }}
+            style={{ color: "#ac6a00" }}
           >
             &gt; LINKS
           </p>
@@ -141,15 +141,15 @@ export default function ContactPanel({ onClose }: Props) {
                     {link.label}
                   </p>
                   <p
-                    className="font-pixel text-[6px] mt-1.5 truncate"
-                    style={{ color: "#3a2808" }}
+                    className="font-pixel text-[7px] mt-1.5 truncate"
+                    style={{ color: "#a27016" }}
                   >
                     {link.handle}
                   </p>
                 </div>
                 <span
                   className="ml-auto font-pixel text-[8px]"
-                  style={{ color: "#3a2808" }}
+                  style={{ color: "#a27016" }}
                 >
                   &gt;
                 </span>

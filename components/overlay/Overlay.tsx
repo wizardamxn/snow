@@ -23,6 +23,8 @@ import AnalyticsBridge from "./AnalyticsBridge";
 import ChroniclePanel from "./panels/ChroniclePanel";
 import RecruiterTourPrompt from "./panels/RecruiterTourPrompt";
 import RecruiterTourHUD from "./RecruiterTourHUD";
+import ColorGrade from "./ColorGrade";
+import SpeedrunHUD from "./SpeedrunHUD";
 
 /**
  * Routes the bus `emitOpen` id to the correct content panel.
@@ -94,8 +96,15 @@ export default function Overlay() {
   const [timePresetIdx, setTimePresetIdx] = useState(0);
   const [isTouch, setIsTouch] = useState(false);
 
+  // The classic-resume escape hatch is the single most important affordance for
+  // a recruiter who doesn't want to play a game. Show it loudly for the first
+  // few seconds, then let it settle into the quiet HUD styling.
+  const [highlightClassic, setHighlightClassic] = useState(true);
+
   useEffect(() => {
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
+    const t = setTimeout(() => setHighlightClassic(false), 10000);
+    return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
@@ -132,10 +141,25 @@ export default function Overlay() {
     };
     window.addEventListener("keydown", onKeyDown);
 
+    // Swap in the sword cursor while an attackable is in range. Polled via rAF
+    // and applied as a <body> class so it never re-renders the overlay tree.
+    let frame = 0;
+    let wasInRange = false;
+    const pollCursor = () => {
+      if (worldState.attackInRange !== wasInRange) {
+        wasInRange = worldState.attackInRange;
+        document.body.classList.toggle("attack-ready", wasInRange);
+      }
+      frame = requestAnimationFrame(pollCursor);
+    };
+    frame = requestAnimationFrame(pollCursor);
+
     return () => {
       offNear();
       offOpen();
       offTour();
+      cancelAnimationFrame(frame);
+      document.body.classList.remove("attack-ready");
       window.removeEventListener("keydown", onKeyDown);
     };
   }, []);
@@ -148,6 +172,9 @@ export default function Overlay() {
   return (
     <div className="pointer-events-none absolute inset-0 z-10 select-none">
       <AnalyticsBridge />
+      {/* First child: screen-space grade + vignette paint under every other
+          HUD element and panel (later siblings win in the same stacking context). */}
+      <ColorGrade />
       <TutorialOverlay />
       
       {/* ── Minimap (top-right) ─────────────────────────────────────────── */}
@@ -155,6 +182,9 @@ export default function Overlay() {
 
       {/* ── Achievement tracker (below minimap) + completion banner ──────── */}
       <AchievementTracker />
+
+      {/* ── Speedrun timer (terminal easter egg; hidden unless a run is on) ─ */}
+      {!openId && <SpeedrunHUD />}
 
       {/* ── Bard's now-playing speech bubble (floats above him always) ──── */}
       {!openId && <BardBubble />}
@@ -170,17 +200,31 @@ export default function Overlay() {
         href="/resume"
         target="_blank"
         rel="noopener noreferrer"
-        className="pointer-events-auto absolute left-4 font-pixel px-2.5 py-2 transition-colors"
-        style={{
-          bottom: "210px",
-          fontSize: "6px",
-          color: "#c8861e",
-          background: "#0d0b08",
-          border: "2px solid #5a4020",
-          boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
-        }}
+        className={`pointer-events-auto absolute left-4 font-pixel transition-all ${highlightClassic ? "classic-cta-pulse" : ""}`}
+        style={
+          highlightClassic
+            ? {
+                bottom: "210px",
+                fontSize: "9px",
+                padding: "12px 14px",
+                color: "#000",
+                background: "#c8861e",
+                border: "3px solid #000",
+                boxShadow: "4px 4px 0 #000",
+                letterSpacing: "0.06em",
+              }
+            : {
+                bottom: "210px",
+                fontSize: "7px",
+                padding: "8px 10px",
+                color: "#c8861e",
+                background: "#0d0b08",
+                border: "2px solid #5a4020",
+                boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
+              }
+        }
       >
-        CLASSIC VIEW &gt;
+        {highlightClassic ? "📄 JUST THE RESUME →" : "CLASSIC VIEW >"}
       </Link>
 
       {/* ── Pixel title bar (top-centre) ────────────────────────────────── */}
@@ -192,8 +236,8 @@ export default function Overlay() {
           AMAN AHMAD
         </p>
         <p
-          className="font-pixel text-[6px] mt-1.5"
-          style={{ color: "#5a4020" }}
+          className="font-pixel text-[7px] mt-1.5"
+          style={{ color: "#a7773b" }}
         >
           THE FRONTIER PORTFOLIO
         </p>
@@ -207,7 +251,7 @@ export default function Overlay() {
       >
         <div
           className="font-pixel text-[8px] mb-2"
-          style={{ color: "#8a6820" }}
+          style={{ color: "#b78a2a" }}
         >
           CONTROLS
         </div>
@@ -217,23 +261,23 @@ export default function Overlay() {
         >
           <div>
             <span style={{ color: "#f0c050" }}>WASD</span>
-            <span style={{ color: "#5a4020" }}> / ARROWS</span>
+            <span style={{ color: "#a7773b" }}> / ARROWS</span>
           </div>
           <div>
             <span style={{ color: "#f0c050" }}>SHIFT</span>
-            <span style={{ color: "#5a4020" }}> SPRINT</span>
+            <span style={{ color: "#a7773b" }}> SPRINT</span>
           </div>
           <div>
             <span style={{ color: "#f0c050" }}>[E]</span>
-            <span style={{ color: "#5a4020" }}> INTERACT</span>
+            <span style={{ color: "#a7773b" }}> INTERACT</span>
           </div>
           <div>
             <span style={{ color: "#f0c050" }}>[M]</span>
-            <span style={{ color: "#5a4020" }}> {isMuted ? "UNMUTE" : "MUTE"}</span>
+            <span style={{ color: "#a7773b" }}> {isMuted ? "UNMUTE" : "MUTE"}</span>
           </div>
           <div>
             <span style={{ color: "#f0c050" }}>[T]</span>
-            <span style={{ color: "#5a4020" }}> TIME: {TIME_PRESETS[timePresetIdx].label}</span>
+            <span style={{ color: "#a7773b" }}> TIME: {TIME_PRESETS[timePresetIdx].label}</span>
           </div>
         </div>
       </div>

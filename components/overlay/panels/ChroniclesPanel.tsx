@@ -60,15 +60,15 @@ export default function ChroniclesPanel({ onClose }: Props) {
                     {exp.company.toUpperCase()}
                   </p>
                   <p
-                    className="font-pixel text-[6px] mt-1.5"
-                    style={{ color: "#2a2010" }}
+                    className="font-pixel text-[7px] mt-1.5"
+                    style={{ color: "#977339" }}
                   >
                     {exp.period} · {exp.location.toUpperCase()}
                   </p>
                 </div>
                 {exp.current && (
                   <span
-                    className="flex-shrink-0 font-pixel text-[6px] px-2 py-1"
+                    className="flex-shrink-0 font-pixel text-[7px] px-2 py-1"
                     style={{
                       background: "#0a2000",
                       border: "2px solid #40a020",
@@ -84,7 +84,7 @@ export default function ChroniclesPanel({ onClose }: Props) {
               {/* Summary */}
               <p
                 className="font-mono text-xs leading-relaxed mb-3"
-                style={{ color: "#8a7050" }}
+                style={{ color: "#a98d6a" }}
               >
                 {exp.summary}
               </p>
@@ -114,7 +114,7 @@ export default function ChroniclesPanel({ onClose }: Props) {
                 {exp.technologies.map((t) => (
                   <span
                     key={t}
-                    className="font-pixel text-[6px] px-2 py-1"
+                    className="font-pixel text-[7px] px-2 py-1"
                     style={{
                       background: "#050400",
                       border: "2px solid #1e1600",

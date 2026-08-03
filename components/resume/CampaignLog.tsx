@@ -1,6 +1,7 @@
 import experience from "@/lib/data/experience.json";
 import QuestPanel from "./QuestPanel";
 import Chip from "./Chip";
+import MobileCollapse from "./MobileCollapse";
 
 export default function CampaignLog() {
   return (
@@ -30,27 +31,31 @@ export default function CampaignLog() {
               )}
             </div>
             <p className="mt-2 font-mono text-sm" style={{ color: "#c8861e" }}>
-              {job.company} <span style={{ color: "#5a4020" }}>· {job.location}</span>
+              {job.company} <span style={{ color: "#a7773b" }}>· {job.location}</span>
             </p>
-            <p className="font-pixel text-[6px] mt-1" style={{ color: "#5a4020" }}>
+            <p className="font-pixel text-[7px] mt-1" style={{ color: "#a7773b" }}>
               {job.period.toUpperCase()}
             </p>
             <p className="mt-3 font-mono text-sm leading-relaxed" style={{ color: "#9a8560" }}>
               {job.summary}
             </p>
-            <p className="font-pixel text-[6px] mt-4 mb-2" style={{ color: "#6a5030" }}>
-              &gt; OBJECTIVES COMPLETE
-            </p>
-            <ul className="space-y-1.5">
-              {job.highlights.map((h) => (
-                <li key={h} className="flex gap-2 font-mono text-sm leading-relaxed" style={{ color: "#9a8560" }}>
-                  <span style={{ color: "#c8861e" }} className="select-none">
-                    ✓
-                  </span>
-                  {h}
-                </li>
-              ))}
-            </ul>
+            <div className="mt-4">
+              <MobileCollapse
+                summary={`${job.highlights.length} OBJECTIVES COMPLETE`}
+                desktopHeading="> OBJECTIVES COMPLETE"
+              >
+                <ul className="space-y-1.5 pt-1 md:pt-0">
+                  {job.highlights.map((h) => (
+                    <li key={h} className="flex gap-2 font-mono text-sm leading-relaxed" style={{ color: "#9a8560" }}>
+                      <span style={{ color: "#c8861e" }} className="select-none">
+                        ✓
+                      </span>
+                      {h}
+                    </li>
+                  ))}
+                </ul>
+              </MobileCollapse>
+            </div>
             <div className="mt-4 flex flex-wrap gap-1.5">
               {job.technologies.map((t) => (
                 <Chip key={t}>{t}</Chip>

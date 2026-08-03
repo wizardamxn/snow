@@ -193,6 +193,10 @@ export async function buildTownScene(
   const ducks: Duck[] = [];
   const butterflies: Butterfly[] = [];
   const fireflies: Firefly[] = [];
+  /** Additive bloom halos behind each torch — alpha driven by the night tint. */
+  const torchGlows: { g: Graphics; phase: number }[] = [];
+  /** Reflected-light glints on open water; geometry static, alpha/x animated. */
+  const shimmers: { g: Graphics; baseX: number; phase: number; speed: number }[] = [];
 
   // ── Read textures (already loaded — see preloadAll above) ──────────────────
   const treeTexes = TREE_URLS.map(getTex);
@@ -399,6 +403,21 @@ export async function buildTownScene(
       torch.zIndex = feetY + 1;
       entities.addChild(torch);
       animated.push({ sprite: torch, frames: fireFrames, fps: 12, phase: Math.random() * 3 });
+
+      // Bloom halo — concentric additive rings that only light up after dusk.
+      // Drawn once here (static geometry); the per-frame update just scales
+      // alpha with the night tint and a flicker, so there's no re-tessellation.
+      const glow = new Graphics();
+      for (const [r, a] of [[46, 0.05], [30, 0.07], [18, 0.1]] as const) {
+        glow.circle(0, 0, r).fill({ color: 0xff9a3c, alpha: a });
+      }
+      glow.x = torch.x;
+      glow.y = torch.y - TILE * 0.5;
+      glow.blendMode = "add";
+      glow.zIndex = feetY + 0.9;
+      glow.alpha = 0;
+      entities.addChild(glow);
+      torchGlows.push({ g: glow, phase: Math.random() * Math.PI * 2 });
     }
   }
 
@@ -488,6 +507,37 @@ export async function buildTownScene(
         waterFX.addChild(foam);
         animated.push({ sprite: foam, frames: foamFrames, fps: 8, phase: Math.random() * 4 });
       }
+    }
+  }
+
+  // ── Water shimmer — glints of reflected light on open water ────────────────
+  // Geometry is drawn once and only alpha/x are animated, so this costs no
+  // re-tessellation per frame (unlike the fireflies' clear()+redraw).
+  {
+    const shRng = mulberry32(5150);
+    const shimmerLayer = new Container();
+    shimmerLayer.blendMode = "add";
+    waterFX.addChild(shimmerLayer);
+    const isWater = (c: number, r: number) =>
+      r >= 0 && r < ROWS && c >= 0 && c < COLS && tilemap.grid[r][c] === "water";
+    const open: { c: number; r: number }[] = [];
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        // interior water only — glints on the shoreline fight with the foam
+        if (isWater(c, r) && isWater(c - 1, r) && isWater(c + 1, r) && isWater(c, r - 1) && isWater(c, r + 1)) {
+          open.push({ c, r });
+        }
+      }
+    }
+    for (let i = 0; i < Math.min(46, open.length); i++) {
+      const spot = open[Math.floor(shRng() * open.length)];
+      const w = 7 + shRng() * 13;
+      const g = new Graphics().roundRect(-w / 2, -1, w, 2, 1).fill({ color: 0xdff2ff, alpha: 0.5 });
+      g.x = (spot.c + 0.2 + shRng() * 0.6) * TILE;
+      g.y = (spot.r + 0.2 + shRng() * 0.6) * TILE;
+      g.alpha = 0;
+      shimmerLayer.addChild(g);
+      shimmers.push({ g, baseX: g.x, phase: shRng() * Math.PI * 2, speed: 0.7 + shRng() * 1.1 });
     }
   }
 
@@ -739,6 +789,7 @@ export async function buildTownScene(
   {
     const ffRng = mulberry32(9182);
     const fireflyLayer = new Container();
+    fireflyLayer.blendMode = "add";
     world.addChild(fireflyLayer);
     for (let i = 0; i < 24; i++) {
       const col = 2 + Math.floor(ffRng() * (COLS - 4));
@@ -1134,6 +1185,12 @@ export async function buildTownScene(
     }
 
     // ── Orc Chieftain combat ─────────────────────────────────────────────────
+    worldState.attackInRange =
+      !!chief &&
+      chief.alive &&
+      !chief.dying &&
+      Math.hypot(player.x - chief.sprite.x, player.y - chief.sprite.y) < ATTACK_RANGE;
+
     if (chief && chief.alive) {
       if (!chief.dying && player.justSwung) {
         const d = Math.hypot(player.x - chief.sprite.x, player.y - chief.sprite.y);
@@ -1262,6 +1319,26 @@ export async function buildTownScene(
       bf.g.y = Math.round(bf.y) + Math.sin(elapsed * 1.2 + bf.flapPhase * 0.1) * 3;
     }
 
+    // water shimmer — glints strongest in daylight, with a faint moonlit hint
+    if (shimmers.length > 0) {
+      const light = 0.25 + 0.75 * sky.daylight;
+      for (const s of shimmers) {
+        const tw = Math.sin(elapsed * s.speed + s.phase);
+        s.g.alpha = Math.max(0, tw) * 0.55 * light;
+        s.g.x = s.baseX + Math.sin(elapsed * s.speed * 0.5 + s.phase) * 2;
+      }
+    }
+
+    // torch bloom — swells after dusk, with a slow flicker so it reads as fire
+    if (torchGlows.length > 0) {
+      const nightLight = Math.pow(sky.nightAlpha, 0.8);
+      for (const t of torchGlows) {
+        const flicker = 0.85 + 0.15 * Math.sin(elapsed * 6 + t.phase);
+        t.g.alpha = nightLight * flicker;
+        t.g.scale.set(0.92 + 0.08 * flicker);
+      }
+    }
+
     // fireflies — lazy drift, glow fades in/out with the night tint itself
     for (const ff of fireflies) {
       ff.glowPhase += ff.glowSpeed * dt;
@@ -1289,6 +1366,9 @@ export async function buildTownScene(
       const a = twinkle * sky.nightAlpha;
       ff.g.clear();
       if (a > 0.02) {
+        // Outermost ring is the bloom; the layer blends additively, so
+        // overlapping fireflies pool light instead of flatly stacking alpha.
+        ff.g.circle(0, 0, 13).fill({ color: 0xaaff66, alpha: 0.07 * a });
         ff.g.circle(0, 0, 6).fill({ color: 0xccff88, alpha: 0.16 * a });
         ff.g.circle(0, 0, 1.8).fill({ color: 0xf2ffc4, alpha: 0.95 * a });
       }

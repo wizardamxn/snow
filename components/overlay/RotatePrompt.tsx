@@ -74,7 +74,7 @@ export default function RotatePrompt() {
       </p>
       <p
         className="font-mono text-sm text-center"
-        style={{ color: "#7a6a4a", padding: "0 32px", maxWidth: "320px" }}
+        style={{ color: "#a38f67", padding: "0 32px", maxWidth: "320px" }}
       >
         The frontier is wider than it is tall — turn to landscape to explore.
       </p>

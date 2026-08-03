@@ -27,10 +27,10 @@ export default function AllyWords() {
                 <p className="font-mono text-sm leading-relaxed italic" style={{ color: "#9a8560" }}>
                   &ldquo;{t.quote}&rdquo;
                 </p>
-                <p className="font-pixel text-[6px] mt-3" style={{ color: "#f0c050" }}>
+                <p className="font-pixel text-[7px] mt-3" style={{ color: "#f0c050" }}>
                   {t.name.toUpperCase()}
                 </p>
-                <p className="font-pixel text-[5px] mt-1" style={{ color: "#6a5030" }}>
+                <p className="font-pixel text-[5px] mt-1" style={{ color: "#ac824e" }}>
                   {t.role.toUpperCase()} · {t.company.toUpperCase()}
                 </p>
               </div>

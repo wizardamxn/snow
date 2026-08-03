@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { bus } from "@/lib/world/bus";
 import { getVisited, markVisited, ACHIEVEMENT_IDS } from "@/lib/world/achievements";
+import { speedrun } from "@/lib/world/speedrun";
 
 export default function AchievementTracker() {
   const [count, setCount] = useState(0);
@@ -14,6 +15,8 @@ export default function AchievementTracker() {
       const { visited, justCompleted } = markVisited(id);
       setCount(visited.size);
       if (justCompleted) {
+        // Completing the set is the speedrun's finish line.
+        if (speedrun.running) speedrun.finish();
         setShowBanner(true);
         const timer = setTimeout(() => setShowBanner(false), 5000);
         return () => clearTimeout(timer);
@@ -55,7 +58,7 @@ export default function AchievementTracker() {
             <p style={{ color: "#f0c050", fontSize: "12px", marginBottom: "10px" }}>
               ★ THE FRONTIER, FULLY EXPLORED ★
             </p>
-            <p style={{ color: "#8a6820", fontSize: "7px", lineHeight: 1.8 }}>
+            <p style={{ color: "#b78a2a", fontSize: "7px", lineHeight: 1.8 }}>
               You&apos;ve found everything this world has to offer.
             </p>
           </div>

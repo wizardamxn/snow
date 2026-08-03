@@ -93,11 +93,11 @@ export default function RelicsPanel({ onClose }: Props) {
               {/* Private badge */}
               {(project.livePrivate || project.repoPrivate) && (
                 <span
-                  className="absolute top-1.5 right-1.5 font-pixel text-[6px] px-1.5 py-1"
+                  className="absolute top-1.5 right-1.5 font-pixel text-[7px] px-1.5 py-1"
                   style={{
                     background: "#000",
                     border: "2px solid #3a2808",
-                    color: "#4a3820",
+                    color: "#a17a46",
                   }}
                 >
                   PRIVATE
@@ -119,7 +119,7 @@ export default function RelicsPanel({ onClose }: Props) {
               <p
                 className="font-mono text-xs leading-relaxed"
                 style={{
-                  color: "#5a4828",
+                  color: "#9b7c45",
                   display: "-webkit-box",
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",
@@ -138,7 +138,7 @@ export default function RelicsPanel({ onClose }: Props) {
                     style={{
                       background: "#0a0800",
                       border: "1px solid #2a1e00",
-                      color: "#3a2e10",
+                      color: "#947529",
                     }}
                   >
                     {t}
@@ -147,7 +147,7 @@ export default function RelicsPanel({ onClose }: Props) {
                 {project.technologies.length > 3 && (
                   <span
                     className="font-pixel text-[5px] px-1.5 py-0.5"
-                    style={{ color: "#2a1e00" }}
+                    style={{ color: "#9e7100" }}
                   >
                     +{project.technologies.length - 3}
                   </span>
@@ -161,14 +161,14 @@ export default function RelicsPanel({ onClose }: Props) {
               style={{ borderTop: "2px solid #0a0800" }}
             >
               <span
-                className="font-pixel text-[6px]"
-                style={{ color: "#2a1e00" }}
+                className="font-pixel text-[7px]"
+                style={{ color: "#9e7100" }}
               >
                 INSPECT RELIC
               </span>
               <span
                 className="font-pixel text-[7px]"
-                style={{ color: "#4a3210" }}
+                style={{ color: "#ad7525" }}
               >
                 &gt;
               </span>

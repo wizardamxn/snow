@@ -49,7 +49,7 @@ function Row({ keys, desc }: { keys: string[]; desc: string }) {
       </div>
       <span
         className="font-pixel"
-        style={{ fontSize: "6px", color: "#6a5030" }}
+        style={{ fontSize: "7px", color: "#ac824e" }}
       >
         {desc}
       </span>
@@ -106,7 +106,7 @@ export default function TutorialOverlay() {
           />
           <p
             className="font-pixel relative"
-            style={{ fontSize: "6px", color: "#4a3210", letterSpacing: "0.25em", marginBottom: "8px" }}
+            style={{ fontSize: "7px", color: "#ad7525", letterSpacing: "0.25em", marginBottom: "8px" }}
           >
             ✦ WELCOME TO ✦
           </p>
@@ -118,7 +118,7 @@ export default function TutorialOverlay() {
           </h1>
           <p
             className="font-pixel relative"
-            style={{ fontSize: "6px", color: "#7a5818", marginTop: "8px", letterSpacing: "0.1em" }}
+            style={{ fontSize: "7px", color: "#b28123", marginTop: "8px", letterSpacing: "0.1em" }}
           >
             A PIXEL RPG PORTFOLIO · AMAN AHMAD
           </p>
@@ -129,7 +129,7 @@ export default function TutorialOverlay() {
           {/* Pitch */}
           <p
             className="font-mono"
-            style={{ color: "#8a7050", fontSize: "12px", lineHeight: 1.8 }}
+            style={{ color: "#a98d6a", fontSize: "12px", lineHeight: 1.8 }}
           >
             This is an interactive portfolio. Walk your hero around a pixel world,
             approach buildings, and press{" "}
@@ -143,7 +143,7 @@ export default function TutorialOverlay() {
               className="font-pixel"
               style={{
                 fontSize: "7px",
-                color: "#4a3210",
+                color: "#ad7525",
                 letterSpacing: "0.1em",
                 marginBottom: "12px",
               }}
@@ -165,7 +165,7 @@ export default function TutorialOverlay() {
               className="font-pixel"
               style={{
                 fontSize: "7px",
-                color: "#4a3210",
+                color: "#ad7525",
                 letterSpacing: "0.1em",
                 marginBottom: "12px",
               }}
@@ -198,13 +198,13 @@ export default function TutorialOverlay() {
                   <div style={{ minWidth: 0 }}>
                     <p
                       className="font-pixel"
-                      style={{ fontSize: "5px", color: "#c8861e", marginBottom: "4px" }}
+                      style={{ fontSize: "7px", color: "#c8861e", marginBottom: "4px" }}
                     >
                       {b.name}
                     </p>
                     <p
                       className="font-mono"
-                      style={{ fontSize: "10px", color: "#5a4828" }}
+                      style={{ fontSize: "10px", color: "#9b7c45" }}
                     >
                       {b.desc}
                     </p>
@@ -225,40 +225,73 @@ export default function TutorialOverlay() {
           >
             <p
               className="font-pixel"
-              style={{ fontSize: "6px", color: "#3a5a20", lineHeight: 2 }}
+              style={{ fontSize: "7px", color: "#5b8e32", lineHeight: 2 }}
             >
               💡 NAME LABELS FLOAT ABOVE EVERY BUILDING.
               WALK TOWARD ONE — THE [E] PROMPT WILL APPEAR.
             </p>
           </div>
 
-          {/* CTA button */}
-          <button
-            onClick={dismiss}
-            className="font-pixel w-full py-4"
-            style={{
-              background: "#c8861e",
-              border: "3px solid #000",
-              boxShadow: "4px 4px 0 #000",
-              color: "#000",
-              fontSize: "11px",
-              letterSpacing: "0.12em",
-              cursor: "pointer",
-              transition: "background 0.1s",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#f0c050";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#c8861e";
-            }}
-          >
-            ▶ START EXPLORING
-          </button>
+          {/* CTAs — play, or skip straight to the plain resume. Side by side so
+              a recruiter short on time sees the escape hatch without scrolling;
+              stacking them pushed it below the fold. */}
+          <div style={{ display: "flex", gap: "10px", alignItems: "stretch" }}>
+            <button
+              onClick={dismiss}
+              className="font-pixel py-4"
+              style={{
+                flex: "1 1 58%",
+                background: "#c8861e",
+                border: "3px solid #000",
+                boxShadow: "4px 4px 0 #000",
+                color: "#000",
+                fontSize: "10px",
+                letterSpacing: "0.1em",
+                cursor: "pointer",
+                transition: "background 0.1s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "#f0c050";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "#c8861e";
+              }}
+            >
+              ▶ START EXPLORING
+            </button>
+
+            <a
+              href="/resume"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={dismiss}
+              className="font-pixel py-4 flex flex-col items-center justify-center text-center"
+              style={{
+                flex: "1 1 42%",
+                background: "#0a0800",
+                border: "3px solid #c8861e",
+                boxShadow: "4px 4px 0 #000",
+                color: "#f0c050",
+                fontSize: "8px",
+                lineHeight: 1.8,
+                letterSpacing: "0.06em",
+                textDecoration: "none",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "#1a1000";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "#0a0800";
+              }}
+            >
+              <span>📄 IN A HURRY?</span>
+              <span style={{ color: "#ac824e", fontSize: "7px" }}>PLAIN RESUME →</span>
+            </a>
+          </div>
 
           <p
             className="font-pixel text-center"
-            style={{ fontSize: "5px", color: "#2a1808" }}
+            style={{ fontSize: "7px", color: "#b26622" }}
           >
             THIS MESSAGE WON'T SHOW AGAIN THIS SESSION
           </p>

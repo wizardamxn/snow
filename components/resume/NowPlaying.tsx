@@ -49,7 +49,7 @@ export default function NowPlaying() {
       {/* Track info */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="font-pixel text-[6px]" style={{ color: track.isPlaying ? "#8ad060" : "#8a6820", letterSpacing: "0.12em" }}>
+          <span className="font-pixel text-[7px]" style={{ color: track.isPlaying ? "#8ad060" : "#8a6820", letterSpacing: "0.12em" }}>
             🎵 THE BARD&apos;S TUNE · {label}
           </span>
           {track.isPlaying && (
@@ -75,14 +75,14 @@ export default function NowPlaying() {
           style={{ color: "#9a8560", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
         >
           {track.artist}
-          {track.album ? <span style={{ color: "#5a4020" }}> · {track.album}</span> : null}
+          {track.album ? <span style={{ color: "#a7773b" }}> · {track.album}</span> : null}
         </div>
       </div>
 
       {/* Open on Last.fm */}
       {track.songUrl && (
         <span
-          className="font-pixel text-[6px] px-2.5 py-2 shrink-0 hidden sm:inline-block"
+          className="font-pixel text-[7px] px-2.5 py-2 shrink-0 hidden sm:inline-block"
           style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e" }}
         >
           OPEN ↗
