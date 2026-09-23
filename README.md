@@ -1,4 +1,4 @@
-# SIGMA — a portfolio you walk through
+# SNOW — a portfolio you walk through
 
 [amanahmad.xyz](https://amanahmad.xyz) is a résumé rebuilt as a top-down 2D RPG. You spawn in a
 pixel-art frontier town; each building is a section of the résumé — the Armory is skills, the
