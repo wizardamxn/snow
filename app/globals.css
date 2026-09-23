@@ -32,19 +32,36 @@ body {
   font-family: 'Press Start 2P', monospace;
 }
 
-/* ── Pixel RPG scrollbar ────────────────────────────────────────────────── */
-.pixel-scroll::-webkit-scrollbar {
-  width: 8px;
+/* ── Pixel RPG scrollbar — site-wide ────────────────────────────────────────
+   Applied to every scroll container (page included), not just .pixel-scroll,
+   so no panel ever falls back to the OS bar. Square corners, amber thumb.
+   The standard scrollbar-* properties are gated to engines WITHOUT
+   ::-webkit-scrollbar (Firefox): in Chrome 121+ setting scrollbar-color
+   silently disables all the ::-webkit-scrollbar styling below. ──────────── */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
 }
-.pixel-scroll::-webkit-scrollbar-track {
+::-webkit-scrollbar-track {
   background: #0a0600;
+  box-shadow: inset 2px 0 0 #000;
 }
-.pixel-scroll::-webkit-scrollbar-thumb {
+::-webkit-scrollbar-thumb {
   background: #7a5010;
   border: 2px solid #0a0600;
+  border-radius: 0;
 }
-.pixel-scroll::-webkit-scrollbar-thumb:hover {
+::-webkit-scrollbar-thumb:hover {
   background: #c8861e;
+}
+::-webkit-scrollbar-corner {
+  background: #0a0600;
+}
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #7a5010 #0a0600;
+  }
 }
 
 /* ── Pixel border helper ─────────────────────────────────────────────────── */

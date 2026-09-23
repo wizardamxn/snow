@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import World from "./World";
 import Overlay from "@/components/overlay/Overlay";
 import RotatePrompt from "@/components/overlay/RotatePrompt";
+import DesktopHint from "@/components/overlay/DesktopHint";
 import ThemedResume from "@/components/resume/ThemedResume";
 import VisitPing from "@/components/analytics/VisitPing";
 
@@ -36,6 +37,7 @@ export default function HomeGate() {
       <>
         <VisitPing mode="resume" />
         <ThemedResume />
+        <DesktopHint />
       </>
     );
 

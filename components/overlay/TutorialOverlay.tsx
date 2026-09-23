@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { ensureStarted } from "@/lib/audio/ambient";
 
 /**
@@ -49,7 +49,7 @@ function Row({ keys, desc }: { keys: string[]; desc: string }) {
       </div>
       <span
         className="font-pixel"
-        style={{ fontSize: "7px", color: "#ac824e" }}
+        style={{ fontSize: "7px", color: "#ac824e", lineHeight: 1.6 }}
       >
         {desc}
       </span>
@@ -57,11 +57,24 @@ function Row({ keys, desc }: { keys: string[]; desc: string }) {
   );
 }
 
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p
+      className="font-pixel"
+      style={{ fontSize: "7px", color: "#ad7525", letterSpacing: "0.1em", marginBottom: "10px" }}
+    >
+      {children}
+    </p>
+  );
+}
+
 export default function TutorialOverlay() {
   const [visible, setVisible] = useState(false);
+  const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
     if (!sessionStorage.getItem("tutorialShown")) setVisible(true);
+    setIsTouch(window.matchMedia("(pointer: coarse)").matches);
   }, []);
 
   const dismiss = () => {
@@ -74,11 +87,14 @@ export default function TutorialOverlay() {
 
   return (
     <div
-      className="pointer-events-auto absolute inset-0 z-20 flex items-center justify-center p-4"
+      className="pointer-events-auto absolute inset-0 z-[60] flex items-center justify-center p-3 sm:p-4"
       style={{ background: "rgba(0,0,0,0.93)" }}
     >
+      {/* Header + footer are pinned; only the middle scrolls, and only when the
+          screen is too short for it. The CTAs used to sit at the end of one long
+          scroll box, which on a ~720px-tall laptop pushed them below the fold. */}
       <div
-        className="w-full max-w-xl max-h-[92vh] overflow-y-auto pixel-scroll"
+        className="flex w-full max-w-3xl max-h-[94dvh] flex-col overflow-hidden"
         style={{
           background: "#0d0b08",
           border: "3px solid #c8861e",
@@ -88,7 +104,7 @@ export default function TutorialOverlay() {
       >
         {/* ── Header ───────────────────────────────────────────────────── */}
         <div
-          className="relative overflow-hidden px-6 py-5"
+          className="relative shrink-0 overflow-hidden px-6 py-4"
           style={{
             background: "#0a0800",
             borderBottom: "3px solid #000",
@@ -124,8 +140,8 @@ export default function TutorialOverlay() {
           </p>
         </div>
 
-        {/* ── Body ─────────────────────────────────────────────────────── */}
-        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: "20px" }}>
+        {/* ── Body — the only region that scrolls ──────────────────────── */}
+        <div className="min-h-0 flex-1 overflow-y-auto pixel-scroll px-6 py-4 flex flex-col gap-4">
           {/* Pitch */}
           <p
             className="font-mono"
@@ -137,104 +153,105 @@ export default function TutorialOverlay() {
             read about my work.
           </p>
 
-          {/* Controls */}
-          <div>
-            <p
-              className="font-pixel"
-              style={{
-                fontSize: "7px",
-                color: "#ad7525",
-                letterSpacing: "0.1em",
-                marginBottom: "12px",
-              }}
-            >
-              &gt; HOW TO PLAY
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <Row keys={["W", "A", "S", "D"]} desc="MOVE YOUR HERO" />
-              <Row keys={["↑","↓","←","→"]} desc="ALSO WORKS" />
-              <Row keys={["SHIFT"]} desc="SPRINT (HOLD)" />
-              <Row keys={["E"]} desc="ENTER BUILDING (WHEN PROMPT SHOWS)" />
-              <Row keys={["ESC"]} desc="CLOSE ANY PANEL" />
-            </div>
-          </div>
-
-          {/* Building legend */}
-          <div>
-            <p
-              className="font-pixel"
-              style={{
-                fontSize: "7px",
-                color: "#ad7525",
-                letterSpacing: "0.1em",
-                marginBottom: "12px",
-              }}
-            >
-              &gt; WHAT EACH BUILDING HOLDS
-            </p>
+          {/* Phone players (reached via ?play=1) — the touch controls work, but
+              this world was built for a keyboard. */}
+          {isTouch && (
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "6px",
+                padding: "10px 14px",
+                background: "#1a1000",
+                border: "2px solid #c8861e",
+                boxShadow: "0 0 0 1px #000",
               }}
             >
-              {BUILDINGS_LEGEND.map((b) => (
-                <div
-                  key={b.name}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    padding: "8px 10px",
-                    background: "#050400",
-                    border: "2px solid #1e1600",
-                    boxShadow: "0 0 0 1px #000",
-                  }}
-                >
-                  <span style={{ fontSize: "18px", lineHeight: 1, flexShrink: 0 }}>
-                    {b.icon}
-                  </span>
-                  <div style={{ minWidth: 0 }}>
-                    <p
-                      className="font-pixel"
-                      style={{ fontSize: "7px", color: "#c8861e", marginBottom: "4px" }}
-                    >
-                      {b.name}
-                    </p>
-                    <p
-                      className="font-mono"
-                      style={{ fontSize: "10px", color: "#9b7c45" }}
-                    >
-                      {b.desc}
-                    </p>
-                  </div>
+              <p className="font-pixel" style={{ fontSize: "7px", color: "#f0c050", lineHeight: 2 }}>
+                💻 BEST ON A LAPTOP — OPEN THIS SITE ON A COMPUTER FOR THE FULL
+                EXPERIENCE. ON-SCREEN CONTROLS WORK HERE TOO.
+              </p>
+            </div>
+          )}
+
+          {/* Controls | building legend — side by side on wide screens, which is
+              what keeps the whole card inside one laptop viewport. */}
+          <div className="grid gap-5 md:grid-cols-2">
+            <div className="flex flex-col gap-4">
+              <div>
+                <SectionLabel>&gt; HOW TO PLAY</SectionLabel>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <Row keys={["W", "A", "S", "D"]} desc="MOVE (OR ARROW KEYS)" />
+                  <Row keys={["SHIFT"]} desc="SPRINT (HOLD)" />
+                  <Row keys={["E"]} desc="ENTER BUILDING (WHEN PROMPT SHOWS)" />
+                  <Row keys={["ESC"]} desc="CLOSE ANY PANEL" />
                 </div>
-              ))}
+              </div>
+
+              {/* Tip banner — the first thing dropped on very short screens */}
+              <div
+                className="[@media(max-height:640px)]:hidden"
+                style={{
+                  padding: "10px 14px",
+                  background: "#050a00",
+                  border: "2px solid #1a3000",
+                  boxShadow: "0 0 0 1px #000",
+                }}
+              >
+                <p
+                  className="font-pixel"
+                  style={{ fontSize: "7px", color: "#5b8e32", lineHeight: 2 }}
+                >
+                  💡 NAME LABELS FLOAT ABOVE EVERY BUILDING.
+                  WALK TOWARD ONE — THE [E] PROMPT WILL APPEAR.
+                </p>
+              </div>
+            </div>
+
+            {/* Building legend */}
+            <div>
+              <SectionLabel>&gt; WHAT EACH BUILDING HOLDS</SectionLabel>
+              <div className="grid grid-cols-2 gap-1.5 md:grid-cols-1">
+                {BUILDINGS_LEGEND.map((b) => (
+                  <div
+                    key={b.name}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      padding: "6px 10px",
+                      background: "#050400",
+                      border: "2px solid #1e1600",
+                      boxShadow: "0 0 0 1px #000",
+                    }}
+                  >
+                    <span style={{ fontSize: "16px", lineHeight: 1, flexShrink: 0 }}>
+                      {b.icon}
+                    </span>
+                    <div style={{ minWidth: 0 }}>
+                      <p
+                        className="font-pixel"
+                        style={{ fontSize: "7px", color: "#c8861e", marginBottom: "4px", lineHeight: 1.5 }}
+                      >
+                        {b.name}
+                      </p>
+                      <p
+                        className="font-mono"
+                        style={{ fontSize: "10px", color: "#9b7c45" }}
+                      >
+                        {b.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Tip banner */}
-          <div
-            style={{
-              padding: "10px 14px",
-              background: "#050a00",
-              border: "2px solid #1a3000",
-              boxShadow: "0 0 0 1px #000",
-            }}
-          >
-            <p
-              className="font-pixel"
-              style={{ fontSize: "7px", color: "#5b8e32", lineHeight: 2 }}
-            >
-              💡 NAME LABELS FLOAT ABOVE EVERY BUILDING.
-              WALK TOWARD ONE — THE [E] PROMPT WILL APPEAR.
-            </p>
-          </div>
-
-          {/* CTAs — play, or skip straight to the plain resume. Side by side so
-              a recruiter short on time sees the escape hatch without scrolling;
-              stacking them pushed it below the fold. */}
+        {/* ── Footer (pinned) — play, or skip straight to the plain resume.
+            Side by side so a recruiter short on time sees the escape hatch. ── */}
+        <div
+          className="shrink-0 px-6 pt-4 pb-3 flex flex-col gap-3"
+          style={{ background: "#0a0800", borderTop: "3px solid #000" }}
+        >
           <div style={{ display: "flex", gap: "10px", alignItems: "stretch" }}>
             <button
               onClick={dismiss}
@@ -265,10 +282,10 @@ export default function TutorialOverlay() {
               target="_blank"
               rel="noopener noreferrer"
               onClick={dismiss}
-              className="font-pixel py-4 flex flex-col items-center justify-center text-center"
+              className="font-pixel py-3 flex flex-col items-center justify-center text-center"
               style={{
                 flex: "1 1 42%",
-                background: "#0a0800",
+                background: "#0d0b08",
                 border: "3px solid #c8861e",
                 boxShadow: "4px 4px 0 #000",
                 color: "#f0c050",
@@ -281,7 +298,7 @@ export default function TutorialOverlay() {
                 (e.currentTarget as HTMLElement).style.background = "#1a1000";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#0a0800";
+                (e.currentTarget as HTMLElement).style.background = "#0d0b08";
               }}
             >
               <span>📄 IN A HURRY?</span>
@@ -291,9 +308,9 @@ export default function TutorialOverlay() {
 
           <p
             className="font-pixel text-center"
-            style={{ fontSize: "7px", color: "#b26622" }}
+            style={{ fontSize: "6px", color: "#b26622" }}
           >
-            THIS MESSAGE WON'T SHOW AGAIN THIS SESSION
+            THIS MESSAGE WON&apos;T SHOW AGAIN THIS SESSION
           </p>
         </div>
       </div>
