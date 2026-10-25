@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { createContext, useContext, useEffect, useId, useRef } from "react";
 
 /**
  * Grace period, in ms, before the backdrop will act on a click. Opening a
@@ -10,6 +10,20 @@ import { useEffect, useId, useRef } from "react";
  * the panel the instant it opens.
  */
 const BACKDROP_CLOSE_GRACE_MS = 300;
+
+/**
+ * Each building dresses its panels in its own Tiny Swords frame (slate, wood or
+ * parchment) with a title ribbon in its colour. Set by the panel router.
+ */
+export type PanelTheme = { frame: "slate" | "wood" | "paper" | "scroll"; ribbon: "blue" | "red" | "yellow" | "purple" | "black" };
+export const PanelThemeContext = createContext<PanelTheme | null>(null);
+
+const FRAMES = {
+  slate: { src: "/pixel/ui/frame_slate.png", slice: 64, width: 26 },
+  paper: { src: "/pixel/ui/frame_paper.png", slice: 64, width: 26 },
+  wood: { src: "/pixel/ui/frame_wood.png", slice: 128, width: 44 },
+  scroll: { src: "/pixel/ui/frame_scroll.png", slice: "40 20", width: "40px 20px" },
+} as const;
 
 type Props = {
   title: string;
@@ -36,6 +50,9 @@ export default function InfoPanel({
   maxWidth = "max-w-2xl",
 }: Props) {
   const titleId = useId();
+  const theme = useContext(PanelThemeContext);
+  const frame = theme ? FRAMES[theme.frame] : null;
+  const scroll = theme?.frame === "scroll";
   const panelRef = useRef<HTMLDivElement>(null);
   const canCloseOnBackdropRef = useRef(false);
 
@@ -99,18 +116,28 @@ export default function InfoPanel({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`panel-pop-in relative ${maxWidth} w-full max-h-[88vh] flex flex-col outline-none`}
-        style={{
-          background: "#0d0b08",
-          border: "3px solid #c8861e",
-          boxShadow:
-            "0 0 0 3px #000, inset 0 0 0 3px #000, 0 0 0 8px rgba(200,134,30,0.15)",
-          imageRendering: "pixelated",
-        }}
+        className={`panel-pop-in relative ${maxWidth} w-full max-h-[88vh] flex flex-col outline-none ${scroll ? "ink-scroll" : ""}`}
+        style={
+          frame
+            ? {
+                borderStyle: "solid",
+                borderWidth: typeof frame.width === "number" ? `${frame.width}px` : frame.width,
+                borderImage: `url(${frame.src}) ${frame.slice} fill / ${typeof frame.width === "number" ? `${frame.width}px` : frame.width} / 0 ${scroll ? "repeat" : "stretch"}`,
+                imageRendering: "pixelated",
+                filter: "drop-shadow(0 10px 0 rgba(0,0,0,0.45))",
+              }
+            : {
+                background: "#0d0b08",
+                border: "3px solid #c8861e",
+                boxShadow:
+                  "0 0 0 3px #000, inset 0 0 0 3px #000, 0 0 0 8px rgba(200,134,30,0.15)",
+                imageRendering: "pixelated",
+              }
+        }
         onClick={(e) => e.stopPropagation()}
       >
         {/* Corner ornaments — a framed-dialog flourish, common RPG-window treatment */}
-        {(["top-left", "top-right", "bottom-left", "bottom-right"] as const).map((corner) => {
+        {!frame && (["top-left", "top-right", "bottom-left", "bottom-right"] as const).map((corner) => {
           const isTop = corner.startsWith("top");
           const isLeft = corner.endsWith("left");
           return (
@@ -135,13 +162,17 @@ export default function InfoPanel({
         <div
           className="relative flex-shrink-0 flex items-center gap-3 px-5 py-4 overflow-hidden"
           style={{
-            background:
-              "linear-gradient(180deg, #1a1000 0%, #100c00 100%)",
-            borderBottom: "3px solid #000",
+            background: scroll
+              ? "transparent"
+              : frame
+                ? "rgba(14,10,6,0.82)"
+                : "linear-gradient(180deg, #1a1000 0%, #100c00 100%)",
+            borderBottom: scroll ? "2px dashed rgba(122,85,48,0.55)" : "3px solid #000",
           }}
         >
-          {/* Scanline overlay on header */}
+          {/* Scanline overlay on header (dark theme only — parchment has no scanlines) */}
           <div
+            hidden={scroll}
             className="pointer-events-none absolute inset-0"
             style={{
               backgroundImage:
@@ -157,8 +188,8 @@ export default function InfoPanel({
               style={{
                 width: "34px",
                 height: "34px",
-                background: "#0a0600",
-                border: "2px solid #5a4020",
+                background: scroll ? "rgba(255,246,220,0.5)" : "#0a0600",
+                border: scroll ? "2px solid #b8925e" : "2px solid #5a4020",
                 boxShadow: "0 0 0 1px #000, inset 0 0 8px rgba(200,134,30,0.2)",
                 color: "#f0c050",
                 imageRendering: "pixelated",
@@ -173,37 +204,56 @@ export default function InfoPanel({
             {subtitle && (
               <p
                 className="font-pixel text-[7px] mb-1.5 truncate"
-                style={{ color: "#b78a2a", letterSpacing: "0.15em" }}
+                style={{ color: scroll ? "var(--ink-muted)" : "#b78a2a", letterSpacing: "0.15em" }}
               >
                 {subtitle}
               </p>
             )}
-            <h2
-              id={titleId}
-              className="font-pixel text-[11px] leading-tight truncate"
-              style={{ color: "#f0c050" }}
-            >
-              {title}
-            </h2>
+            {theme ? (
+              <h2
+                id={titleId}
+                className="font-pixel text-[11px] leading-none truncate inline-flex items-center"
+                style={{
+                  color: "#fffaf0",
+                  textShadow: "2px 2px 0 rgba(0,0,0,0.55)",
+                  height: "34px",
+                  maxWidth: "100%",
+                  padding: "0 4px",
+                  borderStyle: "solid",
+                  borderWidth: "0 22px",
+                  borderImage: `url(/pixel/ui/ribbon_${theme.ribbon}.png) 0 64 fill / 0 22px / 0 stretch`,
+                  imageRendering: "pixelated",
+                }}
+              >
+                {title}
+              </h2>
+            ) : (
+              <h2
+                id={titleId}
+                className="font-pixel text-[11px] leading-tight truncate"
+                style={{ color: "#f0c050" }}
+              >
+                {title}
+              </h2>
+            )}
           </div>
 
           {/* Close button — pixel style */}
           <button
             onClick={onClose}
             className="relative z-10 flex-shrink-0 font-pixel text-[9px] px-3 py-2 transition-colors"
-            style={{
-              background: "#1a0a00",
-              color: "#c8861e",
-              border: "2px solid #c8861e",
-              boxShadow: "2px 2px 0 #000",
-            }}
+            style={
+              scroll
+                ? { background: "#8e2f1c", color: "#fbe9c8", border: "2px solid #4e150c", boxShadow: "2px 2px 0 rgba(78,21,12,0.6)" }
+                : { background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e", boxShadow: "2px 2px 0 #000" }
+            }
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#3a1a00";
-              (e.currentTarget as HTMLElement).style.color = "#f0c050";
+              (e.currentTarget as HTMLElement).style.background = scroll ? "#a8402a" : "#3a1a00";
+              (e.currentTarget as HTMLElement).style.color = scroll ? "#fff4dc" : "#f0c050";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#1a0a00";
-              (e.currentTarget as HTMLElement).style.color = "#c8861e";
+              (e.currentTarget as HTMLElement).style.background = scroll ? "#8e2f1c" : "#1a0a00";
+              (e.currentTarget as HTMLElement).style.color = scroll ? "#fbe9c8" : "#c8861e";
             }}
             aria-label="Close panel"
           >
@@ -220,9 +270,8 @@ export default function InfoPanel({
         <div
           className="flex-1 overflow-y-auto pixel-scroll p-5 panel-stagger"
           style={{
-            backgroundImage:
-              "radial-gradient(ellipse at 50% 0%, rgba(60,40,10,0.12) 0%, rgba(0,0,0,0) 60%)",
-            backgroundColor: "#0a0800",
+            backgroundColor: scroll ? "transparent" : frame ? "rgba(10,8,4,0.86)" : "#0a0800",
+            backgroundImage: scroll ? "none" : "radial-gradient(ellipse at 50% 0%, rgba(60,40,10,0.12) 0%, rgba(0,0,0,0) 60%)",
           }}
         >
           {children}
@@ -232,26 +281,26 @@ export default function InfoPanel({
         <div
           className="flex-shrink-0 flex items-center justify-between px-5 py-2.5"
           style={{
-            borderTop: "3px solid #000",
-            background: "#0a0800",
+            borderTop: scroll ? "2px dashed rgba(122,85,48,0.55)" : "3px solid #000",
+            background: scroll ? "transparent" : frame ? "rgba(10,8,4,0.86)" : "#0a0800",
           }}
         >
           {/* Flicker cursor decoration */}
           <span
             className="font-pixel text-[7px]"
-            style={{ color: "#ad7525" }}
+            style={{ color: "var(--ink-muted)" }}
           >
             ▼
           </span>
           <p
             className="font-pixel text-[7px]"
-            style={{ color: "#ad7525", letterSpacing: "0.1em" }}
+            style={{ color: "var(--ink-muted)", letterSpacing: "0.1em" }}
           >
             [ESC] CLOSE
           </p>
           <span
             className="font-pixel text-[7px]"
-            style={{ color: "#ad7525" }}
+            style={{ color: "var(--ink-muted)" }}
           >
             ▼
           </span>

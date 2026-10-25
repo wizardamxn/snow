@@ -10,7 +10,7 @@ const LOADING_TIPS = [
   "Press [E] near a building to step inside.",
   "Hold SHIFT to sprint across the Frontier.",
   "There's a hidden terminal near spawn — try typing \"help\".",
-  "A chieftain guards the north — bring your sword.",
+  "The Black Knight holds the north — bring your sword.",
   "Press [T] to fast-forward through the day/night cycle.",
 ];
 

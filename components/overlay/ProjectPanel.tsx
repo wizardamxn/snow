@@ -6,6 +6,7 @@ import remarkGfm from "remark-gfm";
 import { getCaseStudy } from "@/lib/actions/caseStudies";
 import projectsData from "@/lib/data/projects.json";
 import ProjectMedia from "@/components/resume/ProjectMedia";
+import InfoPanel from "./InfoPanel";
 
 /**
  * Explicit type so TypeScript doesn't complain about optional fields that only
@@ -30,311 +31,204 @@ type Project = {
 
 const projects = projectsData as Project[];
 
+/** Ink colours for text written straight on the parchment. */
+export const INK = {
+  heading: "#7a2614",
+  accent: "#8e2f1c",
+  body: "#2e1f10",
+  muted: "#6b4d2c",
+  rule: "#b8925e",
+};
+
+/** A red wax seal — used for the main actions and stamps. */
+export const SEAL: React.CSSProperties = {
+  background: "#8e2f1c",
+  color: "#fbeccd",
+  border: "2px solid #4e150c",
+  boxShadow: "2px 2px 0 rgba(78,21,12,0.45)",
+};
+
 type Props = {
   /** ID from projects.json */
   projectId: string;
   /** Close the entire panel stack (Esc / ✕) */
   onClose: () => void;
-  /** If provided, shows a "← Back" button that returns to the caller (e.g. RelicsPanel grid) */
+  /** If provided, shows a "Back to the vault" link that returns to the gallery */
   onBack?: () => void;
 };
 
-/**
- * Full-screen project detail panel. Now prop-driven (no longer self-subscribing
- * to bus.onOpen) so it can be embedded inside RelicsPanel's gallery flow.
- */
+const Heading = ({ children }: { children: React.ReactNode }) => (
+  <h3 className="font-pixel text-[9px] mb-3 flex items-center gap-2" style={{ color: INK.heading }}>
+    <span aria-hidden>❦</span>
+    {children}
+    <span aria-hidden className="h-px flex-1" style={{ background: INK.rule }} />
+  </h3>
+);
+
+/** One project, written up as a scroll: picture, the story in three lines, deeds, tools, and the full chronicle. */
 export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
   const [markdown, setMarkdown] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  // Esc closes the whole stack
   useEffect(() => {
-    const handle = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handle);
-    return () => window.removeEventListener("keydown", handle);
-  }, [onClose]);
-
-  // Fetch case study when project changes
-  useEffect(() => {
-    setMarkdown(null);
-    setLoading(true);
+    let live = true;
     getCaseStudy(projectId)
-      .then((content) => setMarkdown(content))
-      .catch(() => setMarkdown(null))
-      .finally(() => setLoading(false));
+      .then((content) => live && setMarkdown(content))
+      .catch(() => live && setMarkdown(null));
+    return () => {
+      live = false;
+    };
   }, [projectId]);
 
   const project = projects.find((p) => p.id === projectId);
   if (!project) return null;
 
-  const repoLinks =
-    project.repoUrls ??
-    (project.repoUrl ? [{ label: "Repository", url: project.repoUrl }] : []);
+  const repoLinks = project.repoUrls ?? (project.repoUrl ? [{ label: "Code", url: project.repoUrl }] : []);
 
   return (
-    <div
-      className="pointer-events-auto absolute inset-0 flex items-center justify-center p-4"
-      style={{ background: "rgba(0,0,0,0.88)" }}
-      onClick={onClose}
-    >
-      <div
-        className="relative max-h-[86vh] w-full max-w-3xl overflow-y-auto pixel-scroll text-stone-100"
-        style={{
-          background: "#0d0b08",
-          border: "3px solid #c8861e",
-          boxShadow: "0 0 0 3px #000, inset 0 0 0 3px #000, 0 0 0 8px rgba(200,134,30,0.15)",
-          imageRendering: "pixelated",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* ── Top action bar ─────────────────────────────────────────────── */}
-        <div
-          className="flex items-center gap-2 px-4 py-3"
-          style={{ borderBottom: "3px solid #000", background: "#0a0800" }}
-        >
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="font-pixel text-[7px] px-3 py-2"
-              style={{
-                background: "#0a0600",
-                border: "2px solid #4a3010",
-                boxShadow: "2px 2px 0 #000",
-                color: "#c8861e",
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "#c8861e"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = "#4a3010"; }}
-            >
-              ◄ BACK TO VAULT
-            </button>
-          )}
-          <div className="ml-auto">
-            <button
-              onClick={onClose}
-              className="font-pixel text-[7px] px-3 py-2"
-              style={{
-                background: "#1a0a00",
-                border: "2px solid #c8861e",
-                boxShadow: "2px 2px 0 #000",
-                color: "#c8861e",
-              }}
-              aria-label="Close project panel"
-            >
-              [X] CLOSE
-            </button>
-          </div>
-        </div>
+    <InfoPanel title={project.title.toUpperCase()} subtitle="A RELIC OF THE VAULT" icon="🏺" onClose={onClose} maxWidth="max-w-3xl">
+      <div className="flex flex-col gap-6">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            className="font-pixel text-[8px] self-start hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8e2f1c]"
+            style={{ color: INK.accent }}
+          >
+            ‹ BACK TO THE VAULT
+          </button>
+        )}
 
-        {/* ── Hero image ─────────────────────────────────────────────────── */}
+        {/* Picture in a gilded frame, with the one-line story beside the actions. */}
         <div
-          className="relative w-full overflow-hidden"
-          style={{ height: "200px", borderBottom: "3px solid #000" }}
+          className="relative w-full overflow-hidden aspect-[16/8]"
+          style={{ border: "6px solid #b8862a", boxShadow: `0 0 0 2px ${INK.rule}, 4px 4px 0 2px rgba(74,48,26,0.35)` }}
         >
           <ProjectMedia
             video={project.video}
             poster={project.poster}
             image={project.image}
-            alt={project.title}
+            alt={`${project.title} screenshot`}
             autoplay
-            sizes="(max-width: 768px) 100vw, 48rem"
-            className="object-cover"
-            imageStyle={{ filter: "contrast(1.05) saturate(0.95)" }}
+            sizes="(max-width: 768px) 100vw, 46rem"
+            className="object-cover object-top"
           />
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(to top, rgba(13,11,8,0.95) 0%, rgba(13,11,8,0.3) 50%, transparent 100%)",
-            }}
-          />
-          {/* Title over image */}
-          <div className="absolute bottom-4 left-5 right-5">
-            <h2
-              className="font-pixel text-[11px] leading-snug"
-              style={{ color: "#f0c050" }}
-            >
-              {project.title.toUpperCase()}
-            </h2>
-          </div>
         </div>
 
-        {/* ── Content ────────────────────────────────────────────────────── */}
-        <div className="space-y-5 p-5">
-          {/* Description */}
-          <p
-            className="font-mono text-sm leading-relaxed"
-            style={{ color: "#a09070" }}
-          >
-            {project.description}
-          </p>
+        <p className="font-scroll text-[18px] leading-relaxed" style={{ color: INK.body }}>
+          {project.description}
+        </p>
 
-          {/* TL;DR — the 20-second version. Nobody reads a 20KB case study cold,
-              so lead with Problem → Build → Result and let the deep dive follow. */}
-          {project.tldr && (
-            <div
-              style={{
-                background: "#0a0800",
-                border: "2px solid #c8861e",
-                boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
-              }}
-            >
-              <div className="px-4 py-2.5" style={{ borderBottom: "2px solid #000", background: "#140d00" }}>
-                <h3 className="font-pixel text-[7px]" style={{ color: "#f0c050" }}>
-                  ⚡ TL;DR
-                </h3>
-              </div>
-              <div className="p-4 space-y-3">
-                {(
-                  [
-                    ["PROBLEM", project.tldr.problem],
-                    ["BUILD", project.tldr.build],
-                    ["RESULT", project.tldr.result],
-                  ] as const
-                ).map(([label, text]) => (
-                  <div key={label} className="flex gap-3">
-                    <span
-                      className="font-pixel text-[7px] flex-shrink-0 pt-0.5"
-                      style={{ color: "#c8861e", width: "58px" }}
-                    >
-                      {label}
-                    </span>
-                    <span className="font-mono text-xs leading-relaxed" style={{ color: "#c0a878" }}>
-                      {text}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+        <div className="flex flex-wrap gap-2">
+          {project.liveUrl && !project.livePrivate && (
+            <a href={project.liveUrl} target="_blank" rel="noopener noreferrer" className="font-pixel text-[8px] px-4 py-2.5 hover:brightness-110" style={SEAL}>
+              ▶ VISIT IT LIVE
+            </a>
           )}
-
-          {/* Key highlights */}
-          <div
-            style={{
-              background: "#050400",
-              border: "2px solid #1e1600",
-              boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
-            }}
-          >
-            <div
-              className="px-4 py-2.5"
-              style={{ borderBottom: "2px solid #000", background: "#0a0800" }}
-            >
-              <h3 className="font-pixel text-[7px]" style={{ color: "#c8861e" }}>
-                &gt; KEY HIGHLIGHTS
-              </h3>
-            </div>
-            <ul className="p-4 space-y-2">
-              {project.highlights.map((h) => (
-                <li key={h} className="flex gap-2">
-                  <span className="font-pixel text-[7px] flex-shrink-0 mt-0.5" style={{ color: "#c8861e" }}>&gt;</span>
-                  <span className="font-mono text-xs leading-relaxed" style={{ color: "#a09070" }}>{h}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Technologies */}
-          <div>
-            <h3 className="font-pixel text-[7px] mb-2" style={{ color: "#ad7525" }}>
-              &gt; TECHNOLOGIES
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {project.technologies.map((t) => (
-                <span
-                  key={t}
-                  className="font-pixel text-[7px] px-2 py-1"
-                  style={{
-                    background: "#050400",
-                    border: "2px solid #1e1600",
-                    boxShadow: "1px 1px 0 #000",
-                    color: "#ac824e",
-                  }}
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Links */}
-          <div
-            className="flex flex-wrap gap-2 pt-4"
-            style={{ borderTop: "2px solid #000" }}
-          >
-            {project.liveUrl && !project.livePrivate && (
+          {!project.repoPrivate &&
+            repoLinks.map((r) => (
               <a
-                href={project.liveUrl}
+                key={r.url}
+                href={r.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-pixel text-[7px] px-4 py-2"
-                style={{
-                  background: "#c8861e",
-                  border: "2px solid #000",
-                  boxShadow: "3px 3px 0 #000",
-                  color: "#000",
-                }}
+                className="font-pixel text-[8px] px-4 py-2.5 hover:bg-[rgba(142,47,28,0.08)]"
+                style={{ color: INK.accent, border: `2px solid ${INK.accent}` }}
               >
-                ▶ LIVE DEMO
+                ◈ {r.label.toUpperCase()}
               </a>
-            )}
-            {project.livePrivate && (
-              <span
-                className="font-pixel text-[7px] px-3 py-2"
-                style={{ background: "#050400", border: "2px solid #1e1600", color: "#977339" }}
-              >
-                LIVE — CLIENT PRIVATE
-              </span>
-            )}
-            {!project.repoPrivate &&
-              repoLinks.map((r) => (
-                <a
-                  key={r.url}
-                  href={r.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-pixel text-[7px] px-4 py-2"
-                  style={{
-                    background: "#0a0800",
-                    border: "2px solid #c8861e",
-                    boxShadow: "3px 3px 0 #000",
-                    color: "#c8861e",
-                  }}
-                >
-                  ◈ {r.label}
-                </a>
-              ))}
-            {project.repoPrivate && (
-              <span
-                className="font-pixel text-[7px] px-3 py-2"
-                style={{ background: "#050400", border: "2px solid #1e1600", color: "#977339" }}
-              >
-                REPO — PRIVATE
-              </span>
-            )}
-          </div>
-
-          {/* Case study markdown */}
-          {loading ? (
-            <div
-              className="py-8 text-center font-pixel text-[7px]"
-              style={{ borderTop: "2px solid #000", color: "#a27016" }}
-            >
-              LOADING CASE STUDY...
-            </div>
-          ) : markdown ? (
-            <div style={{ borderTop: "2px solid #000", paddingTop: "20px" }}>
-              <h3 className="font-pixel text-[7px] mb-4" style={{ color: "#ad7525" }}>
-                &gt; CASE STUDY
-              </h3>
-              <article className="prose prose-stone prose-invert max-w-none text-stone-300 text-sm leading-relaxed prose-headings:font-mono prose-headings:text-amber-400/90 prose-a:text-amber-300 prose-strong:text-stone-100">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-              </article>
-            </div>
-          ) : null}
+            ))}
+          {(project.livePrivate || project.repoPrivate) && (
+            <span className="font-scroll italic text-[15px] self-center" style={{ color: INK.muted }}>
+              {project.livePrivate && project.repoPrivate
+                ? "Built for a client; the site and code are private."
+                : project.livePrivate
+                  ? "The live site is private to the client."
+                  : "The code is private."}
+            </span>
+          )}
         </div>
+
+        {project.tldr && (
+          <section>
+            <Heading>THE TALE IN BRIEF</Heading>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(
+                [
+                  ["THE PROBLEM", project.tldr.problem],
+                  ["WHAT I BUILT", project.tldr.build],
+                  ["THE RESULT", project.tldr.result],
+                ] as const
+              ).map(([label, text]) => (
+                <div key={label} className="p-3" style={{ border: `2px solid ${INK.rule}`, background: "rgba(255,248,226,0.5)" }}>
+                  <p className="font-pixel text-[7px] mb-2" style={{ color: INK.accent }}>
+                    {label}
+                  </p>
+                  <p className="font-scroll text-[15px] leading-snug" style={{ color: INK.body }}>
+                    {text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section>
+          <Heading>DEEDS</Heading>
+          <ul className="flex flex-col gap-2">
+            {project.highlights.map((h) => (
+              <li key={h} className="flex gap-2.5 font-scroll text-[16px] leading-snug" style={{ color: INK.body }}>
+                <span aria-hidden style={{ color: INK.accent }}>
+                  ✦
+                </span>
+                <span>{h}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <Heading>TOOLS OF THE CRAFT</Heading>
+          <div className="flex flex-wrap gap-1.5">
+            {project.technologies.map((t) => (
+              <span key={t} className="font-scroll text-[14px] px-2 py-0.5" style={{ color: INK.body, border: `1px solid ${INK.rule}`, background: "rgba(255,248,226,0.5)" }}>
+                {t}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        {markdown && (
+          <details className="group" style={{ borderTop: `2px dashed ${INK.rule}`, paddingTop: "16px" }}>
+            <summary className="font-pixel text-[9px] cursor-pointer select-none list-none flex items-center gap-2" style={{ color: INK.heading }}>
+              <span className="transition-transform group-open:rotate-90" aria-hidden>
+                ▶
+              </span>
+              READ THE FULL CHRONICLE
+            </summary>
+            <article
+              className="font-scroll mt-4 prose max-w-none text-[16px] leading-relaxed prose-headings:font-scroll prose-headings:font-bold prose-h1:text-[24px] prose-h2:text-[20px] prose-h3:text-[17px] prose-li:my-0.5 prose-pre:bg-[#2e1f10] prose-pre:text-[#f6e6c4] prose-code:before:content-none prose-code:after:content-none"
+              style={
+                {
+                  "--tw-prose-body": INK.body,
+                  "--tw-prose-headings": INK.heading,
+                  "--tw-prose-links": INK.accent,
+                  "--tw-prose-bold": INK.body,
+                  "--tw-prose-bullets": INK.accent,
+                  "--tw-prose-counters": INK.accent,
+                  "--tw-prose-hr": INK.rule,
+                  "--tw-prose-quotes": INK.muted,
+                  "--tw-prose-quote-borders": INK.rule,
+                  "--tw-prose-code": INK.heading,
+                  "--tw-prose-th-borders": INK.rule,
+                  "--tw-prose-td-borders": INK.rule,
+                } as React.CSSProperties
+              }
+            >
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+            </article>
+          </details>
+        )}
       </div>
-    </div>
+    </InfoPanel>
   );
 }

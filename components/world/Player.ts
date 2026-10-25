@@ -2,7 +2,7 @@ import { Container, Graphics, Sprite, Texture } from "pixi.js";
 import { getTex, sliceFrames } from "./tiles";
 import { input, KEY } from "./input";
 
-const PLAYER_H = 74; // display height in world px
+const PLAYER_H = 88; // display height in world px
 const FRAME = 192; // source frame size of the Warrior strips
 const SPEED = 155; // walk speed, world px/s
 const SPRINT = 1.7;
@@ -45,7 +45,7 @@ export async function createPlayer(startX: number, startY: number): Promise<Play
   const container = new Container();
 
   const shadow = new Graphics()
-    .ellipse(0, -2, 18, 7)
+    .ellipse(0, -2, 21, 8)
     .fill({ color: 0x000000, alpha: 0.28 });
   container.addChild(shadow);
 

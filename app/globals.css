@@ -1,10 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Panel ink — gold on black by default; .ink-scroll swaps to ink on parchment. */
+  --ink-strong: #f0c050;
+  --ink-accent: #c8861e;
+  --ink-muted: #ad7525;
+  --ink-body: #c0a878;
+  --card-bg: #0a0800;
+  --card-line: #4a3010;
+  --px-black: #000;
+}
+
+.ink-scroll {
+  --ink-strong: #3a210f;
+  --ink-accent: #8e2f1c;
+  --ink-muted: #7b5a33;
+  --ink-body: #4b3420;
+  --card-bg: rgba(255, 246, 220, 0.42);
+  --card-line: #b8925e;
+  --px-black: #7a5530;
+  --chip-ink: #6b2a18;
 }
 
 @theme inline {
@@ -30,6 +50,11 @@ body {
 /* ── Pixel font utility ─────────────────────────────────────────────────── */
 .font-pixel {
   font-family: 'Press Start 2P', monospace;
+}
+
+/* Readable book face for long text written on the parchment scrolls. */
+.font-scroll {
+  font-family: 'Alegreya', Georgia, 'Times New Roman', serif;
 }
 
 /* ── Pixel RPG scrollbar — site-wide ────────────────────────────────────────

@@ -23,6 +23,7 @@ type OpenHandler = (id: string) => void;
 type VisitHandler = (id: string) => void;
 type TourHandler = (info: TourInfo) => void;
 type TourCommandHandler = (cmd: "start" | "skip") => void;
+type TravelHandler = (id: string) => void;
 
 const sceneHandlers = new Set<SceneHandler>();
 const nearHandlers = new Set<NearHandler>();
@@ -30,6 +31,7 @@ const openHandlers = new Set<OpenHandler>();
 const visitHandlers = new Set<VisitHandler>();
 const tourHandlers = new Set<TourHandler>();
 const tourCommandHandlers = new Set<TourCommandHandler>();
+const travelHandlers = new Set<TravelHandler>();
 
 export const bus = {
   emitScene(scene: Scene) {
@@ -84,5 +86,14 @@ export const bus = {
   onTourCommand(h: TourCommandHandler): () => void {
     tourCommandHandlers.add(h);
     return () => tourCommandHandlers.delete(h);
+  },
+
+  emitTravel(id: string) {
+    travelHandlers.forEach((h) => h(id));
+  },
+  /** UI → world: walk the player to a place (by landmark id) and open it on arrival. */
+  onTravel(h: TravelHandler): () => void {
+    travelHandlers.add(h);
+    return () => travelHandlers.delete(h);
   },
 };

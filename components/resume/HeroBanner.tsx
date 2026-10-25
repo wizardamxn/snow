@@ -47,8 +47,8 @@ export default function HeroBanner() {
             CLASS: FULL-STACK DEVELOPER
           </p>
           <p className="mt-3 max-w-xl font-mono text-sm leading-relaxed" style={{ color: "#9a8560" }}>
-            B.Tech &apos;27 · two production internships shipping web and mobile apps end-to-end —
-            React, Next.js, Node, React Native, AWS EC2.
+            B.Tech &apos;27 · three production internships shipping web apps, mobile apps and AI agents
+            end-to-end — React, Next.js, Node, React Native, Claude API.
           </p>
 
           <div className="mt-3 flex justify-center sm:justify-start">

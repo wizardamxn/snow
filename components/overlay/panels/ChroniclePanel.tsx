@@ -17,9 +17,9 @@ type Stats = {
 };
 
 const row: React.CSSProperties = {
-  background: "#0a0800",
-  border: "2px solid #2a1800",
-  boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
+  background: "var(--card-bg)",
+  border: "2px solid var(--card-bg)",
+  boxShadow: "0 0 0 2px var(--px-black), inset 0 0 0 2px var(--px-black)",
 };
 
 export default function ChroniclePanel({ onClose }: Props) {
@@ -42,13 +42,13 @@ export default function ChroniclePanel({ onClose }: Props) {
     >
       <div className="space-y-4">
         {!stats && (
-          <p className="font-pixel text-[7px] text-center" style={{ color: "#a7773b" }}>
+          <p className="font-pixel text-[7px] text-center" style={{ color: "var(--ink-muted)" }}>
             READING THE LEDGER...
           </p>
         )}
 
         {stats && !stats.available && (
-          <p className="font-mono text-sm text-center leading-relaxed" style={{ color: "#a18555" }}>
+          <p className="font-mono text-sm text-center leading-relaxed" style={{ color: "var(--ink-body)" }}>
             The ledger is empty — no travelers have been recorded yet.
           </p>
         )}
@@ -57,42 +57,42 @@ export default function ChroniclePanel({ onClose }: Props) {
           <>
             <div className="grid grid-cols-2 gap-2">
               <div className="p-3 text-center" style={row}>
-                <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
+                <p className="font-pixel text-[14px]" style={{ color: "var(--ink-strong)" }}>
                   {stats.visitors ?? 0}
                 </p>
-                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "var(--ink-muted)" }}>
                   TRAVELERS
                 </p>
               </div>
               <div className="p-3 text-center" style={row}>
-                <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
+                <p className="font-pixel text-[14px]" style={{ color: "var(--ink-strong)" }}>
                   {stats.bossKills ?? 0}
                 </p>
-                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "var(--ink-muted)" }}>
                   CHIEFTAINS SLAIN
                 </p>
               </div>
               <div className="p-3 text-center" style={row}>
-                <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
+                <p className="font-pixel text-[14px]" style={{ color: "var(--ink-strong)" }}>
                   {stats.gameSessions ?? 0}
                 </p>
-                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "var(--ink-muted)" }}>
                   ENTERED THE FRONTIER
                 </p>
               </div>
               <div className="p-3 text-center" style={row}>
-                <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
+                <p className="font-pixel text-[14px]" style={{ color: "var(--ink-strong)" }}>
                   {stats.resumeDownloads ?? 0}
                 </p>
-                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "var(--ink-muted)" }}>
                   RESUMES CLAIMED
                 </p>
               </div>
               <div className="p-3 text-center col-span-2" style={row}>
-                <p className="font-pixel text-[14px]" style={{ color: "#f0c050" }}>
+                <p className="font-pixel text-[14px]" style={{ color: "var(--ink-strong)" }}>
                   {stats.tourStarts ?? 0}
                 </p>
-                <p className="font-pixel text-[7px] mt-2" style={{ color: "#a7773b" }}>
+                <p className="font-pixel text-[7px] mt-2" style={{ color: "var(--ink-muted)" }}>
                   RECRUITER TOURS TAKEN
                 </p>
               </div>
@@ -100,10 +100,10 @@ export default function ChroniclePanel({ onClose }: Props) {
 
             {stats.mostVisited && (
               <div className="p-3 text-center" style={row}>
-                <p className="font-pixel text-[7px]" style={{ color: "#a7773b" }}>
+                <p className="font-pixel text-[7px]" style={{ color: "var(--ink-muted)" }}>
                   MOST VISITED HALL
                 </p>
-                <p className="font-pixel text-[9px] mt-2" style={{ color: "#f0c050" }}>
+                <p className="font-pixel text-[9px] mt-2" style={{ color: "var(--ink-strong)" }}>
                   {stats.mostVisited.label.toUpperCase()} · {stats.mostVisited.count}
                 </p>
               </div>

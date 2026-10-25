@@ -20,7 +20,7 @@ export default function RecruiterTourPrompt({ onClose }: Props) {
       maxWidth="max-w-md"
     >
       <div className="space-y-4 text-center">
-        <p className="font-mono text-sm leading-relaxed" style={{ color: "#9a8560" }}>
+        <p className="font-mono text-sm leading-relaxed" style={{ color: "var(--ink-body)" }}>
           Short on time? Let the hero walk itself — a quick guided tour through
           all six halls, ending at Contact.
         </p>
@@ -28,14 +28,14 @@ export default function RecruiterTourPrompt({ onClose }: Props) {
           <button
             onClick={start}
             className="font-pixel text-[8px] px-4 py-3 transition-colors"
-            style={{ background: "#c8861e", color: "#000", border: "3px solid #000", boxShadow: "4px 4px 0 #000" }}
+            style={{ background: "var(--ink-accent)", color: "var(--px-black)", border: "3px solid var(--px-black)", boxShadow: "4px 4px 0 var(--px-black)" }}
           >
             ▶ START TOUR
           </button>
           <button
             onClick={onClose}
             className="font-pixel text-[8px] px-4 py-3 transition-colors"
-            style={{ background: "#1a0a00", color: "#c8861e", border: "2px solid #c8861e" }}
+            style={{ background: "var(--card-bg)", color: "var(--ink-accent)", border: "2px solid var(--ink-accent)" }}
           >
             NO THANKS
           </button>

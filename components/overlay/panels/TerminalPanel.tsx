@@ -26,8 +26,8 @@ const PROMPT = "guest@amanahmad:~$";
 
 const ABOUT = [
   "Aman Ahmad — Full Stack Developer.",
-  "Shipping production-grade apps: React, Next.js, Node, React Native, AWS EC2.",
-  "Currently @ Cerope. Previously @ KodeCompiler. A handful of freelance builds on the side.",
+  "Shipping production-grade apps and AI agents: React, Next.js, Node, React Native, Claude API.",
+  "Currently @ 10ex.ai. Previously @ Cerope and KodeCompiler. A handful of freelance builds on the side.",
 ];
 
 const EXPERIENCE = experience.flatMap((job) => [
@@ -262,7 +262,7 @@ export default function TerminalPanel({ onClose }: Props) {
     <InfoPanel title="THE TERMINAL" subtitle="ACCESS GRANTED" icon="💻" onClose={onClose} maxWidth="max-w-2xl">
       <div
         className="p-3 font-mono text-[13px] leading-relaxed"
-        style={{ background: "#050705", border: "2px solid #0d1c0d", minHeight: "320px" }}
+        style={{ background: "#050705", border: "6px solid #3a3a36", boxShadow: "0 0 0 2px #1a1a18, inset 0 0 24px rgba(61,220,90,0.08)", minHeight: "320px" }}
         onClick={() => inputRef.current?.focus()}
       >
         <div ref={scrollRef} className="max-h-[45vh] overflow-y-auto pixel-scroll">

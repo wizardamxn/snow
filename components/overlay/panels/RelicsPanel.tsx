@@ -3,14 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import InfoPanel from "../InfoPanel";
-import ProjectPanel from "../ProjectPanel";
+import ProjectPanel, { INK, SEAL } from "../ProjectPanel";
 import projectsData from "@/lib/data/projects.json";
 
 type Project = {
   id: string;
   title: string;
   description: string;
-  highlights: string[];
   image: string;
   liveUrl?: string;
   livePrivate?: boolean;
@@ -22,160 +21,68 @@ const projects = projectsData as Project[];
 
 type Props = { onClose: () => void };
 
+/** The vault's ledger: one entry per project, picture on the left, the tale on the right. */
 export default function RelicsPanel({ onClose }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // ── Level 2: project detail ──────────────────────────────────────────────
   if (selectedId) {
-    return (
-      <ProjectPanel
-        projectId={selectedId}
-        onClose={onClose}
-        onBack={() => setSelectedId(null)}
-      />
-    );
+    return <ProjectPanel projectId={selectedId} onClose={onClose} onBack={() => setSelectedId(null)} />;
   }
 
-  // ── Level 1: gallery grid ────────────────────────────────────────────────
   return (
-    <InfoPanel
-      title="VAULT OF RELICS"
-      subtitle="PROJECTS & WORKS"
-      icon="🏺"
-      onClose={onClose}
-      maxWidth="max-w-3xl"
-    >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        {projects.map((project) => (
-          <button
-            key={project.id}
-            onClick={() => setSelectedId(project.id)}
-            className="group text-left focus:outline-none"
-            style={{
-              background: "#050400",
-              border: "2px solid #1e1600",
-              boxShadow: "0 0 0 2px #000",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#c8861e";
-              (e.currentTarget as HTMLElement).style.boxShadow =
-                "0 0 0 2px #000, 4px 4px 0 #000";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "#1e1600";
-              (e.currentTarget as HTMLElement).style.boxShadow = "0 0 0 2px #000";
-            }}
-          >
-            {/* Thumbnail */}
-            <div
-              className="relative overflow-hidden"
-              style={{ height: "120px", borderBottom: "2px solid #000" }}
+    <InfoPanel title="VAULT OF RELICS" subtitle="PROJECTS & WORKS" icon="🏺" onClose={onClose} maxWidth="max-w-3xl">
+      <p className="font-scroll italic text-[15px] mb-4" style={{ color: INK.muted }}>
+        Five works, each with its full tale. Choose one to read it.
+      </p>
+      <ul className="flex flex-col gap-3">
+        {projects.map((p) => (
+          <li key={p.id}>
+            <button
+              type="button"
+              onClick={() => setSelectedId(p.id)}
+              className="group grid w-full grid-cols-1 sm:grid-cols-[200px_1fr] gap-4 p-3 text-left transition-colors hover:bg-[rgba(122,85,48,0.12)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8e2f1c]"
+              style={{ border: `2px solid ${INK.rule}`, background: "rgba(255,248,226,0.45)" }}
             >
-              <Image
-                src={project.image}
-                alt={project.title}
-                fill
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover pixel-img"
-                style={{
-                  imageRendering: "pixelated",
-                  filter: "contrast(1.1) saturate(0.9)",
-                }}
-              />
-              {/* Dark overlay */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to top, rgba(5,4,0,0.9) 0%, rgba(5,4,0,0.2) 50%, transparent 100%)",
-                }}
-              />
-              {/* Private badge */}
-              {(project.livePrivate || project.repoPrivate) && (
-                <span
-                  className="absolute top-1.5 right-1.5 font-pixel text-[7px] px-1.5 py-1"
-                  style={{
-                    background: "#000",
-                    border: "2px solid #3a2808",
-                    color: "#a17a46",
-                  }}
-                >
-                  PRIVATE
+              <span
+                className="relative block aspect-[16/10] w-full overflow-hidden"
+                style={{ border: "4px solid #b8862a", boxShadow: `0 0 0 2px ${INK.rule}, 3px 3px 0 2px rgba(74,48,26,0.35)` }}
+              >
+                <Image src={p.image} alt="" fill sizes="(max-width: 640px) 100vw, 200px" className="object-cover object-top" />
+              </span>
+              <span className="flex min-w-0 flex-col gap-2">
+                <span className="flex flex-wrap items-center gap-2">
+                  <span className="font-pixel text-[11px]" style={{ color: INK.heading }}>
+                    {p.title.toUpperCase()}
+                  </span>
+                  {(p.livePrivate || p.repoPrivate) && (
+                    <span className="font-pixel text-[7px] px-1.5 py-1" style={{ ...SEAL, background: "#5b4a3a" }}>
+                      PRIVATE
+                    </span>
+                  )}
                 </span>
-              )}
-              {/* Title over image */}
-              <div className="absolute bottom-2 left-2 right-2">
-                <h3
-                  className="font-pixel text-[8px] leading-tight"
-                  style={{ color: "#f0c050" }}
-                >
-                  {project.title.toUpperCase()}
-                </h3>
-              </div>
-            </div>
-
-            {/* Info */}
-            <div className="p-3">
-              <p
-                className="font-mono text-xs leading-relaxed"
-                style={{
-                  color: "#9b7c45",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-              >
-                {project.description}
-              </p>
-
-              {/* Tech tags */}
-              <div className="mt-2 flex flex-wrap gap-1">
-                {project.technologies.slice(0, 3).map((t) => (
-                  <span
-                    key={t}
-                    className="font-pixel text-[5px] px-1.5 py-0.5"
-                    style={{
-                      background: "#0a0800",
-                      border: "1px solid #2a1e00",
-                      color: "#947529",
-                    }}
-                  >
-                    {t}
-                  </span>
-                ))}
-                {project.technologies.length > 3 && (
-                  <span
-                    className="font-pixel text-[5px] px-1.5 py-0.5"
-                    style={{ color: "#9e7100" }}
-                  >
-                    +{project.technologies.length - 3}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* View prompt */}
-            <div
-              className="flex items-center justify-between px-3 py-2"
-              style={{ borderTop: "2px solid #0a0800" }}
-            >
-              <span
-                className="font-pixel text-[7px]"
-                style={{ color: "#9e7100" }}
-              >
-                INSPECT RELIC
+                <span className="font-scroll text-[15px] leading-snug" style={{ color: INK.body }}>
+                  {p.description}
+                </span>
+                <span className="flex flex-wrap gap-1.5">
+                  {p.technologies.slice(0, 5).map((t) => (
+                    <span key={t} className="font-scroll text-[13px] px-1.5" style={{ color: INK.body, border: `1px solid ${INK.rule}` }}>
+                      {t}
+                    </span>
+                  ))}
+                  {p.technologies.length > 5 && (
+                    <span className="font-scroll text-[13px]" style={{ color: INK.muted }}>
+                      +{p.technologies.length - 5} more
+                    </span>
+                  )}
+                </span>
+                <span className="font-pixel text-[8px] mt-auto group-hover:underline" style={{ color: INK.accent }}>
+                  READ THE FULL TALE ›
+                </span>
               </span>
-              <span
-                className="font-pixel text-[7px]"
-                style={{ color: "#ad7525" }}
-              >
-                &gt;
-              </span>
-            </div>
-          </button>
+            </button>
+          </li>
         ))}
-      </div>
+      </ul>
     </InfoPanel>
   );
 }

@@ -1,6 +1,6 @@
 const STATS = [
-  { label: "EXPERIENCE", value: "9+ MO", fill: 0.4 },
-  { label: "GUILDS JOINED", value: "2", fill: 0.55 },
+  { label: "EXPERIENCE", value: "1 YR", fill: 0.5 },
+  { label: "GUILDS JOINED", value: "3", fill: 0.7 },
   { label: "RELICS FORGED", value: "5", fill: 0.7 },
   { label: "CLASS", value: "FULL-STACK", fill: 1 },
 ];

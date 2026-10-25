@@ -199,8 +199,9 @@ export default function TutorialOverlay() {
                   className="font-pixel"
                   style={{ fontSize: "7px", color: "#5b8e32", lineHeight: 2 }}
                 >
-                  💡 NAME LABELS FLOAT ABOVE EVERY BUILDING.
-                  WALK TOWARD ONE — THE [E] PROMPT WILL APPEAR.
+                  💡 NO NEED TO EXPLORE: CLICK A PLACE IN
+                  &quot;WHERE TO?&quot; (OR PRESS 1–6) AND YOUR HERO WALKS THERE.
+                  THE GOLD ARROW POINTS TO WHAT YOU HAVEN&apos;T SEEN.
                 </p>
               </div>
             </div>
