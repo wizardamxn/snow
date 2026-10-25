@@ -21,9 +21,9 @@ export default function ArmoryPanel({ onClose }: Props) {
             <div
               key={category.category}
               style={{
-                background: "#050400",
+                background: "var(--card-bg)",
                 border: `2px solid ${meta.accent}`,
-                boxShadow: `0 0 0 2px #000, inset 0 0 0 2px #000`,
+                boxShadow: `0 0 0 2px var(--px-black), inset 0 0 0 2px var(--px-black)`,
               }}
             >
               {/* Category header */}
@@ -31,7 +31,7 @@ export default function ArmoryPanel({ onClose }: Props) {
                 className="flex items-center gap-2 px-3 py-2.5"
                 style={{
                   background: meta.accent,
-                  borderBottom: "2px solid #000",
+                  borderBottom: "2px solid var(--px-black)",
                 }}
               >
                 <span className="text-base leading-none select-none">
@@ -39,6 +39,7 @@ export default function ArmoryPanel({ onClose }: Props) {
                 </span>
                 <h3
                   className="font-pixel text-[7px]"
+                  // the header sits on the category's dark heraldic colour in both themes
                   style={{ color: "#f0c050" }}
                 >
                   {category.category.toUpperCase()}
@@ -53,9 +54,9 @@ export default function ArmoryPanel({ onClose }: Props) {
                     className="font-pixel text-[7px] px-2 py-1.5"
                     style={{
                       background: meta.chipColor,
-                      border: "2px solid #000",
-                      boxShadow: "2px 2px 0 #000",
-                      color: "#e0d0a0",
+                      border: "2px solid var(--px-black)",
+                      boxShadow: "2px 2px 0 var(--px-black)",
+                      color: "#f3e3bd",
                       cursor: "default",
                     }}
                   >
@@ -70,7 +71,7 @@ export default function ArmoryPanel({ onClose }: Props) {
 
       <p
         className="font-pixel text-[7px] text-center mt-4"
-        style={{ color: "#977339" }}
+        style={{ color: "var(--ink-muted)" }}
       >
         ✦ ALWAYS LEARNING · ALWAYS SHIPPING ✦
       </p>

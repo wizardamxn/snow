@@ -21,27 +21,27 @@ export default function TestimoniesPanel({ onClose }: Props) {
             key={t.name}
             className="relative"
             style={{
-              background: "#050400",
-              border: "2px solid #2a1a00",
-              boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
+              background: "var(--card-bg)",
+              border: "2px solid var(--card-bg)",
+              boxShadow: "0 0 0 2px var(--px-black), inset 0 0 0 2px var(--px-black)",
             }}
           >
             {/* Quote mark decoration */}
             <div
               className="px-4 pt-4"
               style={{
-                borderBottom: "2px solid #1a1000",
+                borderBottom: "2px solid var(--card-bg)",
               }}
             >
               <p
                 className="font-pixel text-[7px] mb-2"
-                style={{ color: "#a27016" }}
+                style={{ color: "var(--ink-muted)" }}
               >
                 ❝ TESTIMONY
               </p>
               <p
                 className="font-mono text-sm leading-relaxed italic pb-4"
-                style={{ color: "#c0a878" }}
+                style={{ color: "var(--ink-body)" }}
               >
                 {t.quote}
               </p>
@@ -54,9 +54,9 @@ export default function TestimoniesPanel({ onClose }: Props) {
                 className="h-10 w-10 flex items-center justify-center flex-shrink-0 font-pixel text-[10px]"
                 style={{
                   background: AVATAR_BG[i % AVATAR_BG.length],
-                  border: "2px solid #000",
-                  boxShadow: "2px 2px 0 #000",
-                  color: "#f0c050",
+                  border: "2px solid var(--px-black)",
+                  boxShadow: "2px 2px 0 var(--px-black)",
+                  color: "var(--ink-strong)",
                 }}
               >
                 {t.name.charAt(0)}
@@ -64,13 +64,13 @@ export default function TestimoniesPanel({ onClose }: Props) {
               <div>
                 <p
                   className="font-pixel text-[8px]"
-                  style={{ color: "#f0c050" }}
+                  style={{ color: "var(--ink-strong)" }}
                 >
                   {t.name.toUpperCase()}
                 </p>
                 <p
                   className="font-pixel text-[7px] mt-1.5"
-                  style={{ color: "#ad7525" }}
+                  style={{ color: "var(--ink-muted)" }}
                 >
                   {t.role.toUpperCase()} · {t.company.toUpperCase()}
                 </p>

@@ -25,17 +25,50 @@ import RecruiterTourPrompt from "./panels/RecruiterTourPrompt";
 import RecruiterTourHUD from "./RecruiterTourHUD";
 import ColorGrade from "./ColorGrade";
 import SpeedrunHUD from "./SpeedrunHUD";
+import PlacesMenu from "./PlacesMenu";
+import ProjectPanel from "./ProjectPanel";
+import { PanelThemeContext, type PanelTheme } from "./InfoPanel";
+
+/** Which Tiny Swords frame and ribbon each place's panels wear. */
+const PANEL_THEMES: Record<string, PanelTheme> = {
+  sanctum: { frame: "scroll", ribbon: "blue" },
+  chronicles: { frame: "scroll", ribbon: "red" },
+  relics: { frame: "scroll", ribbon: "purple" },
+  armory: { frame: "scroll", ribbon: "yellow" },
+  testimonies: { frame: "scroll", ribbon: "yellow" },
+  contact: { frame: "scroll", ribbon: "blue" },
+  cave: { frame: "scroll", ribbon: "black" },
+  chronicle: { frame: "scroll", ribbon: "yellow" },
+  recruiterSignpost: { frame: "scroll", ribbon: "red" },
+  // The CRT keeps its green screen — a machine pinned to a medieval scroll is the joke.
+  terminal: { frame: "scroll", ribbon: "black" },
+};
 
 /**
  * Routes the bus `emitOpen` id to the correct content panel.
  */
-function PanelRouter({
+function PanelRouter(props: { openId: string; onClose: () => void; onOpen: (id: string) => void }) {
+  const key = props.openId.startsWith("relic:") ? "relics" : props.openId;
+  return (
+    <PanelThemeContext.Provider value={PANEL_THEMES[key] ?? null}>
+      <PanelSwitch {...props} />
+    </PanelThemeContext.Provider>
+  );
+}
+
+function PanelSwitch({
   openId,
   onClose,
+  onOpen,
 }: {
   openId: string;
   onClose: () => void;
+  onOpen: (id: string) => void;
 }) {
+  // A display in the Vault of Relics opens that one project; "back" shows the whole gallery.
+  if (openId.startsWith("relic:")) {
+    return <ProjectPanel projectId={openId.slice(6)} onClose={onClose} onBack={() => onOpen("relics")} />;
+  }
   switch (openId) {
     case "sanctum":
       return <SanctumPanel onClose={onClose} />;
@@ -63,6 +96,13 @@ function PanelRouter({
       return null;
   }
 }
+
+/** Parchment strip for world prompts — matches the scroll panels. */
+const parchment: React.CSSProperties = {
+  background: "#f1e0b8",
+  border: "2px solid #4a2e17",
+  boxShadow: "3px 3px 0 rgba(30,18,8,0.55), inset 0 0 0 2px #e2c995",
+};
 
 /** Pixel RPG box-shadow border style */
 const pixelBox: React.CSSProperties = {
@@ -95,6 +135,7 @@ export default function Overlay() {
   const [isMuted, setIsMuted] = useState(false);
   const [timePresetIdx, setTimePresetIdx] = useState(0);
   const [isTouch, setIsTouch] = useState(false);
+  const [inside, setInside] = useState(false);
 
   // The classic-resume escape hatch is the single most important affordance for
   // a recruiter who doesn't want to play a game. Show it loudly for the first
@@ -118,6 +159,7 @@ export default function Overlay() {
       setOpenId(id);
     });
     const offTour = bus.onTour(setTour);
+    const offScene = bus.onScene((scene) => setInside(scene !== "town"));
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key.toLowerCase() === "m") {
@@ -158,6 +200,7 @@ export default function Overlay() {
       offNear();
       offOpen();
       offTour();
+      offScene();
       cancelAnimationFrame(frame);
       document.body.classList.remove("attack-ready");
       window.removeEventListener("keydown", onKeyDown);
@@ -178,16 +221,26 @@ export default function Overlay() {
       <TutorialOverlay />
       
       {/* ── Minimap (top-right) ─────────────────────────────────────────── */}
-      {!openId && <Minimap />}
+      {!openId && !inside && <Minimap />}
+
+      {/* ── Inside a building: how to get back out ─────────────────────────── */}
+      {inside && !openId && !near && (
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 px-4 py-2.5 font-pixel text-[7px]" style={{ ...parchment, color: "#6b4d2c" }}>
+          WALK OUT THE DOOR (BOTTOM) TO LEAVE
+        </div>
+      )}
 
       {/* ── Achievement tracker (below minimap) + completion banner ──────── */}
       <AchievementTracker />
+
+      {/* ── "Where to?" — click a section and the hero walks there ─────────── */}
+      {!openId && !tour && <PlacesMenu />}
 
       {/* ── Speedrun timer (terminal easter egg; hidden unless a run is on) ─ */}
       {!openId && <SpeedrunHUD />}
 
       {/* ── Bard's now-playing speech bubble (floats above him always) ──── */}
-      {!openId && <BardBubble />}
+      {!openId && !inside && <BardBubble />}
 
       {/* ── On-screen D-pad + action buttons (touch devices only) ────────── */}
       {!openId && !tour && <TouchControls />}
@@ -288,23 +341,22 @@ export default function Overlay() {
         <div
           className="absolute bottom-5 left-1/2 -translate-x-1/2 px-5 py-3 text-center"
           style={{
-            ...pixelBox,
+            ...parchment,
             animation: "none",
           }}
         >
-          {/* Animated cursor blink */}
           <p
             className="font-pixel text-[8px] leading-loose"
-            style={{ color: "#f0c050" }}
+            style={{ color: "#2e1f10" }}
           >
             <span
               className="inline-block px-2 py-0.5 mr-2"
               style={{
-                background: "#f0c050",
-                color: "#000",
+                background: "#8e2f1c",
+                color: "#fbeccd",
                 fontFamily: "'Press Start 2P', monospace",
                 fontSize: "8px",
-                boxShadow: "2px 2px 0 #7a5010",
+                border: "2px solid #4e150c",
               }}
             >
               E
@@ -313,7 +365,7 @@ export default function Overlay() {
           </p>
           <p
             className="font-pixel text-[7px] mt-1.5"
-            style={{ color: "#c8861e" }}
+            style={{ color: "#8e2f1c" }}
           >
             {near.label.toUpperCase()}
           </p>
@@ -321,7 +373,7 @@ export default function Overlay() {
       )}
 
       {/* ── Content panels ──────────────────────────────────────────────── */}
-      {openId && <PanelRouter openId={openId} onClose={closePanel} />}
+      {openId && <PanelRouter openId={openId} onClose={closePanel} onOpen={setOpenId} />}
     </div>
   );
 }

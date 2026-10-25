@@ -7,8 +7,8 @@ import { track } from "@/lib/analytics/track";
 type Props = { onClose: () => void };
 
 const STATS = [
-  { label: "EXP", value: "9+ MO" },
-  { label: "INTERNS", value: "2" },
+  { label: "EXP", value: "1 YR" },
+  { label: "INTERNS", value: "3" },
   { label: "PROJ", value: "5" },
   { label: "STACK", value: "FULL" },
 ];
@@ -21,10 +21,10 @@ const LINKS = [
 ];
 
 /** Shared inline pixel box style */
-const box = (color = "#c8861e"): React.CSSProperties => ({
+const box = (color = "var(--ink-accent)"): React.CSSProperties => ({
   border: `2px solid ${color}`,
-  boxShadow: `0 0 0 2px #000, inset 0 0 0 2px #000`,
-  background: "#0a0800",
+  boxShadow: `0 0 0 2px var(--px-black), inset 0 0 0 2px var(--px-black)`,
+  background: "var(--card-bg)",
 });
 
 export default function SanctumPanel({ onClose }: Props) {
@@ -47,30 +47,30 @@ export default function SanctumPanel({ onClose }: Props) {
               alt="Aman Ahmad"
               fill
               sizes="80px"
-              className="object-cover object-top pixel-img"
+              className="object-cover"
               priority
-              style={{ imageRendering: "pixelated" }}
+              style={{ objectPosition: "50% 30%" }}
             />
           </div>
           <div className="min-w-0">
             <h3
               className="font-pixel text-[11px] leading-snug"
-              style={{ color: "#f0c050" }}
+              style={{ color: "var(--ink-strong)" }}
             >
               AMAN AHMAD
             </h3>
             <p
               className="font-pixel text-[7px] mt-2"
-              style={{ color: "#b78a2a" }}
+              style={{ color: "var(--ink-muted)" }}
             >
               FULL STACK DEV
             </p>
             <p
               className="font-mono text-xs mt-2 leading-relaxed"
-              style={{ color: "#a09070" }}
+              style={{ color: "var(--ink-body)" }}
             >
-              Shipping production-grade apps — React, Next.js, Node,
-              React Native, AWS EC2 — while finishing a B.Tech in ECE (2027).
+              Shipping production-grade apps and AI agents — React, Next.js,
+              Node, React Native, Claude API — while finishing a B.Tech in ECE (2027).
             </p>
           </div>
         </div>
@@ -85,13 +85,13 @@ export default function SanctumPanel({ onClose }: Props) {
             >
               <div
                 className="font-pixel text-[9px] leading-none"
-                style={{ color: "#f0c050" }}
+                style={{ color: "var(--ink-strong)" }}
               >
                 {s.value}
               </div>
               <div
                 className="font-pixel text-[7px] mt-2"
-                style={{ color: "#ad7525" }}
+                style={{ color: "var(--ink-muted)" }}
               >
                 {s.label}
               </div>
@@ -100,16 +100,19 @@ export default function SanctumPanel({ onClose }: Props) {
         </div>
 
         {/* ── Bio ────────────────────────────────────────────────────────── */}
-        <div className="p-4 space-y-3" style={box("#3a2808")}>
-          <p className="font-mono text-xs leading-relaxed" style={{ color: "#c0a878" }}>
+        <div className="p-4 space-y-3" style={box("var(--card-line)")}>
+          <p className="font-mono text-xs leading-relaxed" style={{ color: "var(--ink-body)" }}>
             Interning at{" "}
-            <span className="font-pixel text-[8px]" style={{ color: "#f0c050" }}>CEROPE</span>
-            {" "}— Next.js + MERN stack + React Native mobile, Redis caching that cut API
-            latency from ~10s to under 200ms.
+            <span className="font-pixel text-[8px]" style={{ color: "var(--ink-strong)" }}>10EX.AI</span>
+            {" "}— building AI agents that do marketing on their own: a website chatbot that talks
+            to visitors, a blog agent that writes and publishes posts, and agents that run on a
+            schedule set in plain English.
           </p>
-          <p className="font-mono text-xs leading-relaxed" style={{ color: "#a18555" }}>
+          <p className="font-mono text-xs leading-relaxed" style={{ color: "var(--ink-body)" }}>
             Previously interned at{" "}
-            <span className="font-pixel text-[8px]" style={{ color: "#b78a2a" }}>KODECOMPILER</span>
+            <span className="font-pixel text-[8px]" style={{ color: "var(--ink-muted)" }}>CEROPE</span>
+            {" "}— Redis caching that cut API latency from ~10s to under 200ms — and at{" "}
+            <span className="font-pixel text-[8px]" style={{ color: "var(--ink-muted)" }}>KODECOMPILER</span>
             {" "}— built a sandboxed LeetCode-style code execution engine from scratch. Freelance
             projects include AI media converter AVMG, RAG chat platform ProjectTeams,
             agri-marketplace KropiGo, and CRM SolarVistar.
@@ -128,14 +131,14 @@ export default function SanctumPanel({ onClose }: Props) {
               className="group flex items-center gap-2 px-3 py-2 font-pixel text-[7px] transition-colors"
               style={box()}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#1a1000";
+                (e.currentTarget as HTMLElement).style.background = "var(--card-bg)";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#0a0800";
+                (e.currentTarget as HTMLElement).style.background = "var(--card-bg)";
               }}
             >
-              <span style={{ color: "#f0c050" }}>{l.label}</span>
-              <span style={{ color: "#ad7525" }}>{l.handle}</span>
+              <span style={{ color: "var(--ink-strong)" }}>{l.label}</span>
+              <span style={{ color: "var(--ink-muted)" }}>{l.handle}</span>
             </a>
           ))}
         </div>

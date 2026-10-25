@@ -1,22 +1,45 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { worldState } from "@/lib/world/worldState";
-import { COLS, ROWS, WORLD_W, WORLD_H, TILE, BUILDINGS, CAVE, RIVER, POND } from "../world/world.config";
+import { COLS, ROWS, WORLD_W, WORLD_H, TILE, BUILDINGS, CAVE, buildTileGrid } from "../world/world.config";
+
+const COLORS: Record<string, string> = {
+  water: "#205a78",
+  ground: "#4f7a2c",
+  high: "#6f9a3a",
+  cliff: "#3d4f4a",
+  rampL: "#6f9a3a",
+  rampR: "#6f9a3a",
+  bridge: "#8a5a2c",
+};
 
 export default function Minimap() {
   const markerRef = useRef<HTMLDivElement>(null);
-  
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   // Minimap size logic
   const mapW = 120;
   const scale = mapW / WORLD_W;
   const mapH = WORLD_H * scale;
 
+  // Terrain is static, so it's painted once from the same grid the world uses.
+  useEffect(() => {
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    const grid = buildTileGrid();
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        ctx.fillStyle = COLORS[grid[r][c]];
+        ctx.fillRect(c, r, 1, 1);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     let frame: number;
     const update = () => {
       if (markerRef.current) {
-        // Position player marker based on worldState.playerX/Y
         const px = worldState.playerX * scale;
         const py = worldState.playerY * scale;
         markerRef.current.style.transform = `translate(${px}px, ${py}px)`;
@@ -33,32 +56,18 @@ export default function Minimap() {
       style={{
         width: `${mapW}px`,
         height: `${mapH}px`,
-        background: "#1a2010",
+        background: "#205a78",
         border: "2px solid #3a5020",
         boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
-        opacity: 0.85,
+        opacity: 0.9,
       }}
     >
-      {/* ── River ────────────────────────────────────────────────────────── */}
-      <div
-        className="absolute left-0 w-full"
-        style={{
-          top: `${RIVER.row * TILE * scale}px`,
-          height: `${RIVER.rows * TILE * scale}px`,
-          background: "#205080",
-        }}
-      />
-
-      {/* ── Pond ─────────────────────────────────────────────────────────── */}
-      <div
-        className="absolute"
-        style={{
-          left: `${POND.col * TILE * scale}px`,
-          top: `${POND.row * TILE * scale}px`,
-          width: `${POND.w * TILE * scale}px`,
-          height: `${POND.h * TILE * scale}px`,
-          background: "#205080",
-        }}
+      <canvas
+        ref={canvasRef}
+        width={COLS}
+        height={ROWS}
+        className="absolute inset-0"
+        style={{ width: "100%", height: "100%", imageRendering: "pixelated" }}
       />
 
       {/* ── Buildings ────────────────────────────────────────────────────── */}
@@ -68,10 +77,10 @@ export default function Minimap() {
           className="absolute"
           style={{
             left: `${b.col * TILE * scale}px`,
-            top: `${b.row * TILE * scale}px`,
+            top: `${(b.row + b.h - 2) * TILE * scale}px`,
             width: `${b.w * TILE * scale}px`,
-            height: `${b.h * TILE * scale}px`,
-            background: "#a07030",
+            height: `${2 * TILE * scale}px`,
+            background: "#e0a040",
             border: "1px solid #000",
           }}
         />

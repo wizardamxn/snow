@@ -8,13 +8,15 @@ let bgMusic: HTMLAudioElement | null = null;
 
 // Volumes
 let masterVolume = 0.8;
+/** Background music sits well under the master level so it stays ambience, not a soundtrack. */
+const MUSIC_LEVEL = 0.3;
 let muted = false;
 
 let started = false;
 
 function applyVolumes() {
   if (bgMusic) {
-    bgMusic.volume = muted ? 0 : masterVolume;
+    bgMusic.volume = muted ? 0 : masterVolume * MUSIC_LEVEL;
   }
 }
 
@@ -30,7 +32,7 @@ export function ensureStarted(): void {
   // 1. Setup BG Music
   bgMusic = new Audio("/audio/music.mp3");
   bgMusic.loop = true;
-  bgMusic.volume = muted ? 0 : masterVolume;
+  bgMusic.volume = muted ? 0 : masterVolume * MUSIC_LEVEL;
   bgMusic.play().catch((e) => console.warn("Audio play blocked:", e));
 
   // 2. Setup Web Audio for SFX

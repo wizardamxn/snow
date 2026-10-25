@@ -11,8 +11,8 @@ const CAM_SCALE_MAX = 2.6;
 
 const DIALOGUE_PAGES = [
   "Caw! Welcome to the Frontier, traveler.",
-  "The buildings ahead hold the master's knowledge...",
-  "Walk up to their doors and press [E] to step inside. Caw!",
+  "Each building holds a part of the master's story. Walk in through any door.",
+  "In a hurry? Pick a place under WHERE TO? and your feet will carry you there. Caw!",
 ];
 
 export default function RavenBubble({ onClose }: { onClose: () => void }) {
@@ -133,17 +133,17 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
           e.stopPropagation();
           advance();
         }}
-        className="font-pixel relative p-3 text-center"
+        className="font-scroll relative px-4 py-3 text-center"
         style={{
-          background: "rgba(0,0,0,0.88)", // Consistent panel backdrop
-          border: "2px solid #5a4828",
-          boxShadow: "4px 4px 0 #000, 0 0 0 2px #000",
-          color: "#e8d8b8",
-          fontSize: "8px",
-          lineHeight: "1.6",
-          minWidth: "180px",
-          maxWidth: "240px",
-          minHeight: "48px", // Prevent jumping when text is short
+          background: "#f1e0b8", // a scrap of parchment, matching the panels' scrolls
+          border: "2px solid #4a2e17",
+          boxShadow: "3px 3px 0 rgba(30,18,8,0.55), inset 0 0 0 2px #e2c995",
+          color: "#2e1f10",
+          fontSize: "15px",
+          lineHeight: "1.35",
+          minWidth: "200px",
+          maxWidth: "260px",
+          minHeight: "52px", // Prevent jumping when text is short
           cursor: "pointer",
         }}
       >
@@ -154,14 +154,14 @@ export default function RavenBubble({ onClose }: { onClose: () => void }) {
           <div
             className="absolute -bottom-2 -right-2 animate-pulse"
             style={{
-              background: "#c8861e",
-              border: "2px solid #000",
-              color: "#000",
-              padding: "2px 4px",
+              background: "#8e2f1c",
+              border: "2px solid #4e150c",
+              color: "#fbeccd",
+              padding: "2px 5px",
               fontSize: "7px",
             }}
           >
-            [E]
+            <span className="font-pixel">E ›</span>
           </div>
         )}
       </div>

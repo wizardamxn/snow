@@ -1,11 +1,17 @@
 # SNOW — a portfolio you walk through
 
-[amanahmad.xyz](https://amanahmad.xyz) is a résumé rebuilt as a top-down 2D RPG. You spawn in a
-pixel-art frontier town; each building is a section of the résumé — the Armory is skills, the
-Chronicle Hall is GitHub activity, the Sanctum is testimonials, the Contact Spire is, well, contact.
-Walk up, press interact, read. There's a day/night cycle, a Last.fm-powered bard who plays whatever
-I'm actually listening to, a terminal with real `git log` output, and a 60-second guided tour for
-anyone who'd rather not walk.
+[amanahmad.xyz](https://amanahmad.xyz) is a résumé rebuilt as a top-down 2D RPG. You spawn on a
+pixel-art island town; each building is a section of the résumé, and you can walk inside it: the
+Sanctum is About, the Hall of Chronicles is Experience, the Vault of Relics is Projects, the Armory
+is Skills, the Hall of Testimonies is Testimonials, and the Contact Spire is, well, contact. Inside,
+the content sits on objects (a plaque per job, an easel per project, a rack per skill area) and
+opens as a parchment scroll.
+
+Nobody has to learn the map: a **WHERE TO?** list (or keys 1–6) walks the hero to any section and
+opens it, and a gold arrow points at the next one you haven't seen. North across the bridge are the
+wilds: a waterfall, a gold mine by the cave, and the Black Knight waiting in his arena. There's a
+day/night cycle, a Last.fm-powered bard who plays whatever I'm actually listening to, a terminal
+with real `git log` output, and a 60-second guided tour for anyone who'd rather not walk.
 
 Touch devices skip the game by default — a full RPG squeezed onto a phone screen is a worse
 experience than reading — and land on a themed HTML résumé instead, restyled in the game's own
@@ -32,11 +38,18 @@ proof, not a bullet point about it.
 
 ## Architecture, briefly
 
-- `components/world/` — the Pixi layer. `scenes/Town.ts` is the world: terrain, buildings, NPCs,
-  ambient FX (fireflies, torch bloom, water shimmer), the day/night clock, and the recruiter
-  auto-tour driver. `Player.ts` owns movement/collision/autopilot.
-- `components/overlay/` — the React/DOM layer stacked on top of the canvas: HUD, dialogue panels,
-  the terminal, touch controls. Talks to the game via a small `worldState` singleton + pub/sub
+- `components/world/` — the Pixi layer.
+  - `world.config.ts` draws the map as ASCII (`~` water, `.` ground, `^` plateau, `L`/`R` ramps,
+    `=` bridge) plus building, road and landmark positions; edit the map there by eye.
+  - `Tilemap.ts` autotiles that grid from the Tiny Swords tileset (two walk levels joined by ramps)
+    and paints the roads, cobbled square and bridge pixel by pixel.
+  - `scenes/Town.ts` is the overworld: buildings, Tiny Swords townsfolk and workers, the Black
+    Knight, ambient FX, the day/night clock, click-to-travel and the recruiter tour (both route with
+    a tile BFS). `scenes/Interior.ts` builds the walk-in rooms; `props.ts` is the shared pixel-drawn
+    furniture (well, stalls, barrels, tables…). `Player.ts` owns movement/collision/autopilot.
+- `components/overlay/` — the React/DOM layer stacked on top of the canvas: HUD, the WHERE TO?
+  menu, dialogue panels (each building's panels are parchment scrolls, themed through
+  `PanelThemeContext` in `InfoPanel.tsx`), the terminal, touch controls. Talks to the game via a small `worldState` singleton + pub/sub
   `bus`, rather than React owning per-frame state — the canvas runs at 60fps independent of React's
   render cycle, and React only re-renders on discrete transitions (entering a building, a day/night
   flip), never on player position.

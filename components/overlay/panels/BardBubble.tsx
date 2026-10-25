@@ -66,10 +66,10 @@ export default function BardBubble() {
         <div
           className="font-pixel flex items-center gap-2 p-2"
           style={{
-            background: "rgba(20,16,10,0.92)",
-            border: "2px solid #5a4828",
-            borderRadius: "10px",
-            boxShadow: "3px 3px 0 #000",
+            background: "#f1e0b8",
+            border: "2px solid #4a2e17",
+            borderRadius: "4px",
+            boxShadow: "3px 3px 0 rgba(30,18,8,0.55), inset 0 0 0 2px #e2c995",
             minWidth: "150px",
             maxWidth: "220px",
           }}
@@ -81,10 +81,10 @@ export default function BardBubble() {
               width: "28px",
               height: "28px",
               flexShrink: 0,
-              border: "2px solid #5a4828",
-              borderRadius: "4px",
+              border: "2px solid #4a2e17",
+              borderRadius: "2px",
               overflow: "hidden",
-              background: "#000",
+              background: "#2e1f10",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -104,12 +104,12 @@ export default function BardBubble() {
 
           {/* Track info */}
           <div style={{ minWidth: 0 }}>
-            <div style={{ color: "#c8861e", fontSize: "7px", letterSpacing: "0.06em" }}>
+            <div style={{ color: "#8e2f1c", fontSize: "7px", letterSpacing: "0.06em" }}>
               {track.isPlaying ? "NOW PLAYING" : "LAST PLAYED"}
             </div>
             <div
               style={{
-                color: "#f0c050",
+                color: "#2e1f10",
                 fontSize: "7px",
                 marginTop: "3px",
                 whiteSpace: "nowrap",
@@ -121,10 +121,9 @@ export default function BardBubble() {
             </div>
             <div
               style={{
-                color: "#e8d8b8",
+                color: "#6b4d2c",
                 fontSize: "7px",
                 marginTop: "2px",
-                opacity: 0.85,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -145,7 +144,7 @@ export default function BardBubble() {
             height: 0,
             borderLeft: "8px solid transparent",
             borderRight: "8px solid transparent",
-            borderTop: "9px solid #5a4828",
+            borderTop: "9px solid #4a2e17",
           }}
         />
         <div
@@ -157,7 +156,7 @@ export default function BardBubble() {
             height: 0,
             borderLeft: "6px solid transparent",
             borderRight: "6px solid transparent",
-            borderTop: "7px solid rgba(20,16,10,0.92)",
+            borderTop: "7px solid #f1e0b8",
           }}
         />
       </div>

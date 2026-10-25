@@ -5,14 +5,14 @@ import experience from "@/lib/data/experience.json";
 
 type Props = { onClose: () => void };
 
-const box = (accent = "#2a1a00"): React.CSSProperties => ({
+const box = (accent = "var(--card-bg)"): React.CSSProperties => ({
   border: `2px solid ${accent}`,
-  boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
-  background: "#080600",
+  boxShadow: "0 0 0 2px var(--px-black), inset 0 0 0 2px var(--px-black)",
+  background: "var(--card-bg)",
 });
 
 const TECH_COLOR: Record<string, string> = {
-  "Next.js": "#a0a0a0",
+  "Next.js": "var(--ink-body)",
   React: "#60c8f0",
   "React Native": "#40d0e0",
   "Node.js": "#60d060",
@@ -38,9 +38,9 @@ export default function ChroniclesPanel({ onClose }: Props) {
             key={exp.id}
             className="relative overflow-hidden"
             style={{
-              ...box(exp.current ? "#6a3800" : "#1e1600"),
+              ...box(exp.current ? "var(--card-line)" : "var(--card-bg)"),
               borderLeftWidth: "4px",
-              borderLeftColor: exp.current ? "#c8861e" : "#2a2010",
+              borderLeftColor: exp.current ? "var(--ink-accent)" : "var(--card-line)",
             }}
           >
             <div className="p-4">
@@ -49,19 +49,19 @@ export default function ChroniclesPanel({ onClose }: Props) {
                 <div>
                   <h3
                     className="font-pixel text-[9px] leading-snug"
-                    style={{ color: "#f0c050" }}
+                    style={{ color: "var(--ink-strong)" }}
                   >
                     {exp.role.toUpperCase()}
                   </h3>
                   <p
                     className="font-pixel text-[7px] mt-2"
-                    style={{ color: exp.current ? "#c8861e" : "#4a3210" }}
+                    style={{ color: exp.current ? "var(--ink-accent)" : "var(--ink-muted)" }}
                   >
                     {exp.company.toUpperCase()}
                   </p>
                   <p
                     className="font-pixel text-[7px] mt-1.5"
-                    style={{ color: "#977339" }}
+                    style={{ color: "var(--ink-muted)" }}
                   >
                     {exp.period} · {exp.location.toUpperCase()}
                   </p>
@@ -72,7 +72,7 @@ export default function ChroniclesPanel({ onClose }: Props) {
                     style={{
                       background: "#0a2000",
                       border: "2px solid #40a020",
-                      boxShadow: "0 0 0 2px #000",
+                      boxShadow: "0 0 0 2px var(--px-black)",
                       color: "#60d040",
                     }}
                   >
@@ -84,7 +84,7 @@ export default function ChroniclesPanel({ onClose }: Props) {
               {/* Summary */}
               <p
                 className="font-mono text-xs leading-relaxed mb-3"
-                style={{ color: "#a98d6a" }}
+                style={{ color: "var(--ink-body)" }}
               >
                 {exp.summary}
               </p>
@@ -95,13 +95,13 @@ export default function ChroniclesPanel({ onClose }: Props) {
                   <li key={h} className="flex gap-2">
                     <span
                       className="font-pixel text-[7px] flex-shrink-0 mt-0.5"
-                      style={{ color: "#c8861e" }}
+                      style={{ color: "var(--ink-accent)" }}
                     >
                       &gt;
                     </span>
                     <span
                       className="font-mono text-xs leading-relaxed"
-                      style={{ color: "#a09070" }}
+                      style={{ color: "var(--ink-body)" }}
                     >
                       {h}
                     </span>
@@ -116,10 +116,10 @@ export default function ChroniclesPanel({ onClose }: Props) {
                     key={t}
                     className="font-pixel text-[7px] px-2 py-1"
                     style={{
-                      background: "#050400",
-                      border: "2px solid #1e1600",
-                      boxShadow: "0 0 0 1px #000",
-                      color: TECH_COLOR[t] ?? "#6a5030",
+                      background: "var(--card-bg)",
+                      border: "2px solid var(--card-bg)",
+                      boxShadow: "0 0 0 1px var(--px-black)",
+                      color: `var(--chip-ink, ${TECH_COLOR[t] ?? "var(--ink-muted)"})`,
                     }}
                   >
                     {t}

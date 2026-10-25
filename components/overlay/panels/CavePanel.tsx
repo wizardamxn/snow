@@ -29,9 +29,9 @@ export default function CavePanel({ onClose }: Props) {
         <div
           className="mx-auto w-16 h-16 flex items-center justify-center text-4xl"
           style={{
-            background: "#050300",
-            border: "2px solid #1a1000",
-            boxShadow: "0 0 0 2px #000, 4px 4px 0 #000",
+            background: "var(--card-bg)",
+            border: "2px solid var(--card-bg)",
+            boxShadow: "0 0 0 2px var(--px-black), 4px 4px 0 var(--px-black)",
           }}
         >
           ⛰
@@ -43,11 +43,11 @@ export default function CavePanel({ onClose }: Props) {
             <p
               key={i}
               className="flex gap-2 font-mono text-sm leading-relaxed italic"
-              style={{ color: "#a18555" }}
+              style={{ color: "var(--ink-body)" }}
             >
               <span
                 className="font-pixel text-[7px] flex-shrink-0 mt-1"
-                style={{ color: "#a27016" }}
+                style={{ color: "var(--ink-muted)" }}
               >
                 {i + 1}.
               </span>
@@ -60,28 +60,28 @@ export default function CavePanel({ onClose }: Props) {
         <div
           className="p-4 text-left"
           style={{
-            background: "#030200",
-            border: "2px solid #2a1800",
-            boxShadow: "0 0 0 2px #000, inset 0 0 0 2px #000",
+            background: "var(--card-bg)",
+            border: "2px solid var(--card-bg)",
+            boxShadow: "0 0 0 2px var(--px-black), inset 0 0 0 2px var(--px-black)",
           }}
         >
           <p
             className="font-pixel text-[7px] mb-3"
-            style={{ color: "#a27016" }}
+            style={{ color: "var(--ink-muted)" }}
           >
             ❝ CAVE INSCRIPTION
           </p>
-          <div className="space-y-2 font-mono text-sm leading-relaxed" style={{ color: "#9b7c45" }}>
+          <div className="space-y-2 font-mono text-sm leading-relaxed" style={{ color: "var(--ink-muted)" }}>
             <p>
-              <span style={{ color: "#b6893f" }}>Favorite games — </span>
+              <span style={{ color: "var(--ink-muted)" }}>Favorite games — </span>
               {FAVORITE_GAMES.join(", ")}
             </p>
             <p>
-              <span style={{ color: "#b6893f" }}>Hobbies — </span>
+              <span style={{ color: "var(--ink-muted)" }}>Hobbies — </span>
               {HOBBIES.join(", ")}
             </p>
             <p>
-              <span style={{ color: "#b6893f" }}>Valorant — </span>
+              <span style={{ color: "var(--ink-muted)" }}>Valorant — </span>
               {VALORANT.role ? `${VALORANT.rank} · ${VALORANT.role}` : VALORANT.rank}
             </p>
           </div>
@@ -89,7 +89,7 @@ export default function CavePanel({ onClose }: Props) {
 
         <p
           className="font-pixel text-[7px]"
-          style={{ color: "#ab6a20" }}
+          style={{ color: "var(--ink-accent)" }}
         >
           ✦ NOTHING VENTURED, NOTHING SHIPPED ✦
         </p>
