@@ -83,8 +83,8 @@ export default function ClassicResume() {
             </h1>
             <p className="mt-1 text-neutral-500 dark:text-neutral-400">Full Stack Developer Intern</p>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-neutral-600 dark:text-neutral-300">
-              Full-stack developer (B.Tech &apos;27) with two production internships, shipping
-              web and mobile apps end-to-end — React, Next.js, Node, React Native, AWS EC2.
+              Full-stack developer (B.Tech &apos;27) with three production internships, shipping
+              web apps, mobile apps and AI agents end-to-end — React, Next.js, Node, React Native, Claude API.
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -117,8 +117,8 @@ export default function ClassicResume() {
         {/* ── Stats strip ────────────────────────────────────────────────── */}
         <section className="grid grid-cols-4 gap-4 border-y border-neutral-200 dark:border-neutral-800 py-6 text-center">
           {[
-            { label: "Experience", value: "9+ mo" },
-            { label: "Internships", value: "2" },
+            { label: "Experience", value: "1 yr" },
+            { label: "Internships", value: "3" },
             { label: "Projects", value: "5" },
             { label: "Stack", value: "Full" },
           ].map((s) => (

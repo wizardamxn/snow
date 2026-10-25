@@ -72,11 +72,11 @@ const personJsonLd = {
   image: `${SITE_URL}/avatar.webp`,
   jobTitle: "Full Stack Developer",
   description:
-    "Full-stack developer building end-to-end web and mobile products with React, Next.js, Node, and React Native.",
+    "Full-stack developer building web apps, mobile apps and AI agents end-to-end with React, Next.js, Node, React Native, and the Claude API.",
   email: "mailto:amank225566@gmail.com",
   worksFor: {
     "@type": "Organization",
-    name: "Cerope",
+    name: "10ex.ai",
   },
   sameAs: ["https://github.com/wizardamxn", "https://linkedin.com/in/amanahmad1"],
 };

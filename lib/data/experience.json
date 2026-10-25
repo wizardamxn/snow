@@ -1,11 +1,26 @@
 [
   {
+    "id": "10ex",
+    "role": "SDE Intern",
+    "company": "10ex.ai",
+    "location": "Hyderabad",
+    "period": "Sep 2026 — Present",
+    "current": true,
+    "summary": "Building AI agents that do marketing work on their own (writing, publishing, chatting with website visitors) for an AI go-to-market platform.",
+    "highlights": [
+      "Built an AI chatbot any company can drop onto its website: it answers visitors live, and the team can jump into any conversation from their inbox.",
+      "Shipped an AI blog agent that writes posts and publishes them straight to a customer's Webflow site, and can update or take them down later.",
+      "Made agents run themselves on a schedule set in plain English (\"twice a week at 2pm\"), working through a topic list without ever repeating one."
+    ],
+    "technologies": ["FastAPI", "Taskiq", "React", "TanStack", "Claude API", "Postgres", "Redis", "Qdrant"]
+  },
+  {
     "id": "cerope",
     "role": "Full Stack Developer Intern",
     "company": "Cerope",
     "location": "Remote",
-    "period": "Mar 2026 — Present",
-    "current": true,
+    "period": "Mar 2026 — Aug 2026",
+    "current": false,
     "summary": "Building features end-to-end across a Next.js front end and a MERN-stack backend, plus a React Native mobile app, with a Redis caching layer that cut API latency from ~10s to under 200ms.",
     "highlights": [
       "Reduced response latency on high-traffic APIs from ~10s to under 200ms and cut database load by 60%+ by designing a Redis caching layer with invalidation on writes.",

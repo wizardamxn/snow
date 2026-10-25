@@ -13,10 +13,10 @@
   },
   {
     "category": "Databases",
-    "skills": ["MongoDB (Atlas Vector Search)", "PostgreSQL", "Redis", "Firebase", "Supabase"]
+    "skills": ["MongoDB (Atlas Vector Search)", "PostgreSQL", "Redis", "Firebase", "Supabase", "Qdrant"]
   },
   {
     "category": "Gen AI & Infra",
-    "skills": ["Vercel AI SDK", "Google Gemini API", "RAG Pipelines", "AWS EC2", "Nginx", "Cloudflare", "Prisma", "FFmpeg"]
+    "skills": ["Claude API", "AI Agents", "Vercel AI SDK", "Google Gemini API", "RAG Pipelines", "AWS EC2", "Nginx", "Cloudflare", "Prisma", "FFmpeg"]
   }
 ]

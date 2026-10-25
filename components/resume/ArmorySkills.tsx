@@ -14,9 +14,9 @@ const LEVEL: Record<string, number> = {
   // Backend
   "Node.js": 0.9, "Express.js": 0.9, FastAPI: 0.8, "Socket.io": 0.82, BullMQ: 0.75,
   // Databases
-  "MongoDB (Atlas Vector Search)": 0.88, PostgreSQL: 0.8, Redis: 0.85, Firebase: 0.8, Supabase: 0.8,
+  "MongoDB (Atlas Vector Search)": 0.88, PostgreSQL: 0.8, Redis: 0.85, Firebase: 0.8, Supabase: 0.8, Qdrant: 0.75,
   // Gen AI & Infra
-  "Vercel AI SDK": 0.82, "Google Gemini API": 0.8, "RAG Pipelines": 0.8, "AWS EC2": 0.75, Nginx: 0.7, Cloudflare: 0.72, Prisma: 0.82, FFmpeg: 0.7,
+  "Claude API": 0.88, "AI Agents": 0.88, "Vercel AI SDK": 0.82, "Google Gemini API": 0.8, "RAG Pipelines": 0.8, "AWS EC2": 0.75, Nginx: 0.7, Cloudflare: 0.72, Prisma: 0.82, FFmpeg: 0.7,
 };
 
 function SkillMeter({ skill, fill }: { skill: string; fill: number }) {
