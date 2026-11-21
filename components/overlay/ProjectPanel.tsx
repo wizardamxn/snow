@@ -65,9 +65,10 @@ const Heading = ({ children }: { children: React.ReactNode }) => (
   </h3>
 );
 
-/** One project, written up as a scroll: picture, the story in three lines, deeds, tools, and the full chronicle. */
+/** One project, trimmed: picture or demo, the pitch, links, three key deeds, tools, and the full chronicle behind a toggle. */
 export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
   const [markdown, setMarkdown] = useState<string | null>(null);
+  const [showChronicle, setShowChronicle] = useState(false);
 
   useEffect(() => {
     let live = true;
@@ -148,34 +149,10 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
           )}
         </div>
 
-        {project.tldr && (
-          <section>
-            <Heading>THE TALE IN BRIEF</Heading>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {(
-                [
-                  ["THE PROBLEM", project.tldr.problem],
-                  ["WHAT I BUILT", project.tldr.build],
-                  ["THE RESULT", project.tldr.result],
-                ] as const
-              ).map(([label, text]) => (
-                <div key={label} className="p-3" style={{ border: `2px solid ${INK.rule}`, background: "rgba(255,248,226,0.5)" }}>
-                  <p className="font-pixel text-[7px] mb-2" style={{ color: INK.accent }}>
-                    {label}
-                  </p>
-                  <p className="font-scroll text-[15px] leading-snug" style={{ color: INK.body }}>
-                    {text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
         <section>
-          <Heading>DEEDS</Heading>
+          <Heading>KEY DEEDS</Heading>
           <ul className="flex flex-col gap-2">
-            {project.highlights.map((h) => (
+            {project.highlights.slice(0, 3).map((h) => (
               <li key={h} className="flex gap-2.5 font-scroll text-[16px] leading-snug" style={{ color: INK.body }}>
                 <span aria-hidden style={{ color: INK.accent }}>
                   ✦
@@ -198,35 +175,51 @@ export default function ProjectPanel({ projectId, onClose, onBack }: Props) {
         </section>
 
         {markdown && (
-          <details className="group" style={{ borderTop: `2px dashed ${INK.rule}`, paddingTop: "16px" }}>
-            <summary className="font-pixel text-[9px] cursor-pointer select-none list-none flex items-center gap-2" style={{ color: INK.heading }}>
-              <span className="transition-transform group-open:rotate-90" aria-hidden>
-                ▶
-              </span>
-              READ THE FULL CHRONICLE
-            </summary>
-            <article
-              className="font-scroll mt-4 prose max-w-none text-[16px] leading-relaxed prose-headings:font-scroll prose-headings:font-bold prose-h1:text-[24px] prose-h2:text-[20px] prose-h3:text-[17px] prose-li:my-0.5 prose-pre:bg-[#2e1f10] prose-pre:text-[#f6e6c4] prose-code:before:content-none prose-code:after:content-none"
-              style={
-                {
-                  "--tw-prose-body": INK.body,
-                  "--tw-prose-headings": INK.heading,
-                  "--tw-prose-links": INK.accent,
-                  "--tw-prose-bold": INK.body,
-                  "--tw-prose-bullets": INK.accent,
-                  "--tw-prose-counters": INK.accent,
-                  "--tw-prose-hr": INK.rule,
-                  "--tw-prose-quotes": INK.muted,
-                  "--tw-prose-quote-borders": INK.rule,
-                  "--tw-prose-code": INK.heading,
-                  "--tw-prose-th-borders": INK.rule,
-                  "--tw-prose-td-borders": INK.rule,
-                } as React.CSSProperties
-              }
+          <div style={{ borderTop: `2px dashed ${INK.rule}`, paddingTop: "16px" }}>
+            <button
+              type="button"
+              onClick={() => setShowChronicle((v) => !v)}
+              aria-expanded={showChronicle}
+              aria-controls={`chronicle-${project.id}`}
+              className="font-pixel text-[9px] select-none flex items-center gap-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#8e2f1c]"
+              style={{ color: INK.heading }}
             >
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
-            </article>
-          </details>
+              {/* CSS triangle: Press Start 2P has no reliable arrow glyphs */}
+              <span
+                aria-hidden
+                className="inline-block transition-transform"
+                style={{
+                  width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent",
+                  borderLeft: `7px solid ${INK.heading}`, transform: showChronicle ? "rotate(90deg)" : "none",
+                }}
+              />
+              {showChronicle ? "HIDE THE FULL CHRONICLE" : "READ THE FULL CHRONICLE"}
+            </button>
+            {showChronicle && (
+              <article
+                id={`chronicle-${project.id}`}
+                className="font-scroll mt-4 prose max-w-none text-[16px] leading-relaxed prose-headings:font-scroll prose-headings:font-bold prose-h1:text-[24px] prose-h2:text-[20px] prose-h3:text-[17px] prose-li:my-0.5 prose-pre:bg-[#2e1f10] prose-pre:text-[#f6e6c4] prose-code:before:content-none prose-code:after:content-none"
+                style={
+                  {
+                    "--tw-prose-body": INK.body,
+                    "--tw-prose-headings": INK.heading,
+                    "--tw-prose-links": INK.accent,
+                    "--tw-prose-bold": INK.body,
+                    "--tw-prose-bullets": INK.accent,
+                    "--tw-prose-counters": INK.accent,
+                    "--tw-prose-hr": INK.rule,
+                    "--tw-prose-quotes": INK.muted,
+                    "--tw-prose-quote-borders": INK.rule,
+                    "--tw-prose-code": INK.heading,
+                    "--tw-prose-th-borders": INK.rule,
+                    "--tw-prose-td-borders": INK.rule,
+                  } as React.CSSProperties
+                }
+              >
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
+              </article>
+            )}
+          </div>
         )}
       </div>
     </InfoPanel>

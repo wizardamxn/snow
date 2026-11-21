@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { bus, type NearInfo, type TourInfo } from "@/lib/world/bus";
 import { worldState } from "@/lib/world/worldState";
-import { playBlip, setMuted, getAudioState } from "@/lib/audio/ambient";
+import { playBlip, setMuted, getAudioState, armAutostart } from "@/lib/audio/ambient";
 import SanctumPanel from "./panels/SanctumPanel";
 import ChroniclesPanel from "./panels/ChroniclesPanel";
 import RelicsPanel from "./panels/RelicsPanel";
@@ -142,6 +142,17 @@ export default function Overlay() {
   // few seconds, then let it settle into the quiet HUD styling.
   const [highlightClassic, setHighlightClassic] = useState(true);
 
+  const toggleMute = () => {
+    const next = !getAudioState().muted;
+    setMuted(next);
+    setIsMuted(next);
+  };
+
+  const openProjects = () => {
+    playBlip();
+    setOpenId("relics");
+  };
+
   useEffect(() => {
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
     const t = setTimeout(() => setHighlightClassic(false), 10000);
@@ -149,8 +160,9 @@ export default function Overlay() {
   }, []);
 
   useEffect(() => {
-    // Initial audio state sync
+    // Initial audio state sync; music may only start once the game is on screen.
     setIsMuted(getAudioState().muted);
+    const disarmAudio = armAutostart();
 
     setNear(worldState.near);
     const offNear = bus.onNear((info) => setNear(info));
@@ -162,11 +174,7 @@ export default function Overlay() {
     const offScene = bus.onScene((scene) => setInside(scene !== "town"));
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key.toLowerCase() === "m") {
-        const current = getAudioState().muted;
-        setMuted(!current);
-        setIsMuted(!current);
-      }
+      if (e.key.toLowerCase() === "m") toggleMute();
       if (e.key.toLowerCase() === "t") {
         setTimePresetIdx((prev) => {
           const next = (prev + 1) % TIME_PRESETS.length;
@@ -197,6 +205,7 @@ export default function Overlay() {
     frame = requestAnimationFrame(pollCursor);
 
     return () => {
+      disarmAudio();
       offNear();
       offOpen();
       offTour();
@@ -220,6 +229,24 @@ export default function Overlay() {
       <ColorGrade />
       <TutorialOverlay />
       
+      {/* ── Quick actions (top-left): projects from anywhere + the only mute on touch screens ── */}
+      {!openId && (
+        <div className="pointer-events-auto absolute left-4 top-4 flex flex-col items-start gap-2 font-pixel">
+          <button type="button" onClick={openProjects} className="px-3 py-2.5 text-[8px] hover:brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f6c75a]" style={{ ...pixelBox, color: "#f6c75a" }}>
+            PROJECTS
+          </button>
+          <button
+            type="button"
+            onClick={toggleMute}
+            aria-pressed={!isMuted}
+            className="px-3 py-2 text-[7px] hover:brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f6c75a]"
+            style={{ ...pixelBox, color: isMuted ? "#8f7a56" : "#c8861e" }}
+          >
+            MUSIC: {isMuted ? "OFF" : "ON"}
+          </button>
+        </div>
+      )}
+
       {/* ── Minimap (top-right) ─────────────────────────────────────────── */}
       {!openId && !inside && <Minimap />}
 
