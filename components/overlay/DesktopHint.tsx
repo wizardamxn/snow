@@ -24,7 +24,12 @@ export default function DesktopHint() {
     // Small delay so it arrives after the page settles rather than on first paint.
     if (!isTouch || dismissed) return;
     const t = setTimeout(() => setShow(true), 1200);
-    return () => clearTimeout(t);
+    // It covers a big slice of a phone screen, so it steps aside on its own after a while.
+    const hide = setTimeout(() => setShow(false), 13200);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(hide);
+    };
   }, []);
 
   const dismiss = () => {
@@ -51,7 +56,7 @@ export default function DesktopHint() {
       style={{ bottom: "calc(12px + env(safe-area-inset-bottom, 0px))" }}
     >
       <div
-        className="relative flex items-start gap-3 p-3 pr-9"
+        className="relative flex items-start gap-3 p-3 pr-12"
         style={{
           background: "#0d0b08",
           border: "3px solid #c8861e",
@@ -86,8 +91,8 @@ export default function DesktopHint() {
         <button
           onClick={dismiss}
           aria-label="Dismiss"
-          className="font-pixel absolute top-1.5 right-1.5 flex items-center justify-center"
-          style={{ width: 26, height: 26, fontSize: "9px", color: "#ac824e" }}
+          className="font-pixel absolute top-0.5 right-0.5 flex items-center justify-center"
+          style={{ width: 44, height: 44, fontSize: "10px", color: "#ac824e" }}
         >
           ✕
         </button>

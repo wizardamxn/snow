@@ -1,13 +1,50 @@
 [
   {
+    "id": "araxys",
+    "title": "Araxys",
+    "description": "A team workspace with real-time chat, live co-edited docs and an AI knowledge base that answers questions from your own docs, files and channels, with clickable sources.",
+    "highlights": [
+      "Built channels, threads, DMs, presence, unread counts and notifications over Socket.IO, plus live co-editing of rich-text docs with Yjs (shared cursors; offline edits sync on reconnect) and comment threads.",
+      "Shipped a RAG knowledge base: a BullMQ/Redis worker chunks and embeds docs, uploaded PDFs/CSV/Markdown and public channels; MongoDB Atlas Vector Search answers with numbered, clickable citations, and private channels and DMs are never indexed.",
+      "Multi-tenant workspaces with owner/admin/member roles and invite links, an audit log with CSV export, full workspace export, and HMAC-signed webhooks to Slack/Discord with retries.",
+      "Rebuilt in seven phases from a v1 prototype: auth on every route and socket, zod-validated config, and 228 API tests (unit + integration on an in-memory MongoDB) running in CI.",
+      "Runs on a self-hosted Android phone (PM2 + Cloudflare Tunnel, frontend on Netlify) with CI-gated push-to-deploy, health checks and automatic rollback."
+    ],
+    "image": "/araxys.png",
+    "liveUrl": "https://araxys.amanahmad.xyz",
+    "repoUrl": "https://github.com/wizardamxn/araxys",
+    "technologies": [
+      "React",
+      "TypeScript",
+      "Node.js",
+      "Express",
+      "Socket.IO",
+      "Yjs",
+      "MongoDB Atlas Vector Search",
+      "Redis",
+      "BullMQ",
+      "Gemini",
+      "Supabase",
+      "Cloudflare Tunnel"
+    ],
+    "tldr": {
+      "problem": "Teams keep knowledge in scattered docs and chats, then re-ask the same questions.",
+      "build": "One workspace for chat, co-edited docs and a RAG knowledge base, with a BullMQ ingestion worker and per-workspace vector search.",
+      "result": "Cited answers from the team's own content, 228 automated API tests, and push-to-deploy onto a self-hosted phone server."
+    },
+    "video": "/demos/araxys.mp4",
+    "poster": "/demos/araxys.jpg"
+  },
+  {
     "id": "avmg",
     "title": "AVMG",
-    "description": "An all-in-one media converter that pulls audio and video from virtually any source, converts it to the format you need, and even drafts AI-generated notes from YouTube transcripts.",
+    "description": "An all-in-one media tool: pull audio and video from almost any source, convert it to the format you need, and draft AI study notes from YouTube transcripts.",
     "highlights": [
       "Designed a distributed video transcoding pipeline (FFmpeg + BullMQ workers) with job pickup latency under 500ms.",
       "Implemented subtitle harvesting via yt-dlp metadata-only fetches, cutting per-video transfer from ~400MB to under 1MB.",
-      "Built a live job dashboard that streams transcode progress to users, with automatic retries and dead-letter handling for failed jobs.",
-      "Handled large file uploads with Multer and persisted assets via Supabase storage and PostgreSQL.",
+      "Built a live job dashboard that streams transcode progress to users, with automatic retries for failed jobs.",
+      "Serves finished files straight from disk: a zero-copy rename plus streamed, resumable (HTTP Range) downloads replaced a cloud upload that read whole videos into RAM, and lifted the old 50 MB free-tier file cap.",
+      "Self-hosted on an Android phone: moved Prisma to its Rust-free client (its native engine has no Android build) and apply migrations from the deploy pipeline with psql.",
       "Shipped an AI notes generator that summarizes YouTube videos straight from their transcripts."
     ],
     "image": "/avmg.webp",
@@ -27,78 +64,165 @@
       "React",
       "Node.js",
       "Express",
-      "MongoDB",
+      "PostgreSQL",
+      "Prisma",
       "Redis",
       "BullMQ",
       "FFmpeg",
-      "Supabase",
-      "PostgreSQL",
-      "AWS EC2"
+      "yt-dlp",
+      "Gemini",
+      "Cloudflare Tunnel"
     ],
     "tldr": {
       "problem": "Converting and archiving media meant juggling several tools, and long transcodes blocked everything behind them.",
-      "build": "A distributed FFmpeg + BullMQ pipeline with Redis-backed queues, live job telemetry, and yt-dlp metadata-only subtitle harvesting.",
-      "result": "Job pickup under 500ms, per-video transfer cut from ~400MB to under 1MB, with automatic retries and dead-letter handling."
+      "build": "A BullMQ + FFmpeg worker pipeline with Redis queues, live job telemetry, metadata-only subtitle fetches, and files served straight from the server's disk.",
+      "result": "Job pickup under 500ms, per-video transfer cut from ~400MB to under 1MB, and no RAM spike or file-size cap on delivery."
     },
     "video": "/demos/avmg.mp4",
     "poster": "/demos/avmg.jpg"
   },
   {
-    "id": "projectteams",
-    "title": "ProjectTeams",
-    "description": "A real-time team collaboration platform with chat, presence, and co-editing — plus a built-in RAG engine that lets teams upload their own documents and ask questions answered from their own content, with cited sources.",
+    "id": "warden",
+    "title": "Warden",
+    "description": "Paste a YouTube lecture and get revision notes that follow the video as it plays, then flashcards and an OMR-style answer sheet built from the same lecture. Every card and question links back to the moment it came from.",
     "highlights": [
-      "Shipped a retrieval-augmented (RAG) document Q&A engine — teams upload PDFs and ask questions answered strictly from their own corpus, with cited sources.",
-      "Offloaded heavy ingestion (parse, chunk, embed) to a BullMQ/Redis worker, with semantic retrieval via MongoDB Atlas Vector Search scoped per team.",
-      "Powered live chat and presence with Socket.io across a MERN stack, hitting sub-100ms message delivery.",
-      "Added an AI authoring suite — summaries, auto-tagging, and grammar refinement — on the Vercel AI SDK and Gemini.",
-      "Deployed to production on AWS EC2 with PM2 (API + worker) behind an Nginx same-origin reverse proxy, fronted by Cloudflare and Let's Encrypt TLS."
+      "Go API and Go worker that never call each other: jobs live in Postgres, and each step (captions, notes, flashcards, quiz) is saved with its own marker, so a crash or retry only reruns what's missing and a lecture someone already made returns in milliseconds with no AI call.",
+      "Treats Gemini's output as untrusted input: Go checks every timestamp is a real transcript line, every quiz has four distinct options and a real answer, and every \"asked in the exam\" mark quotes the teacher's actual words, with one fix-up call before failing.",
+      "No AI SDK: plain HTTP from Go to Gemini, with retries when Google is busy and a clean stop when the daily quota runs out.",
+      "Next.js study screens: notes synced to the embedded YouTube player with a highlighter sweep, focus mode, flip-card flashcards and an answer sheet scored +4/-1 like the real NEET paper.",
+      "Own auth, daily limits, NEET and General templates, a library and a Revise tab, covered by Go integration tests and Playwright end-to-end tests."
     ],
-    "image": "/projectteams.webp",
-    "liveUrl": "https://projectteams.amanahmad.xyz",
-    "repoUrl": "https://github.com/wizardamxn/projectteams",
+    "image": "/warden.png",
+    "repoUrl": "https://github.com/wizardamxn/warden",
+    "technologies": [
+      "Go",
+      "PostgreSQL",
+      "Next.js",
+      "React",
+      "TypeScript",
+      "Gemini API",
+      "yt-dlp",
+      "Playwright"
+    ],
+    "tldr": {
+      "problem": "Watching a lecture feels like learning more than it is, and making notes and practice questions by hand takes longer than the lecture.",
+      "build": "A Go pipeline that turns captions into checked notes, flashcards and a quiz, saved step by step in Postgres, and a Next.js site that syncs them to the video.",
+      "result": "Notes that follow the video, practice tied to exact timestamps, and AI output that is verified in code instead of trusted."
+    }
+  },
+  {
+    "id": "gutter",
+    "title": "Gutter",
+    "description": "A Chrome side panel that reads the AI chat you have open (ChatGPT, Claude, Gemini or Grok) and answers side questions about it, so the main thread stays clean.",
+    "highlights": [
+      "Manifest V3 extension (React + TypeScript) that reads the open chat with per-site selectors served by the backend, so fixes ship without a store review.",
+      "Three ways to answer: Chrome's on-device Gemini Nano (free, nothing leaves the computer), hosted models through the Gutter server, or the user's own API key.",
+      "A hybrid router picks between lookup and explain answers: a semantic matcher first, the on-device model only on near-ties. It scored 90/100 in a bake-off against 87 (semantic only), 86 (Nano only) and 59 (rules).",
+      "Long chats: code picks the parts that match the question by words and by meaning, each answer lists what it was based on, and \"second opinion\" checks the last answer with a model from a different company.",
+      "Express + MongoDB server for accounts, synced side notes and per-account free limits, self-hosted on an Android phone with CI-gated deploys."
+    ],
+    "image": "/gutter.png",
+    "repoUrl": "https://github.com/wizardamxn/gutter",
+    "technologies": [
+      "Chrome Extension (MV3)",
+      "React",
+      "TypeScript",
+      "Gemini Nano",
+      "Node.js",
+      "Express",
+      "MongoDB"
+    ],
+    "tldr": {
+      "problem": "Asking a side question in an AI chat derails the main thread you were working in.",
+      "build": "A side panel that reads the open chat and answers on the side, on-device or through hosted models, with a routed lookup/explain answer style.",
+      "result": "Side questions that never pollute the main chat, free on-device answers, and nothing sent to the main chat without the user's say."
+    }
+  },
+  {
+    "id": "pocketserver",
+    "title": "Pocket Server",
+    "description": "An Android phone turned into a production server: Termux runs the backends for Araxys, AVMG and Gutter plus their databases, published through a Cloudflare Tunnel, with push-to-deploy from GitHub.",
+    "highlights": [
+      "Runs 10 PM2-managed processes on one phone (three app backends and their workers, PostgreSQL, Redis, cloudflared and a deploy service) and brings them all back after a reboot.",
+      "One Cloudflare named tunnel routes four hostnames to local ports: no open ports and no public IP. Frontends are on Netlify.",
+      "Push-to-deploy: after CI passes, GitHub Actions sends an HMAC-signed, timestamped request; the phone fast-forwards only to commits already on main, installs, migrates, reloads PM2, health-checks and rolls back on failure, and the log shows up in Actions.",
+      "Worked around Android-specific breakage: compiled bcrypt on-device with node-gyp, moved Prisma to its Rust-free client, applied migrations without Prisma's engine, and pointed yt-dlp at Node for YouTube's JavaScript checks."
+    ],
+    "image": "/pocketserver.png",
+    "technologies": [
+      "Android",
+      "Termux",
+      "PM2",
+      "Cloudflare Tunnel",
+      "GitHub Actions",
+      "PostgreSQL",
+      "Redis",
+      "Node.js",
+      "Bash"
+    ],
+    "tldr": {
+      "problem": "Hosting several side projects on cloud VMs costs money every month for very little traffic.",
+      "build": "A phone running every backend under PM2 behind a Cloudflare Tunnel, with a signed deploy webhook driven by GitHub Actions.",
+      "result": "Three live backends for the cost of electricity, deployed on every green push, with automatic rollback."
+    }
+  },
+  {
+    "id": "knowyourpolitician",
+    "title": "KnowYourPolitician",
+    "description": "An open data pipeline on Indian politicians: election history since 1962 joined to self-declared criminal cases, assets and education from ECI affidavits, with party-wise analytics.",
+    "highlights": [
+      "Built a reproducible Python pipeline (download, canonical SQLite, scrape, entity matching, analytics) holding 449K politicians, 575K candidacies since 1962, 155K affidavits and 87K criminal-case records.",
+      "Matches MyNeta affidavits to Lok Dhaba candidates exact, then fuzzy, then a human review queue, so uncertain matches are never guessed.",
+      "Scrapes only public statutory disclosures, politely: identified User-Agent, at least 2 seconds between requests, and an on-disk HTTP cache so reruns never hit a server twice.",
+      "Editorial rules in code: pending cases are never called convictions, nobody is labelled corrupt (ADR-style percentages only), and every fact keeps its source URL and scrape time.",
+      "A Next.js front end for politicians, parties and cases."
+    ],
+    "image": "/knowyourpolitician.png",
+    "repoUrl": "https://github.com/wizardamxn/knowyourpolitician",
+    "technologies": [
+      "Python",
+      "SQLite",
+      "Next.js",
+      "TypeScript",
+      "Web scraping"
+    ],
+    "tldr": {
+      "problem": "Voters can't easily see a candidate's election record next to what they declared in their affidavits.",
+      "build": "A cached, throttled scraping and matching pipeline that joins Lok Dhaba election data to ECI affidavits in one SQLite database.",
+      "result": "Six decades of candidacies linked to declared cases, assets and education, with sources kept for every fact."
+    }
+  },
+  {
+    "id": "kropigo",
+    "title": "KropiGo",
+    "description": "A freelance agri-marketplace connecting kisan (farmers) directly with buyers — farmers list produce, buyers purchase, and admins oversee the entire marketplace.",
+    "highlights": [
+      "Built real-time order and listing updates with Socket.io across a MERN/Next.js stack.",
+      "Used RTK Query to keep marketplace listings and orders fast and in sync on the client.",
+      "Implemented role-based access control (RBAC) and multi-tier admin workflows for kisan, buyers, and admins, including marketplace moderation.",
+      "Optimized image delivery with Cloudinary transformations and lazy loading, improving page load performance on low-bandwidth connections."
+    ],
+    "image": "/kropigo.webp",
+    "liveUrl": "https://kropigo.in",
+    "repoUrl": "https://github.com/wizardamxn/kropigo",
     "technologies": [
       "Socket.io",
+      "RTK Query",
+      "Next.js",
       "React",
       "Node.js",
       "Express",
       "MongoDB",
-      "Redis",
-      "Supabase",
-      "Vercel AI SDK",
-      "AWS EC2"
+      "Cloudinary"
     ],
     "tldr": {
-      "problem": "Teams keep their knowledge in scattered documents, then re-ask the same questions in chat.",
-      "build": "A MERN collaboration platform with Socket.io presence plus a RAG engine — BullMQ ingestion and MongoDB Atlas Vector Search scoped per team.",
-      "result": "Sub-100ms message delivery and cited answers drawn strictly from a team’s own corpus, deployed on AWS EC2 behind Nginx and Cloudflare."
+      "problem": "Farmers selling produce lose margin to middlemen and have no direct line to buyers.",
+      "build": "A Next.js/MERN marketplace with Socket.io live listings, RBAC across kisan/buyer/admin roles, and moderation workflows.",
+      "result": "Direct farmer-to-buyer sales with real-time order updates, and Cloudinary-optimised images for low-bandwidth rural connections."
     },
-    "video": "/demos/projectteams.mp4",
-    "poster": "/demos/projectteams.jpg"
-  },
-  {
-    "id": "watchthis",
-    "title": "WatchThis",
-    "description": "An AI-driven movie recommendation platform that suggests films tailored to your taste, lets you save them to a personal watchlist, and surfaces rich details on every title.",
-    "highlights": [
-      "Generated personalized movie recommendations and surfaced detailed metadata via the TMDB API.",
-      "Built a persistent, user-specific watchlist backed by Firebase.",
-      "Crafted a responsive React front end for browsing, searching, and saving titles.",
-      "Designed detail views covering cast, ratings, synopsis, and related recommendations."
-    ],
-    "image": "/watchthis.webp",
-    "liveUrl": "https://watchthis.amanahmad.xyz",
-    "repoUrl": "https://github.com/wizardamxn/watchthis",
-    "technologies": [
-      "React",
-      "Firebase",
-      "TMDB"
-    ],
-    "tldr": {
-      "problem": "Picking something to watch means bouncing between reviews, trailers, and half-remembered recommendations.",
-      "build": "A React app on the TMDB API with AI-driven suggestions, rich detail views, and a Firebase-backed personal watchlist.",
-      "result": "One place to discover a film, dig into cast and ratings, and save it for later."
-    }
+    "video": "/demos/kropigo.mp4",
+    "poster": "/demos/kropigo.jpg",
+    "repoPrivate": true
   },
   {
     "id": "solarvistar",
@@ -132,34 +256,26 @@
     }
   },
   {
-    "id": "kropigo",
-    "title": "KropiGo",
-    "description": "A freelance agri-marketplace connecting kisan (farmers) directly with buyers — farmers list produce, buyers purchase, and admins oversee the entire marketplace.",
+    "id": "watchthis",
+    "title": "WatchThis",
+    "description": "An AI-driven movie recommendation platform that suggests films tailored to your taste, lets you save them to a personal watchlist, and surfaces rich details on every title.",
     "highlights": [
-      "Built real-time order and listing updates with Socket.io across a MERN/Next.js stack.",
-      "Used RTK Query to keep marketplace listings and orders fast and in sync on the client.",
-      "Implemented role-based access control (RBAC) and multi-tier admin workflows for kisan, buyers, and admins, including marketplace moderation.",
-      "Optimized image delivery with Cloudinary transformations and lazy loading, improving page load performance on low-bandwidth connections."
+      "Generated personalized movie recommendations and surfaced detailed metadata via the TMDB API.",
+      "Built a persistent, user-specific watchlist backed by Firebase.",
+      "Crafted a responsive React front end for browsing, searching, and saving titles.",
+      "Designed detail views covering cast, ratings, synopsis, and related recommendations."
     ],
-    "image": "/kropigo.webp",
-    "liveUrl": "https://kropigo.in",
-    "repoUrl": "https://github.com/wizardamxn/kropigo",
+    "image": "/watchthis.webp",
+    "repoUrl": "https://github.com/wizardamxn/watchthis",
     "technologies": [
-      "Socket.io",
-      "RTK Query",
-      "Next.js",
       "React",
-      "Node.js",
-      "Express",
-      "MongoDB",
-      "Cloudinary"
+      "Firebase",
+      "TMDB"
     ],
     "tldr": {
-      "problem": "Farmers selling produce lose margin to middlemen and have no direct line to buyers.",
-      "build": "A Next.js/MERN marketplace with Socket.io live listings, RBAC across kisan/buyer/admin roles, and moderation workflows.",
-      "result": "Direct farmer-to-buyer sales with real-time order updates, and Cloudinary-optimised images for low-bandwidth rural connections."
-    },
-    "video": "/demos/kropigo.mp4",
-    "poster": "/demos/kropigo.jpg"
+      "problem": "Picking something to watch means bouncing between reviews, trailers, and half-remembered recommendations.",
+      "build": "A React app on the TMDB API with AI-driven suggestions, rich detail views, and a Firebase-backed personal watchlist.",
+      "result": "One place to discover a film, dig into cast and ratings, and save it for later."
+    }
   }
 ]

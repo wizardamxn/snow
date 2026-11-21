@@ -101,7 +101,7 @@ export const BUILDINGS: BuildingDef[] = [
   { id: "contact", name: "Contact Spire", action: "Enter", sprite: `${B}/Tower.png`, col: 25, row: 17, w: 2, h: 4, interior: true },
   { id: "chronicles", name: "Hall of Chronicles", action: "Enter", sprite: `${B}/Barracks.png`, col: 9, row: 19, w: 3, h: 4, interior: true },
   { id: "armory", name: "The Armory", action: "Enter", sprite: `${B}/Archery.png`, col: 9, row: 25, w: 3, h: 4, interior: true },
-  { id: "relics", name: "Vault of Relics", action: "Enter", sprite: `${B}/Monastery.png`, col: 33, row: 18, w: 3, h: 5, interior: true },
+  { id: "relics", name: "Vault of Relics", action: "Enter", sprite: `${B}/Monastery.png`, col: 33, row: 18, w: 3, h: 5, interior: false },
   { id: "testimonies", name: "Hall of Testimonies", action: "Enter", sprite: `${B}/House1.png`, col: 34, row: 25, w: 2, h: 3, interior: true },
 ];
 

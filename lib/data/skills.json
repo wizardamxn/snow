@@ -1,22 +1,62 @@
 [
   {
     "category": "Languages",
-    "skills": ["TypeScript", "JavaScript", "Python", "SQL"]
+    "skills": [
+      "TypeScript",
+      "JavaScript",
+      "Go",
+      "Python",
+      "SQL"
+    ]
   },
   {
     "category": "Frontend",
-    "skills": ["React", "Next.js", "React Native", "Tailwind CSS", "Redux Toolkit / RTK Query"]
+    "skills": [
+      "React",
+      "Next.js",
+      "React Native",
+      "Tailwind CSS",
+      "Redux Toolkit / RTK Query"
+    ]
   },
   {
     "category": "Backend",
-    "skills": ["Node.js", "Express.js", "FastAPI", "Socket.io", "BullMQ"]
+    "skills": [
+      "Node.js",
+      "Express.js",
+      "FastAPI",
+      "Socket.io",
+      "BullMQ"
+    ]
   },
   {
     "category": "Databases",
-    "skills": ["MongoDB (Atlas Vector Search)", "PostgreSQL", "Redis", "Firebase", "Supabase", "Qdrant"]
+    "skills": [
+      "MongoDB (Atlas Vector Search)",
+      "PostgreSQL",
+      "Redis",
+      "Firebase",
+      "Supabase",
+      "Qdrant"
+    ]
   },
   {
     "category": "Gen AI & Infra",
-    "skills": ["Claude API", "AI Agents", "Vercel AI SDK", "Google Gemini API", "RAG Pipelines", "AWS EC2", "Nginx", "Cloudflare", "Prisma", "FFmpeg"]
+    "skills": [
+      "Claude API",
+      "AI Agents",
+      "Vercel AI SDK",
+      "Google Gemini API",
+      "RAG Pipelines",
+      "AWS EC2",
+      "Nginx",
+      "Cloudflare",
+      "Prisma",
+      "FFmpeg",
+      "GitHub Actions",
+      "PM2",
+      "Cloudflare Tunnel",
+      "Self-hosting (Termux)"
+    ]
   }
 ]

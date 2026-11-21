@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { ensureStarted } from "@/lib/audio/ambient";
+import projects from "@/lib/data/projects.json";
 
 /**
  * First-load tutorial screen. Shown once per session (sessionStorage flag).
@@ -11,7 +12,7 @@ import { ensureStarted } from "@/lib/audio/ambient";
 const BUILDINGS_LEGEND = [
   { icon: "⚔", name: "THE SANCTUM", desc: "About & Bio" },
   { icon: "📜", name: "HALL OF CHRONICLES", desc: "Work Experience" },
-  { icon: "🏺", name: "VAULT OF RELICS", desc: "5 Projects" },
+  { icon: "🏺", name: "VAULT OF RELICS", desc: `${projects.length} Projects` },
   { icon: "🗡", name: "THE ARMORY", desc: "Skills & Stack" },
   { icon: "📣", name: "HALL OF TESTIMONIES", desc: "Testimonials" },
   { icon: "✉", name: "CONTACT SPIRE", desc: "Get in Touch" },

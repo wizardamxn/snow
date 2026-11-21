@@ -113,9 +113,10 @@ export default function SanctumPanel({ onClose }: Props) {
             <span className="font-pixel text-[8px]" style={{ color: "var(--ink-muted)" }}>CEROPE</span>
             {" "}— Redis caching that cut API latency from ~10s to under 200ms — and at{" "}
             <span className="font-pixel text-[8px]" style={{ color: "var(--ink-muted)" }}>KODECOMPILER</span>
-            {" "}— built a sandboxed LeetCode-style code execution engine from scratch. Freelance
-            projects include AI media converter AVMG, RAG chat platform ProjectTeams,
-            agri-marketplace KropiGo, and CRM SolarVistar.
+            {" "}— built a sandboxed LeetCode-style code execution engine from scratch. Side
+            projects include team workspace Araxys, media converter AVMG, lecture-to-notes app
+            Warden and AI-chat side panel Gutter, most of them running on an Android phone turned
+            into a home server. Freelance builds: agri-marketplace KropiGo and CRM SolarVistar.
           </p>
         </div>
 

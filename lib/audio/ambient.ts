@@ -10,20 +10,34 @@ let bgMusic: HTMLAudioElement | null = null;
 let masterVolume = 0.8;
 /** Background music sits well under the master level so it stays ambience, not a soundtrack. */
 const MUSIC_LEVEL = 0.3;
-let muted = false;
+const MUTE_KEY = "sigma_muted";
+let muted = (() => {
+  try {
+    return typeof window !== "undefined" && localStorage.getItem(MUTE_KEY) === "1";
+  } catch {
+    return false;
+  }
+})();
 
 let started = false;
 
+/**
+ * Music plays only when unmuted AND the tab is visible. iOS ignores
+ * `audio.volume`, so muting must use `muted` + pause, not volume 0; and a hidden
+ * tab (app switched, screen locked) should never keep playing.
+ */
 function applyVolumes() {
-  if (bgMusic) {
-    bgMusic.volume = muted ? 0 : masterVolume * MUSIC_LEVEL;
-  }
+  if (!bgMusic) return;
+  bgMusic.volume = masterVolume * MUSIC_LEVEL;
+  bgMusic.muted = muted;
+  if (muted || document.hidden) bgMusic.pause();
+  else if (bgMusic.paused) bgMusic.play().catch(() => {});
 }
 
 export function ensureStarted(): void {
   if (typeof window === "undefined") return;
   if (started) {
-    if (bgMusic && bgMusic.paused) bgMusic.play().catch(() => {});
+    applyVolumes();
     ctx?.resume();
     return;
   }
@@ -32,8 +46,6 @@ export function ensureStarted(): void {
   // 1. Setup BG Music
   bgMusic = new Audio("/audio/music.mp3");
   bgMusic.loop = true;
-  bgMusic.volume = muted ? 0 : masterVolume * MUSIC_LEVEL;
-  bgMusic.play().catch((e) => console.warn("Audio play blocked:", e));
 
   // 2. Setup Web Audio for SFX
   const AudioCtor =
@@ -52,6 +64,11 @@ export function setVolume(v: number): void {
 
 export function setMuted(m: boolean): void {
   muted = m;
+  try {
+    localStorage.setItem(MUTE_KEY, m ? "1" : "0");
+  } catch {
+    // private mode / storage off: mute still works for this visit
+  }
   applyVolumes();
 }
 
@@ -63,7 +80,7 @@ export function getAudioState(): { volume: number; muted: boolean } {
  * Synthesize a quick 8-bit "blip" sound for UI interactions.
  */
 export function playBlip(): void {
-  if (!ctx) return;
+  if (!ctx || muted) return;
   const t = ctx.currentTime;
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
@@ -86,7 +103,7 @@ export function playBlip(): void {
  * Synthesize a soft footstep "crunch".
  */
 export function playFootstep(): void {
-  if (!ctx) return;
+  if (!ctx || muted) return;
   const t = ctx.currentTime;
   
   // Create a tiny white noise burst
@@ -116,13 +133,31 @@ export function playFootstep(): void {
   noise.start(t);
 }
 
-// Ensure audio starts on the very first user interaction if the tutorial was already dismissed.
-if (typeof window !== "undefined") {
-  const startAudioOnInteraction = () => {
+/**
+ * Start the music on the first key or click. Called by the game's Overlay only:
+ * this module is also bundled into the phone resume view, and arming it at
+ * import time made any tap on that page start the game's music.
+ */
+export function armAutostart(): () => void {
+  const start = () => {
     if (!started) ensureStarted();
-    window.removeEventListener("keydown", startAudioOnInteraction);
-    window.removeEventListener("click", startAudioOnInteraction);
+    disarm();
   };
-  window.addEventListener("keydown", startAudioOnInteraction);
-  window.addEventListener("click", startAudioOnInteraction);
+  const disarm = () => {
+    window.removeEventListener("keydown", start);
+    window.removeEventListener("click", start);
+  };
+  window.addEventListener("keydown", start);
+  window.addEventListener("click", start);
+  return disarm;
+}
+
+if (typeof window !== "undefined") {
+  // Pause everything when the tab is hidden (app switch, screen lock), resume when it's back.
+  document.addEventListener("visibilitychange", () => {
+    if (!started) return;
+    applyVolumes();
+    if (document.hidden) ctx?.suspend();
+    else ctx?.resume();
+  });
 }

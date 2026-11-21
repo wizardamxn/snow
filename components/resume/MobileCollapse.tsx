@@ -34,12 +34,18 @@ export default function MobileCollapse({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="md:hidden flex items-center gap-1.5 font-pixel text-[7px] py-1 -ml-0.5"
+        className="md:hidden flex items-center gap-2 font-pixel text-[7px] min-h-[40px] pr-3 -ml-0.5"
         style={{ color: "#ac824e" }}
       >
-        <span aria-hidden style={{ color: "#c8861e", display: "inline-block", width: 8 }}>
-          {open ? "▾" : "▸"}
-        </span>
+        {/* CSS triangle: Press Start 2P draws ▸/▾ as the wrong glyph */}
+        <span
+          aria-hidden
+          className="inline-block transition-transform"
+          style={{
+            width: 0, height: 0, borderTop: "4px solid transparent", borderBottom: "4px solid transparent",
+            borderLeft: "6px solid #c8861e", transform: open ? "rotate(90deg)" : "none",
+          }}
+        />
         {open ? "HIDE" : summary}
       </button>
 

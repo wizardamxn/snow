@@ -1121,7 +1121,7 @@ export async function buildTownScene(
     { id: "chronicles", caption: "Currently at 10ex.ai — shipping an embeddable AI chatbot and scheduled agents on the Claude API." },
     { id: "armory", caption: "The stack: React, Next.js, Node, FastAPI, Postgres, Redis, and AI agents on the Claude API." },
     { id: "testimonies", caption: "What the people I've worked with say — real quotes, real teams." },
-    { id: "relics", caption: "5 shipped projects — live demos, real repos, real metrics." },
+    { id: "relics", caption: "Every project on one scroll — live demos, real repos, real metrics." },
     { id: "contact", caption: "Open to opportunities — let's talk. Opening contact details..." },
   ];
   let tourStopIdx = -1; // -1 = inactive
@@ -1393,7 +1393,7 @@ export async function buildTownScene(
     }
     setNear(best);
     if (input.justPressed(...KEY.interact) && best) {
-      bus.emitVisit(best.id.startsWith("relic:") ? "relics" : best.id);
+      bus.emitVisit(best.id);
       bus.emitOpen(best.id);
     }
     r.update(elapsed);

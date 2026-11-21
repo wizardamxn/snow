@@ -11,7 +11,8 @@
   - **Distributed Processing:** BullMQ 5, Redis (BullMQ Connection Rail)
   - **Media Processing:** FFmpeg (fluent-ffmpeg), youtube-dl-exec (yt-dlp wrapper)
   - **Databases & ORMs:** PostgreSQL, Prisma ORM
-  - **Cloud Infrastructure & Storage:** Supabase Cloud Storage (S3-compatible bucket), AWS EC2 (Compute & Postgres Hosting)
+  - **Infrastructure & Storage:** Self-hosted on an Android phone (Termux): PM2 runs the API, media worker, cleanup worker, PostgreSQL and Redis; Cloudflare Tunnel publishes the API with no open ports. Finished files live on the server's own disk. Frontend on Netlify.
+  - **Delivery:** GitHub Actions CI, then an HMAC-signed deploy webhook: the phone pulls, installs, applies migrations, reloads PM2, health-checks and rolls back on failure
   - **User Interface:** Vanilla CSS, TailwindCSS, Geist Sans & Geist Mono (Vercel Fonts)
 
 ---
@@ -30,15 +31,15 @@
   Rapid, concurrent state updates from distributed workers pushing job telemetry (e.g., transitioning from `PENDING` to `PROCESSING` to `COMPLETED`/`FAILED`) risked race conditions, locks in PostgreSQL, and desynchronization in real-time UI dashboards.
 
 - **Insight: The Ghost Mode Bypass Protocol**
-  By intercepting requests where the target format is explicitly `.txt` in [downloader.js](file:///e:/AVMG/b/src/services/downloader.js#L12-L34), the extraction worker bypasses the media binary stream entirely. We pass `skipDownload: true` along with subtitle extraction configs (`writeSubs: true`, `writeAutoSubs: true`, and `subLangs: "en"`) to `youtube-dl-exec`, reducing download weight from hundreds of megabytes to a sub-millisecond network request for the subtitle track alone.
+  By intercepting requests where the target format is explicitly `.txt` in [downloader.js](https://github.com/wizardamxn/avmg-b/blob/main/src/services/downloader.js#L12-L34), the extraction worker bypasses the media binary stream entirely. We pass `skipDownload: true` along with subtitle extraction configs (`writeSubs: true`, `writeAutoSubs: true`, and `subLangs: "en"`) to `youtube-dl-exec`, reducing download weight from hundreds of megabytes to a sub-millisecond network request for the subtitle track alone.
 - **Insight: Regex Chains and Stutter Reduction Engine**
-  We implemented a deterministic processing pipeline in [transcriptCleaner.js](file:///e:/AVMG/b/src/services/transcriptCleaner.js#L3-L43) that cleans dirty subtitle transcripts. It uses a sequence of regex replacements to clean alignment metadata, karaoke tags, HTML, and audio markers, followed by a linear line-by-line deduplication algorithm that merges consecutive duplicate fragments to produce clean running prose.
+  We implemented a deterministic processing pipeline in [transcriptCleaner.js](https://github.com/wizardamxn/avmg-b/blob/main/src/services/transcriptCleaner.js#L3-L43) that cleans dirty subtitle transcripts. It uses a sequence of regex replacements to clean alignment metadata, karaoke tags, HTML, and audio markers, followed by a linear line-by-line deduplication algorithm that merges consecutive duplicate fragments to produce clean running prose.
 - **Insight: Lanczos Scale Split-Palette Generation**
-  For `.gif` output mutations, we bypass default transcoding by injecting a complex two-pass FFmpeg filter layout: `fps=15,scale=480:-1:flags=lanczos,split[s0][s1]`; `[s0]palettegen[p]`; `[s1][p]paletteuse` in [mediaProcessor.js](file:///e:/AVMG/b/src/services/mediaProcessor.js#L55-L63). This splits the input stream, dynamically constructs a custom palette representing the specific colors in the source video, and applies the palette during rendering to ensure high-fidelity color output.
+  For `.gif` output mutations, we bypass default transcoding by injecting a complex two-pass FFmpeg filter layout: `fps=15,scale=480:-1:flags=lanczos,split[s0][s1]`; `[s0]palettegen[p]`; `[s1][p]paletteuse` in [mediaProcessor.js](https://github.com/wizardamxn/avmg-b/blob/main/src/services/mediaProcessor.js#L55-L63). This splits the input stream, dynamically constructs a custom palette representing the specific colors in the source video, and applies the palette during rendering to ensure high-fidelity color output.
 - **Insight: Ephemeral Garbage Collection Lifecycle**
-  We enforced a zero-leak storage guarantee. Both original uploads and intermediate transcode variants are automatically purged. In [mediaProcessor.js](file:///e:/AVMG/b/src/services/mediaProcessor.js#L78-L92), a filesystem cleanup hook triggers `fs.unlink` in both the completion and rejection handlers. For finalized outputs, [supabaseUplink.js](file:///e:/AVMG/b/src/utils/supabaseUplink.js#L36-L38) triggers a synchronous `fs.unlinkSync` immediately after verifying upload completion to the `avmg-payloads` bucket.
+  We enforced a zero-leak storage guarantee. Both original uploads and intermediate transcode variants are automatically purged. In [mediaProcessor.js](https://github.com/wizardamxn/avmg-b/blob/main/src/services/mediaProcessor.js#L78-L92), a filesystem cleanup hook triggers `fs.unlink` in both the completion and rejection handlers. Finished outputs are moved into `uploads/out/` and deleted by the cleanup worker at their expiry; a 24-hour sweep also removes any temp file a crashed job left behind.
 - **Insight: Decoupled Queue Telemetry & State Ledgers**
-  Rather than writing to the database directly from API handlers, we leverage Prisma to generate a system receipt in PostgreSQL, offload the heavy execution payload to BullMQ on Redis, and update the telemetry ledger asynchronously in [mediaWorker.js](file:///e:/AVMG/b/src/workers/mediaWorker.js#L40-L43). The frontend app uses a non-blocking 5-second polling interval to read database records without blocking the main event loops.
+  Rather than writing to the database directly from API handlers, we leverage Prisma to generate a system receipt in PostgreSQL, offload the heavy execution payload to BullMQ on Redis, and update the telemetry ledger asynchronously in [mediaWorker.js](https://github.com/wizardamxn/avmg-b/blob/main/src/workers/mediaWorker.js#L40-L43). The frontend app uses a non-blocking 5-second polling interval to read database records without blocking the main event loops.
 
 ---
 
@@ -53,7 +54,7 @@ The underlying infrastructure utilizes a Next.js BFF (Backend-for-Frontend) arch
 ## 4. KEY FEATURES
 
 ### Local Media Transcoding Engine (FFmpeg Core)
-- **Fast-Seeking Optimizations:** Uses input-seeking via `command.seekInput(startTime)` in [mediaProcessor.js](file:///e:/AVMG/b/src/services/mediaProcessor.js#L39-L42), instructing FFmpeg to bypass decoding intermediate frame indexes prior to the offset timestamp, decreasing processing time for long clips.
+- **Fast-Seeking Optimizations:** Uses input-seeking via `command.seekInput(startTime)` in [mediaProcessor.js](https://github.com/wizardamxn/avmg-b/blob/main/src/services/mediaProcessor.js#L39-L42), instructing FFmpeg to bypass decoding intermediate frame indexes prior to the offset timestamp, decreasing processing time for long clips.
 - **Precision Quality Brackets:** Implements strict compression constraints, enforcing audio bitrates of `320k` (best), `192k` (good), and `128k` (draft), alongside video resolution scaling that clamps outputs to `1280x720` (good) or `854x480` (draft).
 - **Watermark Filter Overlays:** Statically binds user logo graphics into video container streams using a complex coordinate overlay filter (`overlay=W-w-10:H-h-10`) positioned relative to width and height boundaries.
 - **Snapshot Thumbnail Extraction:** Captures standalone image thumbnails (.jpg or .png) by overriding FFmpeg video stream parameters to write only a single frame output (`-vframes 1`).
@@ -68,9 +69,11 @@ The underlying infrastructure utilizes a Next.js BFF (Backend-for-Frontend) arch
 - **Redis Communication Rail:** Persists job payload specifications (`jobId`, source URLs, target formats, trimming limits) on a durable Redis queue database.
 - **Robust Telemetry Updates:** Synchronizes state changes (`PENDING` $\rightarrow$ `PROCESSING` $\rightarrow$ `COMPLETED`/`FAILED`) within a PostgreSQL instance.
 
-### Cloud Uplink Engine (Supabase Storage Integrations)
-- **S3-Compatible Object Storage:** Beams mutated files to bucket `avmg-payloads` with upsert policies, outputting highly available download URLs.
-- **Storage Protection Policy:** Automatically triggers synchronous filesystem unlink operations to delete temporary assets locally the instant cloud uploading finishes.
+### File Delivery (served from the server's own disk)
+- **Zero-copy publish:** A finished file is `rename()`d into `uploads/out/`. On the same disk that only rewrites a directory entry, so a large video is never read into memory (the earlier Supabase upload read the whole file into RAM first).
+- **Streamed downloads:** `GET /api/files/:name` streams the file in small chunks with backpressure and HTTP Range support (resumable downloads). `basename()` blocks `../` path tricks.
+- **Expiry:** The cleanup worker deletes files past their per-tier expiry and clears the job's link, so the disk never fills up.
+- **Why not object storage:** Files only live for an hour, the old bucket was a single point of failure, and its free tier capped files at 50 MB.
 
 ### Telemetry Dashboard & Ledger
 - **Relational Integrity Logs:** Displays chronological summaries of the fifty most recent processing events.
@@ -123,13 +126,14 @@ The underlying infrastructure utilizes a Next.js BFF (Backend-for-Frontend) arch
                                         |     |     |
                                         v     v     v
                                   +-----------+-----------+
-                                  | Supabase Uplink Client|
+                                  |  publishFile: rename  |
+                                  |  into uploads/out     |
                                   +-----------+-----------+
-                                              | Upload (S3) & Local Purge
+                                              | GET /api/files/:name
                                               v
                                   +-----------+-----------+
-                                  | Supabase Cloud Bucket |
-                                  |   (avmg-payloads)     |
+                                  | Streamed download     |
+                                  | (Range, 64 KB chunks) |
                                   +-----------------------+
 ```
 
@@ -148,8 +152,8 @@ The underlying infrastructure utilizes a Next.js BFF (Backend-for-Frontend) arch
    - **Local Transcode (`job-convert`):** Triggers FFmpeg seeking, bitrates, watermark composition, and writes the output.
    - **Network Pull (`job-download`):** Invokes `yt-dlp` to download the remote stream.
    - **Combo pipeline (`job-download-convert`):** Downloads the media, runs subtitles parsing, and invokes FFmpeg for final transcodes.
-8. **Cloud Uploading:** The local file buffer is uploaded to the Supabase cloud bucket `avmg-payloads`.
-9. **Ledger Finalization:** Prisma updates the database status to `COMPLETED` and registers the cloud download URL.
+8. **Publishing:** The finished file is moved (not copied) into `uploads/out/`, and its download link becomes `<PUBLIC_API_URL>/api/files/<name>`.
+9. **Ledger Finalization:** Prisma updates the database status to `COMPLETED` and records the download URL.
 10. **Garbage Collection:** Synchronous unlinking removes local files to prevent disk usage.
 11. **Webhook Notification:** A POST event is sent to the target `webhookUrl` if specified.
 
@@ -179,8 +183,8 @@ Acts as the central telemetry ledger for all media transcodes, network downloads
 *   `url` (String, Nullable): Remote source target location.
 *   `targetFormat` (String, Nullable): Export target format extension (e.g. `mp3`, `wav`, `mp4`, `gif`, `jpg`, `txt`).
 *   `quality` (String, Nullable): Compression level profile (`best`, `good`, `draft`).
-*   `fileName` (String, Nullable): Final name of the cloud-stored file.
-*   `path` (String, Nullable): Permanent Supabase public download URL.
+*   `fileName` (String, Nullable): Final name of the published file.
+*   `path` (String, Nullable): Download URL (`/api/files/<name>`); set to null once cleanup deletes the file.
 *   `size` (Integer, Nullable): Size in bytes.
 *   `transcriptPath` (String, Nullable): Temporary internal route for subtitles.
 *   `status` (JobStatus Enum): Flow state, defaults to `PENDING`.
