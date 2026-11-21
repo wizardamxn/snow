@@ -1,11 +1,11 @@
-# Portfolio Case Study: Project Teams
+# Portfolio Case Study: Araxys
 
 ### 1. METADATA HEADER
-* **Project Name:** **Project Teams** — A high-fidelity, real-time collaboration platform that merges instant messaging, collaborative document editing, active presence tracking, LLM-assisted authoring, and a retrieval-augmented (RAG) document Q&A engine into a unified, secure, multi-tenant workspace.
+* **Project Name:** **Araxys** — A high-fidelity, real-time collaboration platform that merges instant messaging, collaborative document editing, active presence tracking, LLM-assisted authoring, and a retrieval-augmented (RAG) document Q&A engine into a unified, secure, multi-tenant workspace.
 * **Links/Metadata:**
   * **Status:** LIVE IN PRODUCTION
-  * **Source Code:** [GitHub Repository](https://github.com/wizardamxn/projectteams)
-  * **Live Demo:** [projectteams.amanahmad.xyz](https://projectteams.amanahmad.xyz)
+  * **Source Code:** [GitHub Repository](https://github.com/wizardamxn/araxys)
+  * **Live Demo:** [araxys.amanahmad.xyz](https://araxys.amanahmad.xyz)
   * **Role:** Principal Full-Stack Engineer / Architect
   * **Team Size:** 1 (Solo Developer)
 * **Stack:**
@@ -18,7 +18,7 @@
   * **Databases & Storage:** MongoDB (via Mongoose ODM), Supabase Storage (object/blob persistence)
   * **State Management:** Redux Toolkit (Thunk-driven socket orchestration)
   * **Styling & UI:** Tailwind CSS, Framer Motion, Lucide React, Sonner
-  * **Infrastructure & Delivery:** AWS EC2, PM2 (process orchestration), Nginx (reverse proxy / same-origin gateway), Cloudflare (DNS, edge proxy, TLS), Let's Encrypt (origin TLS), Docker (local dev parity)
+  * **Infrastructure & Delivery:** Self-hosted on an Android phone (Termux): PM2 runs the API, the RAG worker and Redis; Cloudflare Tunnel publishes the API with no open ports. Frontend on Netlify. GitHub Actions CI (typecheck, 228 API tests, lint, build) gates an HMAC-signed deploy webhook with health checks and automatic rollback. Earlier: AWS EC2 + Nginx + Let's Encrypt. Docker for local dev parity.
 
 ---
 
@@ -55,12 +55,16 @@
   * *Hurdle:* The app was developed against a Docker Compose dev stack (live-reload dev servers, cross-origin `localhost` ports, hardcoded EC2 IP in CORS). Promoting that verbatim to production broke auth: cross-site cookies were dropped, the SPA's API base URL double-prefixed `/api/api/...`, the WebSocket URL was undefined, and a raw HTTP IP exposed credentials in cleartext.
   * *Insight:* Re-architected the deployment to a **single same-origin topology**. Nginx serves the built Vite bundle and reverse-proxies `/api` and `/socket.io` to the Node backend on loopback — so the browser only ever talks to one origin, collapsing the cross-site cookie and double-prefix problems. Auth cookies were unified behind a single `cookieOptions` (httpOnly, `SameSite=Lax`, `secure` gated by a `COOKIE_SECURE` env flag rather than `NODE_ENV`). PM2 supervises the API and worker as independent processes (with `SIGTERM` job draining), and Cloudflare + Let's Encrypt terminate TLS at the edge and origin (`Full (strict)`).
 
+* **Challenge 9: Running Production on a Phone — Android, Termux and a Push-to-Deploy Pipeline**
+  * *Hurdle:* Moving off EC2 onto a self-hosted Android phone (Termux) broke assumptions the stack made about Linux: `bcrypt` ships no Android prebuild, npm 12 blocks native install scripts, there is no `/tmp`, nginx/systemd are not a given, and the box sits behind NAT with no public IP. Deploys became manual SSH sessions.
+  * *Insight:* Compiled `bcrypt` on-device with `node-gyp` against Termux's clang; split the frontend onto Netlify and exposed only the API through an outbound Cloudflare Tunnel (no open ports); kept the cookie same-site by putting both on `amanahmad.xyz`. Every push to `main` now runs CI, then GitHub Actions sends an HMAC-signed, timestamped request to a small deploy service on the phone, which fast-forwards only to commits already on `origin/main`, rebuilds, reloads PM2, health-checks and rolls back automatically on failure — reporting the result back into the Actions log.
+
 ---
 
 ### 3. OVERVIEW
-*Project Teams* is a high-performance, real-time collaboration ecosystem that merges messaging, collaborative digital workspaces, LLM-assisted authoring, and a retrieval-augmented document intelligence layer into a single unified workspace. Beyond live chat and co-editing, the platform lets a team **upload its own documents and then ask questions against them in natural language** — answers are grounded strictly in the team's own corpus and returned with source citations. Users can also invoke three synchronous AI authoring operations on any document via the integrated assistant panel: semantic tag extraction, text summarization, and tone/grammar refinement. The user experience is a dark-mode, high-fidelity single-page application (SPA) featuring smooth transitions, optimistic UI updates, and instant socket-driven messaging.
+*Araxys* is a high-performance, real-time collaboration ecosystem that merges messaging, collaborative digital workspaces, LLM-assisted authoring, and a retrieval-augmented document intelligence layer into a single unified workspace. Beyond live chat and co-editing, the platform lets a team **upload its own documents and then ask questions against them in natural language** — answers are grounded strictly in the team's own corpus and returned with source citations. Users can also invoke three synchronous AI authoring operations on any document via the integrated assistant panel: semantic tag extraction, text summarization, and tone/grammar refinement. The user experience is a dark-mode, high-fidelity single-page application (SPA) featuring smooth transitions, optimistic UI updates, and instant socket-driven messaging.
 
-Architecturally, the system is a decoupled, multi-process topology. A React/Vite SPA is served as static assets by Nginx, which also acts as the same-origin API gateway — reverse-proxying REST traffic and WebSocket upgrades to a monolithic Node.js/Express Backend-For-Frontend (BFF). Communication is split by workload: stateless CRUD, authentication, and synchronous AI completions travel over HTTPS REST, while real-time chat and presence ride persistent Socket.IO TCP connections. The heavy, CPU-bound RAG ingestion path is offloaded entirely to a **separate BullMQ/Redis worker process**, keeping the request-serving gateway responsive. Structured data lives in MongoDB (via Mongoose), raw document blobs in Supabase Storage, and vector embeddings in a MongoDB Atlas vector index. The whole stack runs on AWS EC2 under PM2, fronted by Cloudflare with Let's Encrypt TLS.
+Architecturally, the system is a decoupled, multi-process topology. A React/Vite SPA is served from Netlify and talks to a monolithic Node.js/Express Backend-For-Frontend (BFF) on its own subdomain (REST plus WebSocket upgrades through a Cloudflare Tunnel). Both share the same registrable domain, so the `SameSite=Lax` auth cookie still flows. Communication is split by workload: stateless CRUD, authentication, and synchronous AI completions travel over HTTPS REST, while real-time chat and presence ride persistent Socket.IO TCP connections. The heavy, CPU-bound RAG ingestion path is offloaded entirely to a **separate BullMQ/Redis worker process**, keeping the request-serving gateway responsive. Structured data lives in MongoDB (via Mongoose), raw document blobs in Supabase Storage, and vector embeddings in a MongoDB Atlas vector index. Today the API and worker run under PM2 on a self-hosted Android phone behind a Cloudflare Tunnel, and the SPA is served by Netlify (it started on AWS EC2 behind Nginx).
 
 ---
 
@@ -77,15 +81,18 @@ Architecturally, the system is a decoupled, multi-process topology. A React/Vite
 
 ### 5. ARCHITECTURE
 ```
-                              ┌───────────────────────────┐
-   Browser  ───────────────▶  │   Cloudflare (DNS / proxy │
-                              │   / edge TLS, Full strict) │
-                              └─────────────┬──────────────┘
-                                            │  (HTTPS, origin)
-                                            v
+   Browser ──▶ Netlify  (Vite SPA · araxys.amanahmad.xyz)
+      │
+      │  REST + /socket.io  →  teams-api.amanahmad.xyz
+      v
+   ┌───────────────────────────────┐
+   │  Cloudflare edge (TLS)        │
+   └───────────────┬───────────────┘
+                   │  outbound-only Cloudflare Tunnel (no open ports)
+                   v
 +-------------------------------------------------------------------------+
-|                    AWS EC2  ·  Nginx (same-origin gateway)              |
-|     serves Vite SPA (static)  |  proxies /api  +  /socket.io  ──▶ :2222 |
+|        Android phone · Termux · cloudflared  (teams-api.amanahmad.xyz)  |
+|                       no open ports  ──▶  127.0.0.1:2222                 |
 +-----------------------------------------+-------------------------------+
                                           | (loopback)
                                           v
@@ -163,4 +170,4 @@ Modeled and validated through Mongoose across the MongoDB instance:
 ---
 
 ### 8. OUTCOME
-*Project Teams* is a **live, production-grade** collaboration platform that pairs low-latency real-time messaging with a genuinely useful document-intelligence layer. By decoupling CPU-bound ingestion onto a BullMQ/Redis worker, the API gateway stays responsive under load while documents are parsed, chunked, and embedded out of band. By pushing `teamCode` isolation all the way down into the `$vectorSearch` candidate-generation stage, every layer — REST queries, sockets, and semantic retrieval — respects strict tenant boundaries, and grounded, citation-backed LLM answers eliminate hallucination. The same-origin Nginx gateway, PM2 process supervision, and Cloudflare + Let's Encrypt TLS turn a Docker-dev prototype into a hardened, HTTPS-served deployment on AWS EC2 — demonstrating end-to-end ownership from real-time systems design through RAG architecture to operating the stack in production.
+*Araxys* is a **live, production-grade** collaboration platform that pairs low-latency real-time messaging with a genuinely useful document-intelligence layer. By decoupling CPU-bound ingestion onto a BullMQ/Redis worker, the API gateway stays responsive under load while documents are parsed, chunked, and embedded out of band. By pushing `teamCode` isolation all the way down into the `$vectorSearch` candidate-generation stage, every layer — REST queries, sockets, and semantic retrieval — respects strict tenant boundaries, and grounded, citation-backed LLM answers eliminate hallucination. The same-origin Nginx gateway, PM2 process supervision, and Cloudflare + Let's Encrypt TLS turn a Docker-dev prototype into a hardened, HTTPS-served deployment on AWS EC2 — demonstrating end-to-end ownership from real-time systems design through RAG architecture to operating the stack in production.

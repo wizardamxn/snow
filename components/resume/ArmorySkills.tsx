@@ -8,7 +8,7 @@ import QuestPanel from "./QuestPanel";
 const DEFAULT_LEVEL = 0.72;
 const LEVEL: Record<string, number> = {
   // Languages
-  TypeScript: 0.9, JavaScript: 0.95, Python: 0.8, SQL: 0.75,
+  TypeScript: 0.9, JavaScript: 0.95, Python: 0.8, Go: 0.65, SQL: 0.75,
   // Frontend
   React: 0.95, "Next.js": 0.92, "React Native": 0.8, "Tailwind CSS": 0.9, "Redux Toolkit / RTK Query": 0.85,
   // Backend
@@ -17,6 +17,7 @@ const LEVEL: Record<string, number> = {
   "MongoDB (Atlas Vector Search)": 0.88, PostgreSQL: 0.8, Redis: 0.85, Firebase: 0.8, Supabase: 0.8, Qdrant: 0.75,
   // Gen AI & Infra
   "Claude API": 0.88, "AI Agents": 0.88, "Vercel AI SDK": 0.82, "Google Gemini API": 0.8, "RAG Pipelines": 0.8, "AWS EC2": 0.75, Nginx: 0.7, Cloudflare: 0.72, Prisma: 0.82, FFmpeg: 0.7,
+  "GitHub Actions": 0.72, PM2: 0.78, "Cloudflare Tunnel": 0.75, "Self-hosting (Termux)": 0.75,
 };
 
 function SkillMeter({ skill, fill }: { skill: string; fill: number }) {

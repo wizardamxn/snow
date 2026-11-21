@@ -52,7 +52,8 @@ type RoomDef = { w: number; h: number; floor: Floor; wall: Wall; accent: number;
 const ROOMS: Record<string, RoomDef> = {
   sanctum: { w: 11, h: 6, floor: "stone", wall: "stone", accent: 0x3b6fb6, rug: true },
   chronicles: { w: 11, h: 6, floor: "wood", wall: "wood", accent: 0xb5473a, rug: true },
-  relics: { w: 13, h: 6, floor: "stone", wall: "stone", accent: 0x7c4fa3, rug: true },
+  // ~2 tiles per easel so the frames (92px) never overlap as projects are added.
+  relics: { w: Math.max(13, projects.length * 2), h: 6, floor: "stone", wall: "stone", accent: 0x7c4fa3, rug: true },
   armory: { w: 12, h: 6, floor: "wood", wall: "stone", accent: 0xc79a2e },
   testimonies: { w: 10, h: 6, floor: "wood", wall: "wood", accent: 0xc79a2e, rug: true },
   contact: { w: 9, h: 6, floor: "stone", wall: "stone", accent: 0x3b6fb6 },

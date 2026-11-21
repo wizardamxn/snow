@@ -32,7 +32,7 @@ export default function RelicsPanel({ onClose }: Props) {
   return (
     <InfoPanel title="VAULT OF RELICS" subtitle="PROJECTS & WORKS" icon="🏺" onClose={onClose} maxWidth="max-w-3xl">
       <p className="font-scroll italic text-[15px] mb-4" style={{ color: INK.muted }}>
-        Five works, each with its full tale. Choose one to read it.
+        {projects.length} works, each with its full tale. Choose one to read it.
       </p>
       <ul className="flex flex-col gap-3">
         {projects.map((p) => (
