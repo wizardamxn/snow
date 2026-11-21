@@ -26,7 +26,6 @@ import RecruiterTourHUD from "./RecruiterTourHUD";
 import ColorGrade from "./ColorGrade";
 import SpeedrunHUD from "./SpeedrunHUD";
 import PlacesMenu from "./PlacesMenu";
-import ProjectPanel from "./ProjectPanel";
 import { PanelThemeContext, type PanelTheme } from "./InfoPanel";
 
 /** Which Tiny Swords frame and ribbon each place's panels wear. */
@@ -47,28 +46,15 @@ const PANEL_THEMES: Record<string, PanelTheme> = {
 /**
  * Routes the bus `emitOpen` id to the correct content panel.
  */
-function PanelRouter(props: { openId: string; onClose: () => void; onOpen: (id: string) => void }) {
-  const key = props.openId.startsWith("relic:") ? "relics" : props.openId;
+function PanelRouter(props: { openId: string; onClose: () => void }) {
   return (
-    <PanelThemeContext.Provider value={PANEL_THEMES[key] ?? null}>
+    <PanelThemeContext.Provider value={PANEL_THEMES[props.openId] ?? null}>
       <PanelSwitch {...props} />
     </PanelThemeContext.Provider>
   );
 }
 
-function PanelSwitch({
-  openId,
-  onClose,
-  onOpen,
-}: {
-  openId: string;
-  onClose: () => void;
-  onOpen: (id: string) => void;
-}) {
-  // A display in the Vault of Relics opens that one project; "back" shows the whole gallery.
-  if (openId.startsWith("relic:")) {
-    return <ProjectPanel projectId={openId.slice(6)} onClose={onClose} onBack={() => onOpen("relics")} />;
-  }
+function PanelSwitch({ openId, onClose }: { openId: string; onClose: () => void }) {
   switch (openId) {
     case "sanctum":
       return <SanctumPanel onClose={onClose} />;
@@ -148,11 +134,6 @@ export default function Overlay() {
     setIsMuted(next);
   };
 
-  const openProjects = () => {
-    playBlip();
-    setOpenId("relics");
-  };
-
   useEffect(() => {
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
     const t = setTimeout(() => setHighlightClassic(false), 10000);
@@ -216,6 +197,8 @@ export default function Overlay() {
     };
   }, []);
 
+  const classicPos: React.CSSProperties = isTouch ? { top: "16px", left: "124px" } : { bottom: "210px" };
+
   const closePanel = () => {
     playBlip();
     setOpenId(null);
@@ -229,12 +212,9 @@ export default function Overlay() {
       <ColorGrade />
       <TutorialOverlay />
       
-      {/* ── Quick actions (top-left): projects from anywhere + the only mute on touch screens ── */}
+      {/* ── Music toggle (top-left): the only mute on touch screens, where the [M] legend is hidden ── */}
       {!openId && (
-        <div className="pointer-events-auto absolute left-4 top-4 flex flex-col items-start gap-2 font-pixel">
-          <button type="button" onClick={openProjects} className="px-3 py-2.5 text-[8px] hover:brightness-125 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#f6c75a]" style={{ ...pixelBox, color: "#f6c75a" }}>
-            PROJECTS
-          </button>
+        <div className="pointer-events-auto absolute left-4 top-4 font-pixel">
           <button
             type="button"
             onClick={toggleMute}
@@ -275,7 +255,8 @@ export default function Overlay() {
       {/* ── Recruiter Mode: caption card + progress dots (bottom-centre) ─── */}
       {!openId && <RecruiterTourHUD />}
 
-      {/* ── Classic (non-game) view link (bottom-left, above the controls legend) ── */}
+      {/* ── Classic (non-game) view link: bottom-left above the controls legend; on touch it
+          sits top-left beside the music toggle, out of the play area and away from the D-pad ── */}
       <Link
         href="/resume"
         target="_blank"
@@ -284,7 +265,7 @@ export default function Overlay() {
         style={
           highlightClassic
             ? {
-                bottom: "210px",
+                ...classicPos,
                 fontSize: "9px",
                 padding: "12px 14px",
                 color: "#000",
@@ -294,7 +275,7 @@ export default function Overlay() {
                 letterSpacing: "0.06em",
               }
             : {
-                bottom: "210px",
+                ...classicPos,
                 fontSize: "7px",
                 padding: "8px 10px",
                 color: "#c8861e",
@@ -400,7 +381,7 @@ export default function Overlay() {
       )}
 
       {/* ── Content panels ──────────────────────────────────────────────── */}
-      {openId && <PanelRouter openId={openId} onClose={closePanel} onOpen={setOpenId} />}
+      {openId && <PanelRouter openId={openId} onClose={closePanel} />}
     </div>
   );
 }

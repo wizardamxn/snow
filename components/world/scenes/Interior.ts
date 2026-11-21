@@ -3,7 +3,6 @@ import { getTex, sliceFrames, TILE } from "@/components/world/tiles";
 import { hash, noise } from "@/components/world/Tilemap";
 import { SPRITE_TRIM } from "@/components/world/spriteTrim";
 import * as props from "@/components/world/props";
-import projects from "@/lib/data/projects.json";
 import experience from "@/lib/data/experience.json";
 import skills from "@/lib/data/skills.json";
 
@@ -14,7 +13,6 @@ import skills from "@/lib/data/skills.json";
  */
 
 const U = "/pixel/units";
-const PROJECT_IMAGES = (projects as { image?: string }[]).map((p) => p.image).filter((x): x is string => !!x);
 export const INTERIOR_URLS = [
   "/pixel/ui/icon_sword.png",
   "/pixel/ui/icon_coin.png",
@@ -23,7 +21,6 @@ export const INTERIOR_URLS = [
   `${U}/monk_idle.png`,
   `${U}/blue_archer_idle.png`,
   `${U}/pawn_red_idle.png`,
-  ...PROJECT_IMAGES,
 ];
 
 export type Hotspot = { x: number; y: number; id: string; label: string; action: string };
@@ -52,8 +49,6 @@ type RoomDef = { w: number; h: number; floor: Floor; wall: Wall; accent: number;
 const ROOMS: Record<string, RoomDef> = {
   sanctum: { w: 11, h: 6, floor: "stone", wall: "stone", accent: 0x3b6fb6, rug: true },
   chronicles: { w: 11, h: 6, floor: "wood", wall: "wood", accent: 0xb5473a, rug: true },
-  // ~2 tiles per easel so the frames (92px) never overlap as projects are added.
-  relics: { w: Math.max(13, projects.length * 2), h: 6, floor: "stone", wall: "stone", accent: 0x7c4fa3, rug: true },
   armory: { w: 12, h: 6, floor: "wood", wall: "stone", accent: 0xc79a2e },
   testimonies: { w: 10, h: 6, floor: "wood", wall: "wood", accent: 0xc79a2e, rug: true },
   contact: { w: 9, h: 6, floor: "stone", wall: "stone", accent: 0x3b6fb6 },
@@ -335,7 +330,7 @@ export function buildInterior(id: string, fireFrames: Texture[], lancerFrames: T
     anims.push({ s, frames, fps: 8, phase: Math.random() * 3 });
     block(x - 12, y - 8, 24, 10);
   };
-  /** A framed picture on an easel (projects) or on the wall (portrait). */
+  /** A framed picture on an easel or on the wall (portrait). */
   const picture = (img: Texture, x: number, y: number, fw: number, fh: number, onEasel: boolean, focusY = 0.5) => {
     const g = new Graphics();
     if (onEasel) {
@@ -454,31 +449,6 @@ export function buildInterior(id: string, fireFrames: Texture[], lancerFrames: T
     prop(props.crate(), TILE * 0.9, floorY(2.5), 32);
     bookshelf(W - TILE * 0.9, 11);
     prop(props.plant(), W - TILE * 0.7, floorY(3.6), 22);
-  } else if (id === "relics") {
-    const list = projects as { id: string; title: string; image?: string }[];
-    list.forEach((p, i) => {
-      const n = list.length;
-      const x = TILE * 1.6 + i * ((W - TILE * 3.2) / (n - 1));
-      const arc = Math.abs(i - (n - 1) / 2);
-      const y = floorY(1.2 + (2 - arc) * 0.25);
-      if (p.image) sorted(picture(getTex(p.image), x, y, 84, 52, true), y + 24);
-      block(x - 46, y - 4, 92, 26);
-      label(p.title.toUpperCase(), x, y - 64);
-      hotspot(x, y + 36, { id: `relic:${p.id}`, label: `Project · ${p.title}`, action: "Inspect" });
-    });
-    banner(TILE * 3.2, def.accent);
-    banner(W - TILE * 3.2, def.accent);
-    npc(sliceFrames(getTex(`${U}/monk_idle.png`), 192, 192), `${U}/monk_idle.png`, TILE * 1.2, floorY(3.3));
-    prop(props.chest(), W - TILE * 1.5, floorY(3.2), 36);
-    prop(props.crate(new Graphics(), 26, 22), W - TILE * 0.7, floorY(2.4), 26);
-    const coin = getTex("/pixel/ui/icon_coin.png");
-    for (const [x, y] of [[W - TILE * 1.2, floorY(3.3)], [W - TILE * 1.6, floorY(3.6)]]) {
-      const s = new Sprite(coin);
-      s.anchor.set(0.5, 1);
-      s.width = s.height = 26;
-      s.x = x; s.y = y;
-      sorted(s, y);
-    }
   } else if (id === "armory") {
     const cats = (skills as { category: string }[]).map((s) => s.category);
     const short = (c: string) => (c.startsWith("Gen AI") ? "AI & Infra" : c);
