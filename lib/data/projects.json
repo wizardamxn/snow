@@ -7,7 +7,7 @@
       "Built channels, threads, DMs, presence, unread counts and notifications over Socket.IO, plus live co-editing of rich-text docs with Yjs (shared cursors; offline edits sync on reconnect) and comment threads.",
       "Shipped a RAG knowledge base: a BullMQ/Redis worker chunks and embeds docs, uploaded PDFs/CSV/Markdown and public channels; MongoDB Atlas Vector Search answers with numbered, clickable citations, and private channels and DMs are never indexed.",
       "Multi-tenant workspaces with owner/admin/member roles and invite links, an audit log with CSV export, full workspace export, and HMAC-signed webhooks to Slack/Discord with retries.",
-      "Rebuilt in seven phases from a v1 prototype: auth on every route and socket, zod-validated config, and 228 API tests (unit + integration on an in-memory MongoDB) running in CI.",
+      "Rebuilt in phases from a v1 prototype: auth on every route and socket, validated config, and CI on every push.",
       "Runs on a self-hosted Android phone (PM2 + Cloudflare Tunnel, frontend on Netlify) with CI-gated push-to-deploy, health checks and automatic rollback."
     ],
     "image": "/araxys.png",
@@ -30,7 +30,7 @@
     "tldr": {
       "problem": "Teams keep knowledge in scattered docs and chats, then re-ask the same questions.",
       "build": "One workspace for chat, co-edited docs and a RAG knowledge base, with a BullMQ ingestion worker and per-workspace vector search.",
-      "result": "Cited answers from the team's own content, 228 automated API tests, and push-to-deploy onto a self-hosted phone server."
+      "result": "Cited answers from the team's own content, and push-to-deploy onto a self-hosted phone server."
     },
     "video": "/demos/araxys.mp4",
     "poster": "/demos/araxys.jpg"
@@ -40,8 +40,8 @@
     "title": "AVMG",
     "description": "An all-in-one media toolkit: download from almost any site, convert formats, compress a video to fit an upload limit, clean up audio, grab frames, quick-edit, and pull subtitles without downloading the video.",
     "highlights": [
-      "Designed a distributed video transcoding pipeline (FFmpeg + BullMQ workers) with job pickup latency under 500ms.",
-      "Implemented subtitle harvesting via yt-dlp metadata-only fetches, cutting per-video transfer from ~400MB to under 1MB.",
+      "Built a queue-based media pipeline (FFmpeg + BullMQ workers), so long conversions never block the API.",
+      "Fetches subtitles with yt-dlp without downloading the video itself, so a transcript costs a few kilobytes instead of the whole file.",
       "Built a live job dashboard that streams transcode progress to users, with automatic retries for failed jobs.",
       "Serves finished files straight from disk: a zero-copy rename plus streamed, resumable (HTTP Range) downloads replaced a cloud upload that read whole videos into RAM, and lifted the old 50 MB free-tier file cap.",
       "Self-hosted on an Android phone: moved Prisma to its Rust-free client (its native engine has no Android build) and apply migrations from the deploy pipeline with psql.",
@@ -75,7 +75,7 @@
     "tldr": {
       "problem": "Converting and archiving media meant juggling several tools, and long transcodes blocked everything behind them.",
       "build": "A BullMQ + FFmpeg worker pipeline with Redis queues, live job telemetry, metadata-only subtitle fetches, and files served straight from the server's disk.",
-      "result": "Job pickup under 500ms, per-video transfer cut from ~400MB to under 1MB, and no RAM spike or file-size cap on delivery."
+      "result": "Long jobs never block the API, transcripts skip the video download, and finished files are served straight from disk."
     },
     "video": "/demos/avmg.mp4",
     "poster": "/demos/avmg.jpg"
@@ -83,18 +83,16 @@
   {
     "id": "warden",
     "title": "Warden",
-    "description": "Paste a YouTube lecture and get revision notes that follow the video as it plays, then flashcards and an OMR-style answer sheet built from the same lecture. Every card and question links back to the moment it came from.",
+    "description": "Paste a YouTube lecture and get revision notes that follow the video as it plays, then flashcards and an OMR-style answer sheet built from the same lecture. Every card and question links back to the moment it came from. Built with AI pair-programming: I designed the pipeline and its checks.",
     "highlights": [
-      "Go API and Go worker that never call each other: jobs live in Postgres, and each step (captions, notes, flashcards, quiz) is saved with its own marker, so a crash or retry only reruns what's missing and a lecture someone already made returns in milliseconds with no AI call.",
-      "Treats Gemini's output as untrusted input: Go checks every timestamp is a real transcript line, every quiz has four distinct options and a real answer, and every \"asked in the exam\" mark quotes the teacher's actual words, with one fix-up call before failing.",
-      "No AI SDK: plain HTTP from Go to Gemini, with retries when Google is busy and a clean stop when the daily quota runs out.",
-      "Next.js study screens: notes synced to the embedded YouTube player with a highlighter sweep, focus mode, flip-card flashcards and an answer sheet scored +4/-1 like the real NEET paper.",
-      "Own auth, daily limits, NEET and General templates, a library and a Revise tab, covered by Go integration tests and Playwright end-to-end tests."
+      "The API and the worker never call each other: jobs live in Postgres, and each step (captions, notes, flashcards, quiz) is saved on its own, so a crash or retry only redoes what's missing and a lecture someone already made comes back with no AI call.",
+      "Treats Gemini's output as untrusted: every timestamp must be a real transcript line and every quiz needs four distinct options and a real answer before students see it, with one retry if a check fails.",
+      "Next.js study screens: notes synced to the embedded YouTube player, focus mode, flip-card flashcards and an answer sheet scored like the real NEET paper.",
+      "Accounts, daily limits, NEET and General templates, a library and a Revise tab, with end-to-end tests in Playwright."
     ],
     "image": "/warden.png",
     "repoUrl": "https://github.com/wizardamxn/warden",
     "technologies": [
-      "Go",
       "PostgreSQL",
       "Next.js",
       "React",
@@ -105,7 +103,7 @@
     ],
     "tldr": {
       "problem": "Watching a lecture feels like learning more than it is, and making notes and practice questions by hand takes longer than the lecture.",
-      "build": "A Go pipeline that turns captions into checked notes, flashcards and a quiz, saved step by step in Postgres, and a Next.js site that syncs them to the video.",
+      "build": "A pipeline that turns captions into checked notes, flashcards and a quiz, saved step by step in Postgres, and a Next.js site that syncs them to the video.",
       "result": "Notes that follow the video, practice tied to exact timestamps, and AI output that is verified in code instead of trusted."
     }
   },
@@ -116,7 +114,7 @@
     "highlights": [
       "Manifest V3 extension (React + TypeScript) that reads the open chat with per-site selectors served by the backend, so fixes ship without a store review.",
       "Three ways to answer: Chrome's on-device Gemini Nano (free, nothing leaves the computer), hosted models through the Gutter server, or the user's own API key.",
-      "A hybrid router picks between lookup and explain answers: a semantic matcher first, the on-device model only on near-ties. It scored 90/100 in a bake-off against 87 (semantic only), 86 (Nano only) and 59 (rules).",
+      "A hybrid router picks between a quick lookup and a fuller explanation: a meaning-based matcher first, asking the on-device model only when it's unsure.",
       "Long chats: code picks the parts that match the question by words and by meaning, each answer lists what it was based on, and \"second opinion\" checks the last answer with a model from a different company.",
       "Express + MongoDB server for accounts, synced side notes and per-account free limits, self-hosted on an Android phone with CI-gated deploys."
     ],

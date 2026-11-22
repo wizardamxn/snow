@@ -42,30 +42,30 @@
 </div>
 
 <h2>Summary</h2>
-<div>Software engineer (B.Tech ECE, 2027) with three production internships across full-stack web, mobile, and AI. Currently building LLM agents on the Claude API at 10ex.ai (FastAPI, React, PostgreSQL); previously cut API latency from 10s to under 200ms with Redis caching at Cerope. Runs his own projects in production on a self-hosted Android server with CI/CD.</div>
+<div>Software engineer (B.Tech ECE, 2027) with three production internships across full-stack web, mobile, and AI. Currently building LLM agents on the Claude API at 10ex.ai (FastAPI, React, PostgreSQL); previously added Redis caching to slow, high-traffic APIs at Cerope. Runs his own projects on a self-hosted Android server with CI/CD.</div>
 
 <h2>Experience</h2>
 <div class="entry">
   <div class="row"><div><span class="co">10ex.ai</span> | <b>Software Development Engineer Intern</b> | <i>Hyderabad, India</i></div><div class="muted">Sep 2026 – Present</div></div>
   <ul>
-    <li>Built an embeddable AI website chatbot (TypeScript widget, FastAPI, Claude API) with streamed replies, a live-preview builder, draft-to-publish releases, and human takeover from the team inbox.</li>
-    <li>Shipped an AI blog agent that writes posts and publishes, updates, or unpublishes them on customers’ Webflow CMS, with approval gates and edit-conflict detection.</li>
-    <li>Built natural-language scheduling for agents (rules first, LLM fallback to cron) with semantic topic de-duplication in Qdrant; fixed a parser bug that ran agents up to <b>7x</b> more often than requested.</li>
-    <li>Moved structured LLM output across <b>41 schemas</b> to JSON mode after Claude Opus 5.5 dropped forced tool calls, unblocking <b>100%</b> of failing background Blog Agent runs in production.</li>
+    <li>Built an embeddable AI website chatbot (TypeScript widget, FastAPI, Claude API) with streamed replies and human takeover from the inbox.</li>
+    <li>Shipped an AI blog agent that drafts posts and publishes or updates them on customers’ Webflow CMS, with approval before publishing.</li>
+    <li>Built plain-English scheduling for agents (rules first, LLM fallback) with topic de-duplication in Qdrant, and fixed a parsing bug that made agents run more often than requested.</li>
+    <li>Moved the agents’ structured LLM output to JSON mode after a Claude model update broke forced tool calls, getting failing background runs working again.</li>
   </ul>
 </div>
 <div class="entry">
   <div class="row"><div><span class="co">Cerope</span> | <b>Full Stack Developer Intern</b> | <i>Remote</i></div><div class="muted">Mar 2026 – Aug 2026</div></div>
   <ul>
-    <li>Reduced response latency on high-traffic APIs from <b>10s to under 200ms</b> and cut database load by <b>60%+</b> by designing a Redis caching layer with invalidation on writes.</li>
-    <li>Shipped user-facing features across a production Next.js web platform and its React Native app, keeping both clients in sync on a shared REST API.</li>
+    <li>Added Redis caching with invalidation on writes to slow, high-traffic APIs, taking responses from seconds to sub-second and easing DB load.</li>
+    <li>Shipped user-facing features across a production Next.js web platform and its React Native app, keeping both in sync on one shared REST API.</li>
   </ul>
 </div>
 <div class="entry">
   <div class="row"><div><span class="co">KodeCompiler</span> | <b>Full Stack Developer Intern</b> | <i>Remote</i></div><div class="muted">Nov 2025 – Feb 2026</div></div>
   <ul>
-    <li>Built a sandboxed LeetCode-style judge (React, FastAPI) that runs code against <b>100+ test cases</b> in <b>10+ languages</b>.</li>
-    <li>Engineered an isolated MongoDB query playground where hundreds of users safely run custom scripts in real time.</li>
+    <li>Built a sandboxed LeetCode-style judge (React, FastAPI) that runs submissions against test cases in multiple languages.</li>
+    <li>Built an isolated MongoDB query playground where students run their own scripts safely.</li>
   </ul>
 </div>
 
@@ -74,27 +74,34 @@
   <div class="row"><div><span class="co">Araxys</span> | <span class="stack">React, TypeScript, Node.js, Socket.IO, Yjs, BullMQ, Redis, MongoDB Atlas Vector Search</span></div><div><a href="https://araxys.amanahmad.xyz">Live</a> | <a href="https://github.com/wizardamxn/araxys">GitHub</a></div></div>
   <ul>
     <li>Built a team workspace with real-time chat, presence and Yjs live co-editing over Socket.IO, plus a RAG knowledge base: BullMQ/Redis workers chunk and embed docs, files and channels, and Atlas Vector Search returns cited answers.</li>
-    <li>Hardened it with role-based workspaces, HMAC-signed webhooks and <b>228 API tests</b> in CI; self-hosted the API on an Android phone (Termux, PM2, Cloudflare Tunnel) with CI-gated deploys that health-check and roll back automatically.</li>
+    <li>Added role-based workspaces and signed webhooks; self-hosted the API on an Android phone (Termux, PM2, Cloudflare Tunnel) with deploys that run after CI, health-check and roll back on failure.</li>
   </ul>
 </div>
 <div class="entry">
   <div class="row"><div><span class="co">AVMG</span> | <span class="stack">Next.js, Node.js, BullMQ, Redis, FFmpeg, PostgreSQL, Prisma</span></div><div><a href="https://avmg.amanahmad.xyz">Live</a> | <a href="https://github.com/wizardamxn/avmg-f">Frontend</a> | <a href="https://github.com/wizardamxn/avmg-b">Backend</a></div></div>
   <ul>
-    <li>Designed a distributed transcoding pipeline (FFmpeg, BullMQ workers) with job pickup <b>under 500ms</b>; metadata-only yt-dlp subtitle fetches cut per-video transfer from <b>400MB to under 1MB</b>.</li>
-    <li>Replaced cloud uploads with zero-copy disk publishing and streamed, resumable downloads (no RAM spike, no 50 MB cap), and moved Prisma to its Rust-free client to run on the self-hosted Android server.</li>
+    <li>Built a queue-based media pipeline (FFmpeg, BullMQ workers) so long conversions never block the API; subtitle-only yt-dlp fetches skip downloading the video entirely.</li>
+    <li>Serves finished files straight from disk with resumable downloads instead of a cloud bucket, on the self-hosted Android server (switched Prisma to its Rust-free client to run there).</li>
   </ul>
 </div>
 <div class="entry">
-  <div class="row"><div><span class="co">Warden</span> | <span class="stack">Go, PostgreSQL, Next.js, Gemini API, Playwright</span></div><div><a href="https://github.com/wizardamxn/warden">GitHub</a></div></div>
+  <div class="row"><div><span class="co">Warden</span> | <span class="stack">Next.js, PostgreSQL, Gemini API, Playwright · built with AI pair-programming</span></div><div><a href="https://github.com/wizardamxn/warden">GitHub</a></div></div>
   <ul>
-    <li>Built a Go API and worker that turn YouTube lectures into video-synced notes, flashcards and an exam-style quiz; each step is checkpointed in Postgres, so retries rerun only what failed and repeat lectures need no AI call.</li>
-    <li>Validated every Gemini response in Go (real transcript timestamps, four distinct options, quoted exam marks) with one fix-up retry, calling Gemini over plain HTTP with no SDK.</li>
+    <li>Designed a pipeline that turns YouTube lectures into video-synced notes, flashcards and a quiz; each step is saved in Postgres, so a retry only redoes what failed and a repeat lecture needs no AI call.</li>
+    <li>Treats model output as untrusted: every Gemini response is checked against the transcript before students see it, with one retry if it fails.</li>
+  </ul>
+</div>
+<div class="entry">
+  <div class="row"><div><span class="co">Gutter</span> | <span class="stack">Chrome Extension (MV3), React, TypeScript, Express, MongoDB</span></div><div><a href="https://github.com/wizardamxn/gutter">GitHub</a></div></div>
+  <ul>
+    <li>Chrome side panel that reads the open ChatGPT, Claude, Gemini or Grok chat and answers side questions without cluttering the main chat.</li>
+    <li>Answers on-device with Chrome’s built-in Gemini Nano, through hosted models, or with the user’s own key; an Express/MongoDB server handles accounts, synced notes and daily limits.</li>
   </ul>
 </div>
 
 <h2>Technical Skills</h2>
 <table class="skills">
-  <tr><td>Languages</td><td>TypeScript, JavaScript, Python, Go, SQL</td></tr>
+  <tr><td>Languages</td><td>TypeScript, JavaScript, Python, SQL</td></tr>
   <tr><td>Frontend</td><td>React, Next.js, React Native, TanStack Router/Query, Redux Toolkit, Tailwind CSS</td></tr>
   <tr><td>Backend</td><td>Node.js, Express.js, FastAPI, REST APIs, WebSockets (Socket.io), Server-Sent Events, BullMQ, Taskiq</td></tr>
   <tr><td>AI / LLM</td><td>Claude API (tool use, structured output), LLM agents, RAG, vector search, Vercel AI SDK, Gemini API</td></tr>

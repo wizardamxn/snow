@@ -111,7 +111,7 @@ export default function SanctumPanel({ onClose }: Props) {
           <p className="font-mono text-xs leading-relaxed" style={{ color: "var(--ink-body)" }}>
             Previously interned at{" "}
             <span className="font-pixel text-[8px]" style={{ color: "var(--ink-muted)" }}>CEROPE</span>
-            {" "}— Redis caching that cut API latency from ~10s to under 200ms — and at{" "}
+            {" "}— Redis caching that took slow APIs from seconds to sub-second — and at{" "}
             <span className="font-pixel text-[8px]" style={{ color: "var(--ink-muted)" }}>KODECOMPILER</span>
             {" "}— built a sandboxed LeetCode-style code execution engine from scratch. Side
             projects include team workspace Araxys, media converter AVMG, lecture-to-notes app

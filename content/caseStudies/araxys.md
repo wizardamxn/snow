@@ -18,7 +18,7 @@
   * **Databases & Storage:** MongoDB (via Mongoose ODM), Supabase Storage (object/blob persistence)
   * **State Management:** Redux Toolkit (Thunk-driven socket orchestration)
   * **Styling & UI:** Tailwind CSS, Framer Motion, Lucide React, Sonner
-  * **Infrastructure & Delivery:** Self-hosted on an Android phone (Termux): PM2 runs the API, the RAG worker and Redis; Cloudflare Tunnel publishes the API with no open ports. Frontend on Netlify. GitHub Actions CI (typecheck, 228 API tests, lint, build) gates an HMAC-signed deploy webhook with health checks and automatic rollback. Earlier: AWS EC2 + Nginx + Let's Encrypt. Docker for local dev parity.
+  * **Infrastructure & Delivery:** Self-hosted on an Android phone (Termux): PM2 runs the API, the RAG worker and Redis; Cloudflare Tunnel publishes the API with no open ports. Frontend on Netlify. GitHub Actions CI (typecheck, API tests, lint, build) gates an HMAC-signed deploy webhook with health checks and automatic rollback. Earlier: AWS EC2 + Nginx + Let's Encrypt. Docker for local dev parity.
 
 ---
 

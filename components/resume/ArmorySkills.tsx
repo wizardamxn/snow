@@ -8,7 +8,7 @@ import QuestPanel from "./QuestPanel";
 const DEFAULT_LEVEL = 0.72;
 const LEVEL: Record<string, number> = {
   // Languages
-  TypeScript: 0.9, JavaScript: 0.95, Python: 0.8, Go: 0.65, SQL: 0.75,
+  TypeScript: 0.9, JavaScript: 0.95, Python: 0.8, SQL: 0.75,
   // Frontend
   React: 0.95, "Next.js": 0.92, "React Native": 0.8, "Tailwind CSS": 0.9, "Redux Toolkit / RTK Query": 0.85,
   // Backend

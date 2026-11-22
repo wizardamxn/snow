@@ -10,9 +10,18 @@
     "highlights": [
       "Built an AI chatbot any company can drop onto its website: it answers visitors live, and the team can jump into any conversation from their inbox.",
       "Shipped an AI blog agent that writes posts and publishes them straight to a customer's Webflow site, and can update or take them down later.",
-      "Made agents run themselves on a schedule set in plain English (\"twice a week at 2pm\"), working through a topic list without ever repeating one."
+      "Made agents run themselves on a schedule set in plain English (\"twice a week at 2pm\"), working through a topic list without repeating topics."
     ],
-    "technologies": ["FastAPI", "Taskiq", "React", "TanStack", "Claude API", "Postgres", "Redis", "Qdrant"]
+    "technologies": [
+      "FastAPI",
+      "Taskiq",
+      "React",
+      "TanStack",
+      "Claude API",
+      "Postgres",
+      "Redis",
+      "Qdrant"
+    ]
   },
   {
     "id": "cerope",
@@ -21,13 +30,19 @@
     "location": "Remote",
     "period": "Mar 2026 — Aug 2026",
     "current": false,
-    "summary": "Building features end-to-end across a Next.js front end and a MERN-stack backend, plus a React Native mobile app, with a Redis caching layer that cut API latency from ~10s to under 200ms.",
+    "summary": "Building features end-to-end across a Next.js front end and a MERN-stack backend, plus a React Native mobile app, with a Redis caching layer that took slow APIs from seconds to sub-second.",
     "highlights": [
-      "Reduced response latency on high-traffic APIs from ~10s to under 200ms and cut database load by 60%+ by designing a Redis caching layer with invalidation on writes.",
+      "Added Redis caching with invalidation on writes to slow, high-traffic APIs, taking responses from seconds to sub-second and easing database load.",
       "Shipped user-facing features across a production Next.js web platform and its React Native app, keeping both clients in sync on a shared API.",
       "Integrated third-party APIs and background jobs to automate recurring workflows, cutting manual operations effort for the team."
     ],
-    "technologies": ["Next.js", "React", "React Native", "Node.js", "Redis"]
+    "technologies": [
+      "Next.js",
+      "React",
+      "React Native",
+      "Node.js",
+      "Redis"
+    ]
   },
   {
     "id": "kodecompiler",
@@ -36,12 +51,17 @@
     "location": "Remote",
     "period": "Nov 2025 — Feb 2026",
     "current": false,
-    "summary": "Built a sandboxed, LeetCode-style code execution engine (React + FastAPI) evaluating submissions against 100+ test cases across 10+ languages, plus a real-time MongoDB query playground.",
+    "summary": "Built a sandboxed, LeetCode-style code judge (React + FastAPI) that runs submissions against test cases in multiple languages, plus a MongoDB query playground.",
     "highlights": [
-      "Built a sandboxed, LeetCode-style code execution engine (React + FastAPI) that evaluates submissions against 100+ test cases across 10+ languages.",
-      "Engineered an isolated MongoDB query playground letting hundreds of users run custom database scripts safely in real time.",
+      "Built a sandboxed, LeetCode-style code judge (React + FastAPI) that runs submissions against test cases in multiple languages.",
+      "Built an isolated MongoDB query playground where students run their own database scripts safely.",
       "Added real-time submission feedback that streams execution output to users as test cases run, replacing the previous wait-for-completion flow."
     ],
-    "technologies": ["React", "Python", "FastAPI", "MongoDB"]
+    "technologies": [
+      "React",
+      "Python",
+      "FastAPI",
+      "MongoDB"
+    ]
   }
 ]
