@@ -38,14 +38,14 @@
   {
     "id": "avmg",
     "title": "AVMG",
-    "description": "An all-in-one media tool: pull audio and video from almost any source, convert it to the format you need, and draft AI study notes from YouTube transcripts.",
+    "description": "An all-in-one media toolkit: download from almost any site, convert formats, compress a video to fit an upload limit, clean up audio, grab frames, quick-edit, and pull subtitles without downloading the video.",
     "highlights": [
       "Designed a distributed video transcoding pipeline (FFmpeg + BullMQ workers) with job pickup latency under 500ms.",
       "Implemented subtitle harvesting via yt-dlp metadata-only fetches, cutting per-video transfer from ~400MB to under 1MB.",
       "Built a live job dashboard that streams transcode progress to users, with automatic retries for failed jobs.",
       "Serves finished files straight from disk: a zero-copy rename plus streamed, resumable (HTTP Range) downloads replaced a cloud upload that read whole videos into RAM, and lifted the old 50 MB free-tier file cap.",
       "Self-hosted on an Android phone: moved Prisma to its Rust-free client (its native engine has no Android build) and apply migrations from the deploy pipeline with psql.",
-      "Shipped an AI notes generator that summarizes YouTube videos straight from their transcripts."
+      "Added six ffmpeg tools on the same queue: compress-to-size (bitrate fitted from duration), loudness and silence cleanup, frame grabs and contact sheets, rotate/flip/speed edits, a subtitle fetcher and an instant media inspector. Every option is whitelisted before it reaches ffmpeg, and encodes are CPU-capped."
     ],
     "image": "/avmg.webp",
     "liveUrl": "https://avmg.amanahmad.xyz",
@@ -70,7 +70,6 @@
       "BullMQ",
       "FFmpeg",
       "yt-dlp",
-      "Gemini",
       "Cloudflare Tunnel"
     ],
     "tldr": {
